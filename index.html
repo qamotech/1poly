@@ -2074,21 +2074,23 @@
                 endTurnBtn.disabled = true;
                 buyBtn.disabled = true;
                 buildBtn.disabled = true;
+                if (typeof syncMobileActionBar === 'function') syncMobileActionBar();
                 return;
             }
+            const isOnline = isHost || isConnected;
             const p = G.players[G.currentPlayer];
-            const isMyTurn = G.currentPlayer === myPlayerIndex && !p.bankrupt && !G.gameOver;
+            const isMyTurn = isOnline ? (G.currentPlayer === myPlayerIndex && isConnected && !p.bankrupt && !G.gameOver) : (!p.bankrupt && !G.gameOver);
             const canRoll = isMyTurn && G.phase === 'roll' && !p.jail;
             const canEnd = isMyTurn && (G.phase === 'postroll' || p.jail) && !G.gameOver;
             const canBuild = isMyTurn && (G.phase === 'roll' || G.phase === 'postroll') && !G.gameOver;
 
-            rollBtn.disabled = !canRoll || !isConnected;
-            endTurnBtn.disabled = !canEnd || !isConnected;
-            buyBtn.disabled = !isConnected || !isMyTurn || G.phase !== 'postroll';
-            buildBtn.disabled = !canBuild || !isConnected;
+            rollBtn.disabled = !canRoll;
+            endTurnBtn.disabled = !canEnd;
+            buyBtn.disabled = !isMyTurn || G.phase !== 'postroll';
+            buildBtn.disabled = !canBuild;
 
             // show/hide buy
-            if (G.phase === 'postroll' && G.currentPlayer === myPlayerIndex && isConnected) {
+            if (G.phase === 'postroll' && isMyTurn) {
                 const pos = p.position;
                 const owner = G.propertyOwners[pos];
                 const prop = PROPERTIES[pos];
@@ -2972,10 +2974,28 @@
             const mobBuy = document.getElementById('mobBuyBtn');
             const mobBuild = document.getElementById('mobBuildBtn');
             const mobEnd = document.getElementById('mobEndBtn');
-            if (mobRoll) mobRoll.style.opacity = typeof rollBtn !== 'undefined' && rollBtn.disabled ? '0.4' : '1';
-            if (mobBuy) mobBuy.style.display = typeof buyBtn !== 'undefined' && buyBtn.style.display !== 'none' ? 'flex' : 'none';
-            if (mobBuild) mobBuild.style.opacity = typeof buildBtn !== 'undefined' && buildBtn.disabled ? '0.4' : '1';
-            if (mobEnd) mobEnd.style.opacity = typeof endTurnBtn !== 'undefined' && endTurnBtn.disabled ? '0.4' : '1';
+            if (mobRoll) {
+                const isDis = typeof rollBtn !== 'undefined' && rollBtn.disabled;
+                mobRoll.style.opacity = isDis ? '0.4' : '1';
+                mobRoll.style.pointerEvents = isDis ? 'none' : 'auto';
+            }
+            if (mobBuy) {
+                const isVis = typeof buyBtn !== 'undefined' && buyBtn.style.display !== 'none';
+                const isDis = typeof buyBtn !== 'undefined' && buyBtn.disabled;
+                mobBuy.style.display = isVis ? 'flex' : 'none';
+                mobBuy.style.opacity = isDis ? '0.4' : '1';
+                mobBuy.style.pointerEvents = isDis ? 'none' : 'auto';
+            }
+            if (mobBuild) {
+                const isDis = typeof buildBtn !== 'undefined' && buildBtn.disabled;
+                mobBuild.style.opacity = isDis ? '0.4' : '1';
+                mobBuild.style.pointerEvents = isDis ? 'none' : 'auto';
+            }
+            if (mobEnd) {
+                const isDis = typeof endTurnBtn !== 'undefined' && endTurnBtn.disabled;
+                mobEnd.style.opacity = isDis ? '0.4' : '1';
+                mobEnd.style.pointerEvents = isDis ? 'none' : 'auto';
+            }
         }
 
         function inspectDeedCard(pos) {
