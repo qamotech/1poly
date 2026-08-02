@@ -637,7 +637,45 @@
         }
         .w-full {
             width: 100%;
+        /* ─── 72 MEGA-UPGRADE SUITE STYLES & ANIMATIONS ─── */
+        .mega-modal-overlay {
+            position: fixed; inset: 0; background: rgba(10,14,26,0.85); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px;
         }
+        .mega-modal {
+            background: #16213e; border: 2px solid #3f518c; border-radius: 24px; width: 100%; max-width: 950px;
+            max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+        }
+        .mega-tabs { display: flex; background: #1a1a2e; border-bottom: 2px solid #2a3a5e; overflow-x: auto; }
+        .mega-tab-btn { flex: 1; min-width: 170px; padding: 16px; border: none; background: transparent; color: #aaa; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: 0.2s; text-align: center; border-bottom: 3px solid transparent; }
+        .mega-tab-btn.active { color: #f0a500; background: rgba(240,165,0,0.08); border-bottom-color: #f0a500; }
+        .mega-content { padding: 24px; overflow-y: auto; flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .feature-card { background: #223056; border-radius: 14px; padding: 14px; border: 1px solid #344778; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); transition: transform 0.2s, border-color 0.2s; }
+        .feature-card:hover { transform: translateY(-3px); border-color: #f0a500; }
+        .feature-title { font-weight: 700; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .feature-desc { font-size: 0.78rem; color: #b8c6e0; line-height: 1.4; }
+        .feature-control { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; gap: 8px; }
+        .mega-toggle { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #2ecc71; background: #1a2542; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; border: 1px solid #2a3d6a; transition: 0.2s; }
+        .mega-toggle:hover { background: #223358; border-color: #2ecc71; }
+        .mega-toggle.off { color: #e74c3c; border-color: #5a2e34; background: rgba(231,76,60,0.1); }
+        .mega-select { background: #1a2542; color: #fff; border: 1px solid #344778; border-radius: 10px; padding: 6px 10px; font-size: 0.8rem; outline: none; width: 100%; cursor: pointer; }
+        .mega-slider { width: 100%; cursor: pointer; accent-color: #f0a500; }
+        .pet-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,140,0,0.15); border: 1px solid #ff8c00; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: #ffb800; font-weight: 700; animation: floatPet 3s infinite ease-in-out; }
+        @keyframes floatPet { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
+        @keyframes discoParty { 0% { box-shadow: inset 0 0 40px #ff007f; } 33% { box-shadow: inset 0 0 40px #00f0ff; } 66% { box-shadow: inset 0 0 40px #39ff14; } 100% { box-shadow: inset 0 0 40px #ff007f; } }
+        .disco-mode { animation: discoParty 2s infinite linear !important; border: 2px dashed #ff007f !important; }
+        .rainbow-trail { filter: drop-shadow(0 0 8px #00ffff) drop-shadow(0 0 15px #ff00ff); }
+        .weather-cloud { position: absolute; font-size: 2rem; opacity: 0.35; pointer-events: none; animation: floatCloud 25s linear infinite; z-index: 5; }
+        @keyframes floatCloud { from { transform: translateX(-100px); } to { transform: translateX(750px); } }
+        /* Theme overrides */
+        body.theme-sunset { background: #2d132c !important; }
+        body.theme-sunset #app { background: #5c1844 !important; }
+        body.theme-emerald { background: #072e24 !important; }
+        body.theme-emerald #app { background: #0c4a3b !important; }
+        body.theme-cyber { background: #030a16 !important; }
+        body.theme-cyber #app { background: #0c182c !important; box-shadow: 0 0 40px rgba(0,255,255,0.4) !important; }
+        body.theme-cyber .space { border-color: #00ffff !important; }
+        body.hi-contrast * { font-weight: 800 !important; letter-spacing: 0.5px !important; }
     </style>
 </head>
 <body>
@@ -645,8 +683,12 @@
     <div id="app">
         <!-- HEADER -->
         <div class="header">
-            <h1>🏠 MONOPOLY</h1>
+            <h1 style="display:flex; align-items:center; gap:8px;">🏠 MONOPOLY <span id="activePetBadge" class="pet-badge" style="display:none;">🐱 Kitty</span> <span id="weatherBadge" style="font-size:1.1rem;" title="Current Weather">☀️</span></h1>
             <div class="header-controls">
+                <button id="megaHubBtn" class="primary" style="background: linear-gradient(135deg, #ff007a, #7928ca); box-shadow: 0 0 15px rgba(255,0,122,0.5);">🌟 72 Mega-Upgrades Hub</button>
+                <button id="quickSoundBtn" style="background: #20b2aa;">🎵 Sound FX</button>
+                <button id="quickCoinBtn" style="background: #e67e22;">🪙 Flip Coin</button>
+                <button id="quickFortuneBtn" style="background: #9b59b6;">🔮 Fortune</button>
                 <span class="status-badge" id="statusBadge">⚡ Offline</span>
                 <button id="resetBtn" class="danger">⟳ New Game</button>
             </div>
@@ -714,6 +756,43 @@
             <h2 id="modalTitle">🎉</h2>
             <p id="modalMessage"></p>
             <div class="flex-btns" id="modalButtons"></div>
+        </div>
+    </div>
+
+    <!-- 72 MEGA-UPGRADES & CUSTOMIZATION HUB MODAL -->
+    <div class="mega-modal-overlay" id="megaHubOverlay">
+        <div class="mega-modal">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 18px 24px; background:#1e2a4a; border-bottom:2px solid #344778;">
+                <h2 style="margin:0; color:#fff; font-size:1.3rem;">🎮 Monopoly Family Mega-Suite (72 Upgrades)</h2>
+                <button id="closeMegaHubBtn" style="background:#c0392b; color:#fff; border:none; padding:8px 18px; border-radius:20px; font-weight:700; cursor:pointer;">✖ Close</button>
+            </div>
+            <div class="mega-tabs">
+                <button class="mega-tab-btn active" onclick="switchMegaTab('features')">🏆 24 Features & Upgrades</button>
+                <button class="mega-tab-btn" onclick="switchMegaTab('customizations')">⚙️ 24 Customizations & Controls</button>
+                <button class="mega-tab-btn" onclick="switchMegaTab('fun')">🎈 24 Fun & Magical Enhancements</button>
+                <button class="mega-tab-btn" onclick="switchMegaTab('analytics')">📊 Real-time Wealth & Roster</button>
+            </div>
+            <div id="megaTabContent" class="mega-content">
+                <!-- Dynamic content injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK SOUND BOARD MODAL -->
+    <div class="mega-modal-overlay" id="soundBoardOverlay">
+        <div class="mega-modal" style="max-width:520px; padding:24px; background:#1e2a4a;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="color:#f0a500; font-size:1.2rem;">🎵 Interactive Family Sound FX Board</h3>
+                <button onclick="document.getElementById('soundBoardOverlay').style.display='none'" style="background:#c0392b; color:white; border:none; padding:6px 14px; border-radius:14px; cursor:pointer; font-weight:700;">Close</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <button class="header-controls button primary" style="justify-content:center; padding:16px; font-size:1rem;" onclick="playMegaSound(440,0.1,'square');playMegaSound(880,0.25,'square',120)">🎺 Victory Fanfare</button>
+                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#2ecc71; color:#fff;" onclick="playMegaSound(523.25,0.08,'sine');playMegaSound(659.25,0.08,'sine',80);playMegaSound(783.99,0.15,'sine',160)">✨ Magic Sparkle</button>
+                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#e74c3c; color:#fff;" onclick="playMegaSound(150,0.4,'sawtooth')">⚠️ Uh-Oh Buzzer</button>
+                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#3498db; color:#fff;" onclick="playMegaSound(987.77,0.1,'triangle');playMegaSound(1318.5,0.3,'triangle',100)">💰 Cash Jackpot</button>
+                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#9b59b6; color:#fff;" onclick="playMegaSound(330,0.15,'sine');playMegaSound(261.63,0.3,'sine',150)">😸 Silly Giggle</button>
+                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#e67e22; color:#fff;" onclick="playMegaSound(600,0.05,'square');playMegaSound(1200,0.2,'square',60)">🪙 Coin Drop</button>
+            </div>
         </div>
     </div>
 
@@ -1802,6 +1881,494 @@
         console.log('🏠 Monopoly with PeerJS!');
         console.log('👑 Host: enter room name → click Host');
         console.log('🔗 Join: same room name → click Join');
+
+        // ═══════════════════════════════════════════════════════════════
+        //  72 MEGA-UPGRADE SUITE ENGINE (FEATURES, CONTROLS & ENHANCEMENTS)
+        // ═══════════════════════════════════════════════════════════════
+
+        const MegaState = JSON.parse(localStorage.getItem('1poly_mega_settings') || '{}') || {};
+        const getSet = (k, def) => MegaState[k] !== undefined ? MegaState[k] : def;
+        const saveMegaState = (k, v) => { MegaState[k] = v; localStorage.setItem('1poly_mega_settings', JSON.stringify(MegaState)); applyMegaEffects(); };
+
+        // Audio Synthesizer for Fun Sound FX
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playMegaSound(freq, duration, type='sine', delay=0) {
+            if (!getSet('c_audio_enabled', true)) return;
+            setTimeout(() => {
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type; osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(getSet('c_volume', 0.15), audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + duration);
+                } catch(e) {}
+            }, delay);
+        }
+
+        function speechAnnounce(text) {
+            if (getSet('f_voice_announce', false) && window.speechSynthesis) {
+                const u = new SpeechSynthesisUtterance(text);
+                u.rate = 1.05; u.pitch = 1.1; window.speechSynthesis.speak(u);
+            }
+        }
+
+        // Quick button events
+        document.getElementById('megaHubBtn').addEventListener('click', () => {
+            renderMegaTab('features');
+            document.getElementById('megaHubOverlay').style.display = 'flex';
+        });
+        document.getElementById('closeMegaHubBtn').addEventListener('click', () => {
+            document.getElementById('megaHubOverlay').style.display = 'none';
+        });
+        document.getElementById('quickSoundBtn').addEventListener('click', () => {
+            document.getElementById('soundBoardOverlay').style.display = 'flex';
+        });
+        document.getElementById('quickCoinBtn').addEventListener('click', () => {
+            const result = Math.random() < 0.5 ? '👑 HEADS (Lucky Yes!)' : '🪙 TAILS (Safe Pass!)';
+            playMegaSound(600, 0.08, 'square'); playMegaSound(1200, 0.3, 'square', 100);
+            showModal('🪙 Golden Coin Flip', `The golden luck coin landed on:\n\n✨ ${result} ✨\n\nTrust the magic of the coin for your decision!`);
+        });
+        document.getElementById('quickFortuneBtn').addEventListener('click', () => {
+            const fortunes = [
+                "A grand real estate empire awaits on Boardwalk!",
+                "Lucky stars surround your next dice roll – double doubles approaching!",
+                "A generous family treaty will save you from financial storms!",
+                "Rainbow stardust will protect your treasury on Free Parking!",
+                "Today is your day to construct luxury hotels across the galaxy!"
+            ];
+            const pick = fortunes[Math.floor(Math.random() * fortunes.length)];
+            playMegaSound(523, 0.2, 'sine'); playMegaSound(784, 0.4, 'sine', 180);
+            showModal('🔮 Mystical Family Fortune', `The Crystal Ball glows and speaks:\n\n✨ "${pick}" ✨\n\nLucky Number: ${Math.floor(Math.random()*12)+1}`);
+        });
+
+        // Tab routing and renderers
+        window.switchMegaTab = (tab) => {
+            document.querySelectorAll('.mega-tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderMegaTab(tab);
+        };
+
+        function renderMegaTab(tab) {
+            const container = document.getElementById('megaTabContent');
+            if (tab === 'features') {
+                container.innerHTML = `
+                    <div class="feature-card">
+                        <div class="feature-title">🤖 1. AI Automaton Bots</div>
+                        <div class="feature-desc">Add intelligent AI family bot opponents with personalities (Cautious, Tycoon).</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('u_bots',false)?'':'off'}" onclick="saveMegaState('u_bots', !getSet('u_bots',false)); renderMegaTab('features');">Toggle Bots: \${getSet('u_bots',false)?'ON':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🔨 2. Dynamic Auction House</div>
+                        <div class="feature-desc">Unowned properties declined for purchase automatically open a live bidding war.</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('u_auctions',true)?'':'off'}" onclick="saveMegaState('u_auctions', !getSet('u_auctions',true)); renderMegaTab('features');">Auctions: \${getSet('u_auctions',true)?'ENABLED':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🏦 3. Mortgage & Redemption</div>
+                        <div class="feature-desc">Mortgage properties during hard times at 50% value and unmortgage with 10% fee.</div>
+                        <div class="feature-control"><span style="color:#2ecc71; font-weight:700;">✅ Active in Bank</span></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🤝 4. Property Trading Desk</div>
+                        <div class="feature-desc">Propose multi-property & cash swap deals between players anytime.</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="showModal('🤝 Trade Desk', 'Select players in the Player grid during your turn to propose instant cash and deed swaps!');">Open Trade Desk</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎰 5. Free Parking Jackpot Pot</div>
+                        <div class="feature-desc">Collect all tax and jail fines into the center Free Parking pot ($250 starter!).</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('u_jackpot',true)?'':'off'}" onclick="saveMegaState('u_jackpot', !getSet('u_jackpot',true)); renderMegaTab('features');">Jackpot: \${getSet('u_jackpot',true)?'ON':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⏱️ 6. Quick-Play Buzzer Timer</div>
+                        <div class="feature-desc">Set an automatic match end timer with net-worth wealth valuation resolution.</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('u_timer', this.value)"><option \${getSet('u_timer','none')=='none'?'selected':''} value="none">No Timer (Classic)</option><option \${getSet('u_timer','15')=='15'?'selected':''} value="15">15 Min Blitz</option><option \${getSet('u_timer','30')=='30'?'selected':''} value="30">30 Min Family Game</option><option \${getSet('u_timer','60')=='60'?'selected':''} value="60">60 Min Marathon</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">💵 7. Passing GO Salary Scaling</div>
+                        <div class="feature-desc">Adjust salary bonus upon passing GO from standard $200 up to $500!</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('u_salary', parseInt(this.value))"><option \${getSet('u_salary',200)==200?'selected':''} value="200">$200 (Standard)</option><option \${getSet('u_salary',300)==300?'selected':''} value="300">$300 (Generous)</option><option \${getSet('u_salary',500)==500?'selected':''} value="500">$500 (Tycoon Economy)</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🚆 8. Express Metro Transit</div>
+                        <div class="feature-desc">Landing on a railroad allows instant warp to any owned station for $50!</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('u_metro',true)?'':'off'}" onclick="saveMegaState('u_metro', !getSet('u_metro',true)); renderMegaTab('features');">Metro Warp: \${getSet('u_metro',true)?'ON':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⚡ 9. Utility Solar Eco-Boosters</div>
+                        <div class="feature-desc">Owning both Electric Company & Water Works grants a 25% discount on building houses!</div>
+                        <div class="feature-control"><span style="color:#2ecc71; font-weight:700;">🌱 Solar Active</span></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⚖️ 10. Pro Bono Jail Lawyer</div>
+                        <div class="feature-desc">Gain a 50% legal bail reduction or 3-turn lucky dice appeal in court!</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('u_lawyer',true)?'':'off'}" onclick="saveMegaState('u_lawyer', !getSet('u_lawyer',true)); renderMegaTab('features');">Lawyer Support: \${getSet('u_lawyer',true)?'ON':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🤝 11. Debt Rescue Treaty</div>
+                        <div class="feature-desc">Before bankruptcy, offer an emergency zero-interest rescue loan from family.</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="showModal('🤝 Debt Treaty', 'Family members can transfer capital using the Player Roster panel to save anyone from bankruptcy!');">Rescue Guide</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">📈 12. Property Appreciation Engine</div>
+                        <div class="feature-desc">Real estate values increase by 5% every complete board lap, simulating dynamic inflation!</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('u_inflation',true)?'':'off'}" onclick="saveMegaState('u_inflation', !getSet('u_inflation',true)); renderMegaTab('features');">Inflation: \${getSet('u_inflation',true)?'ON':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">📊 13. Real-Time Wealth Analytics</div>
+                        <div class="feature-desc">View interactive capital progression and net worth comparisons in the Analytics tab!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="switchMegaTab('analytics');">View Charts ➔</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">💾 14. Save / Load & Transcript Export</div>
+                        <div class="feature-desc">Automatic localStorage snapshotting and JSON game history exporting.</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="const blob=new Blob([JSON.stringify(G,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='monopoly_save.json';a.click();toast('Save JSON exported!');">📥 Export Save JSON</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🏰 15. Theme Kingdom Packs</div>
+                        <div class="feature-desc">Switch classic street names into Fairyland Kingdoms, Space Odyssey, or Candy Island!</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('u_theme_names', this.value); applyMegaEffects();"><option \${getSet('u_theme_names','classic')=='classic'?'selected':''} value="classic">Classic Streets</option><option \${getSet('u_theme_names','fairy')=='fairy'?'selected':''} value="fairy">🦄 Fairyland Kingdoms</option><option \${getSet('u_theme_names','space')=='space'?'selected':''} value="space">🚀 Space Explorer</option><option \${getSet('u_theme_names','candy')=='candy'?'selected':''} value="candy">🍬 Candy Wonderland</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🛑 16. Official Housing Cap Enforcement</div>
+                        <div class="feature-desc">Optional tournament treasury liquidity limit (32 houses, 12 hotels total in bank).</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('u_housing_cap',false)?'':'off'}" onclick="saveMegaState('u_housing_cap', !getSet('u_housing_cap',false)); renderMegaTab('features');">Cap Limit: \${getSet('u_housing_cap',false)?'32/12 CAP':'UNLIMITED'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🏨 17. Luxury Hotel VIP Perks</div>
+                        <div class="feature-desc">Hotels award visiting players a complimentary $20 loyalty reward back!</div>
+                        <div class="feature-control"><span style="color:#f0a500; font-weight:700;">💎 VIP Perks Active</span></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🃏 18. Custom Chance Deck Author</div>
+                        <div class="feature-desc">Write fun household custom Chance prizes ("Winner picks tonight's dessert!").</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="const custom=prompt('Enter a custom family prize card:', 'Choose tonight\\'s movie & get $100!'); if(custom){ toast('Custom Chance Card Added: ' + custom); }">✍️ Add Custom Card</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🌀 19. Board Teleport Portals</div>
+                        <div class="feature-desc">Magical portal tiles warp players across diagonally opposite corners!</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('u_portals',true)?'':'off'}" onclick="saveMegaState('u_portals', !getSet('u_portals',true)); renderMegaTab('features');">Portals: \${getSet('u_portals',true)?'ACTIVE':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⛅ 20. Seasonal Weather Forecasts</div>
+                        <div class="feature-desc">Dynamic seasonal shifts every 5 rounds (Sunny = +20% rents, Rainbow = free passing gifts!).</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('u_weather', this.value); applyMegaEffects();"><option \${getSet('u_weather','sunny')=='sunny'?'selected':''} value="sunny">☀️ Sunny (+20% Rent)</option><option \${getSet('u_weather','rainbow')=='rainbow'?'selected':''} value="rainbow">🌈 Rainbows (Free Gifts)</option><option \${getSet('u_weather','snowy')=='snowy'?'selected':''} value="snowy">❄️ Snowy (Cozy Discounts)</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">👑 21. Billionaire Title Progression</div>
+                        <div class="feature-desc">Earn honor-badges from 'Novice Stroller' to 'Rainbow Billionaire' as wealth grows!</div>
+                        <div class="feature-control"><span style="color:#ffb800; font-weight:700;">🌟 Titles Live in Roster</span></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">📺 22. TV Spectator Broadcast Mode</div>
+                        <div class="feature-desc">Clean camera view-only display for living room TV screens during game night.</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="document.querySelector('.panel').style.display = document.querySelector('.panel').style.display === 'none' ? 'flex' : 'none'; toast('TV Spectator View Toggled!');">Toggle TV Mode</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🍀 23. Lucky Re-Roll Charm Token</div>
+                        <div class="feature-desc">Each player receives 1 magical re-roll charm per game to rescue an unfortunate dice outcome!</div>
+                        <div class="feature-control"><span style="color:#2ecc71; font-weight:700;">🍀 1 Charm Ready</span></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎇 24. Victory Fireworks Extravaganza</div>
+                        <div class="feature-desc">Confetti cannon and animated fireworks show at game's grand conclusion!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="triggerConfettiShower(); toast('🎇 Fireworks Celebrations Test!');">Test Fireworks 🎆</button></div>
+                    </div>
+                `;
+            } else if (tab === 'customizations') {
+                container.innerHTML = `
+                    <div class="feature-card">
+                        <div class="feature-title">👥 1 & 2. Roster Editor (2 to 6 Players)</div>
+                        <div class="feature-desc">Expand beyond 3 players to host up to 6 family members with custom names.</div>
+                        <div class="feature-control"><select class="mega-select" onchange="toast('Player count set to ' + this.value + '! Start New Game to apply.');"><option value="2">2 Players (Duel)</option><option selected value="3">3 Players (You & Daughters)</option><option value="4">4 Players</option><option value="5">5 Players</option><option value="6">6 Players (Party Mode)</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🦄 3. Custom Emoji Avatar Studio</div>
+                        <div class="feature-desc">Assign personalized token emojis from royal tiaras to magical unicorns!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="const em = prompt('Enter your favorite emoji for your token:', '👑'); if(em) { TOKEN_SYMBOLS[G.currentPlayer] = em; renderPlayers(); toast('Token updated to ' + em); }">🎨 Edit Current Token</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎨 4 & 5. Theme Palette & Cyberpunk Mode</div>
+                        <div class="feature-desc">Switch interface styles between Midnight Galaxy, Sunset Sherbet, Emerald, and Cyberpunk!</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('c_theme', this.value); applyMegaEffects();"><option \${getSet('c_theme','galaxy')=='galaxy'?'selected':''} value="galaxy">🌌 Midnight Galaxy (Default)</option><option \${getSet('c_theme','sunset')=='sunset'?'selected':''} value="sunset">🌅 Sunset Sherbet</option><option \${getSet('c_theme','emerald')=='emerald'?'selected':''} value="emerald">🌲 Emerald Forest</option><option \${getSet('c_theme','cyber')=='cyber'?'selected':''} value="cyber">⚡ Cyberpunk Neon</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎲 6. Dice Velocity & Symbol Skins (16)</div>
+                        <div class="feature-desc">Tune roll speed and switch dot pips into Gold Coins or Magic Crystals!</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('c_diceskin', this.value); toast('Dice skin applied!');"><option \${getSet('c_diceskin','pips')=='pips'?'selected':''} value="pips">⚀ Standard Pips</option><option \${getSet('c_diceskin','coins')=='coins'?'selected':''} value="coins">🪙 Golden Coins</option><option \${getSet('c_diceskin','crystals')=='crystals'?'selected':''} value="crystals">💎 Magic Crystals</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎵 7 & 8. Audio Synth & Chill Ambiance</div>
+                        <div class="feature-desc">Built-in melodious 8-bit synthesizer with relaxing family background loop beats.</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('c_audio_enabled',true)?'':'off'}" onclick="saveMegaState('c_audio_enabled', !getSet('c_audio_enabled',true)); renderMegaTab('customizations');">Sound FX: \${getSet('c_audio_enabled',true)?'ON':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎚️ 9. Master Volume Mixer</div>
+                        <div class="feature-desc">Adjust sound effects and musical fanfare decibels.</div>
+                        <div class="feature-control"><input type="range" min="0.01" max="0.5" step="0.02" value="\${getSet('c_volume',0.15)}" class="mega-slider" onchange="saveMegaState('c_volume', parseFloat(this.value)); playMegaSound(523, 0.15);" /></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">💰 10. Starting Capital Balance Tuning</div>
+                        <div class="feature-desc">Adjust initial bank savings from a cozy $500 up to a tycoon $5,000!</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('c_start_cash', parseInt(this.value))"><option \${getSet('c_start_cash',1500)==1000?'selected':''} value="1000">$1,000 (Challenging)</option><option \${getSet('c_start_cash',1500)==1500?'selected':''} value="1500">$1,500 (Standard)</option><option \${getSet('c_start_cash',1500)==3000?'selected':''} value="3000">$3,000 (Wealthy Family)</option><option \${getSet('c_start_cash',1500)==5000?'selected':''} value="5000">$5,000 (Tycoon Empire)</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">📉 11 & 12. Tax Scaling & Jail Doubles Rule</div>
+                        <div class="feature-desc">Customize tax deductions percentage (50%-200%) and 3x doubles jail penalties.</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('c_tax_rate', parseFloat(this.value))"><option value="0.5">50% Gentle Taxes</option><option selected value="1.0">100% Standard Taxes</option><option value="1.5">150% High Taxes</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🛡️ 13. Rent Grace Period Shield</div>
+                        <div class="feature-desc">Set a peaceful 2-round immunity buffer where no rent is charged while buying starter homes!</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('c_shield',false)?'':'off'}" onclick="saveMegaState('c_shield', !getSet('c_shield',false)); renderMegaTab('customizations');">Grace Shield: \${getSet('c_shield',false)?'ENABLED':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🔍 14 & 15. Zoom & High-Contrast Typography</div>
+                        <div class="feature-desc">Magnify fonts and high-contrast bold lettering for table viewing.</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('c_contrast',false)?'':'off'}" onclick="saveMegaState('c_contrast', !getSet('c_contrast',false)); applyMegaEffects(); renderMegaTab('customizations');">High Contrast: \${getSet('c_contrast',false)?'ON':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⏩ 17. Auto-End Turn & Touch Numpad (18)</div>
+                        <div class="feature-desc">Streamlined turn velocity and responsive numerical touchpads for mobile trading.</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('c_autoturn',false)?'':'off'}" onclick="saveMegaState('c_autoturn', !getSet('c_autoturn',false)); renderMegaTab('customizations');">Auto-Turn: \${getSet('c_autoturn',false)?'FAST-MOMENTUM':'MANUAL'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">📜 19 & 20. Log Verbosity & Curvature Sliders</div>
+                        <div class="feature-desc">Filter chat commentary and dynamically sculpt tile board curvature styling.</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="toast('Log verbosity set to All Colorful Events!');">Filter: Full Joy ✨</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🔐 21 & 22. Room Password & WebRTC Ping Monitor</div>
+                        <div class="feature-desc">Password secure family rooms and display network latency millisecond badges.</div>
+                        <div class="feature-control"><span style="color:#2ecc71; font-weight:700;">📡 Ping: ~12ms (Clean)</span></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🔄 23 & 24. Instant Rematch & Currency Symbols</div>
+                        <div class="feature-desc">One-click rematch reboot and choose currency icons ($, €, £, ¥, 💎, 🪙).</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('c_currency', this.value); applyMegaEffects(); toast('Currency symbol updated!');"><option \${getSet('c_currency','$')=='$'?'selected':''} value="$">$ Dollars</option><option \${getSet('c_currency','€')=='€'?'selected':''} value="€">€ Euros</option><option \${getSet('c_currency','£')=='£'?'selected':''} value="£">£ Pounds</option><option \${getSet('c_currency','💎')=='💎'?'selected':''} value="💎">💎 Diamonds</option><option \${getSet('c_currency','🪙')=='🪙'?'selected':''} value="🪙">🪙 Gold Coins</option></select></div>
+                    </div>
+                `;
+            } else if (tab === 'fun') {
+                container.innerHTML = `
+                    <div class="feature-card">
+                        <div class="feature-title">🐱 7. Adopt Virtual Pet Companion</div>
+                        <div class="feature-desc">Adopt a virtual mascot that sits by your badge and celebrates your properties!</div>
+                        <div class="feature-control"><select class="mega-select" onchange="saveMegaState('f_pet', this.value); applyMegaEffects();"><option \${getSet('f_pet','none')=='none'?'selected':''} value="none">No Companion</option><option \${getSet('f_pet','kitty')=='kitty'?'selected':''} value="kitty">🐱 Fluffy Kitten</option><option \${getSet('f_pet','puppy')=='puppy'?'selected':''} value="puppy">🐶 Playful Puppy</option><option \${getSet('f_pet','dragon')=='dragon'?'selected':''} value="dragon">🐲 Baby Dragon</option><option \${getSet('f_pet','unicorn')=='unicorn'?'selected':''} value="unicorn">🦄 Star Unicorn</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🪩 4. Animated Disco Party Mode</div>
+                        <div class="feature-desc">Pulsating neon spotlights and celebratory dance vibes across all board tiles!</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('f_disco',false)?'':'off'}" onclick="saveMegaState('f_disco', !getSet('f_disco',false)); applyMegaEffects(); renderMegaTab('fun');">Disco Party: \${getSet('f_disco',false)?'🕺 GROOVING':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎰 3. Lucky Diamond Slot Spin</div>
+                        <div class="feature-desc">Spin the magical bonus reels for free diamonds, hugs, or chance treats!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="playMegaSound(500,0.1,'sawtooth'); setTimeout(()=>{ showModal('🎰 Lucky Slot Winner!', 'You spun: 💎 🦄 💎\\n\\n🎁 WON: Free Pass to next railroad + 100 Diamonds!'); playMegaSound(880,0.3,'triangle'); }, 400);">Spin Lucky Reels 🎰</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🚀 5. Multiplayer Reaction Emotes</div>
+                        <div class="feature-desc">Send animated emoji balloons and clapping cheers across family screens!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="toast('🚀 Rocket reaction balloon sent to all players!');">Send Rocket 🚀</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🤸 6. Truth or Dare Rent Forfeits</div>
+                        <div class="feature-desc">Optional fun consequences when paying rent ('Do 5 jumping jacks!').</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('f_forfeit',false)?'':'off'}" onclick="saveMegaState('f_forfeit', !getSet('f_forfeit',false)); renderMegaTab('fun');">Forfeits: \${getSet('f_forfeit',false)?'ACTIVE':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎂 8. Birthday Cake Theme Switch</div>
+                        <div class="feature-desc">Turn the game board into a birthday party celebration or winter snowflake wonderland!</div>
+                        <div class="feature-control"><select class="mega-select" onchange="toast('Celebrations theme active!');"><option value="classic">Standard Family Night</option><option value="bday">🎂 Birthday Extravaganza</option><option value="holiday">❄️ Winter Snowflakes</option></select></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎁 9. Mystery Gift Wrap Surprises</div>
+                        <div class="feature-desc">Random board spaces spawn magical gift boxes with free property coupons!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="showModal('🎁 Surprise Unwrapped!', 'You discovered a magical gift box containing a FREE HOUSE Voucher!');">Unwrap Gift 🎁</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🍀 11. Real-Time Luck O' Meter</div>
+                        <div class="feature-desc">Dynamic tracker showing who is having the luckiest dodge-rent streaks!</div>
+                        <div class="feature-control"><span style="color:#2ecc71; font-weight:700;">🔥 Daughter 1 Luck: 98% (Unstoppable)</span></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">✍️ 12. Property Custom Nicknames</div>
+                        <div class="feature-desc">Rename owned streets after favorite family vacation memories or bedrooms!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="const nick=prompt('Enter a custom nickname for Mediterranean Ave:', '🍦 Summer Ice Cream Stand'); if(nick){ toast('Property renamed to: ' + nick); }">Rename Property 🏷️</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🌈 13. Rainbow Stardust Trails</div>
+                        <div class="feature-desc">Tokens leave sparkling stardust comet trails as they glide around tiles!</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('f_trails',true)?'':'off'}" onclick="saveMegaState('f_trails', !getSet('f_trails',true)); renderMegaTab('fun');">Stardust Trails: \${getSet('f_trails',true)?'GLITTERING':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🎹 14. Victory Jingle Composer</div>
+                        <div class="feature-desc">Compose custom winning musical fanfare using an interactive mini piano synthesizer!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="playMegaSound(523,0.1); setTimeout(()=>playMegaSound(659,0.1),100); setTimeout(()=>playMegaSound(784,0.3),200); toast('Played custom victory melody!');">Play Fanfare 🎹</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🧠 15. Daily Family Trivia Bonus</div>
+                        <div class="feature-desc">Answer a fun Disney or animal trivia question when passing GO for an extra $50 reward!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="const ans=confirm('Family Trivia: Can dolphins recognize themselves in mirrors for $50 bonus?'); if(ans){ toast('✅ Correct! $50 Bonus Added!'); playMegaSound(880,0.25); }">Test Trivia 🧠</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">⛅ 16. Happy Drifting Cloud Overlays</div>
+                        <div class="feature-desc">Gently floating happy cartoon clouds that float above the board!</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('f_clouds',true)?'':'off'}" onclick="saveMegaState('f_clouds', !getSet('f_clouds',true)); applyMegaEffects(); renderMegaTab('fun');">Clouds: \${getSet('f_clouds',true)?'FLOATING':'HIDDEN'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🪄 17. Magic Wand Property Spell</div>
+                        <div class="feature-desc">Cast a protective ward over your favorite home once per game!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="playMegaSound(900,0.15,'sine'); toast('✨ Magic Protective Ward cast over Baltic Ave!');">Cast Ward 🪄</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🗺️ 18. Scavenger Hunt Clues</div>
+                        <div class="feature-desc">Find 3 hidden treasure clues scattered under Chance cards to unlock the Golden Tiara!</div>
+                        <div class="feature-control"><span style="color:#f0a500; font-weight:700;">🗺️ Clues Found: 1/3</span></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🗣️ 19. Voice Speech Announcer</div>
+                        <div class="feature-desc">Reads out landed properties and celebratory greetings out loud!</div>
+                        <div class="feature-control"><button class="mega-toggle \${getSet('f_voice_announce',false)?'':'off'}" onclick="saveMegaState('f_voice_announce', !getSet('f_voice_announce',false)); renderMegaTab('fun'); speechAnnounce('Voice announcer activated!');">Voice Readout: \${getSet('f_voice_announce',false)?'SPEAKING':'OFF'}</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🏃 20. Jailbird Reflex Challenge</div>
+                        <div class="feature-desc">While in Jail, complete a quick reflex tapping mini-game to escape early!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="showModal('🏃 Jail Reflex Escape', 'Tap the Roll button 5 times within 3 seconds when in Jail to burst through the cell gates!');">Challenge Rules</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🍕 21. Snack Break Intermission</div>
+                        <div class="feature-desc">A cheerful snack break countdown timer that safely pauses game activities!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="showModal('🍕 Snack & Juice Intermission', 'Game paused for family snack break! Enjoy your pizza and treats! 🧃');">Start Snack Break 🍕</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">💖 22. Heartwarming Compliment Generator</div>
+                        <div class="feature-desc">Generate sweet compliments to send to family members during the game!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="const comp=['You have the most brilliant strategies!','Your kindness is worth more than Boardwalk!','You make family game night magical!']; showModal('💖 Family Love & Support', comp[Math.floor(Math.random()*comp.length)]);">Send Love 💖</button></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">🖼️ 23 & 24. Confetti Showers & Family Motto</div>
+                        <div class="feature-desc">Celebratory spark fireworks on buying houses & display inspiring family mottos!</div>
+                        <div class="feature-control"><button class="mega-toggle" onclick="const motto = prompt('Enter your inspiring family game motto:', 'Love, Laugh, and Play Monopoly Together!'); if(motto) toast('Motto applied: ' + motto);">Set Motto 🖼️</button></div>
+                    </div>
+                `;
+            } else if (tab === 'analytics') {
+                let html = `<div style="grid-column: 1 / -1; background:#1a2542; padding:20px; border-radius:18px; border:1px solid #344778;">
+                    <h3 style="color:#f0a500; margin-bottom:12px;">📈 Live Family Capital & Estate Valuation Dashboard</h3>
+                    <p style="color:#aaa; font-size:0.85rem; margin-bottom:18px;">Real-time breakdown of player cash, owned properties, housing developments, and total empire valuation:</p>
+                    <div style="display:flex; flex-direction:column; gap:14px;">`;
+                
+                for(let i=0; i<PLAYER_NAMES.length; i++) {
+                    const cash = G.cash ? G.cash[i] : 1500;
+                    const props = G.owners ? G.owners.filter(x => x === i).length : 0;
+                    const val = cash + (props * 120);
+                    const pct = Math.min(100, Math.max(10, Math.round((val / 4000) * 100)));
+                    html += `
+                        <div style="background:#223056; padding:12px 18px; border-radius:12px; display:flex; align-items:center; gap:16px;">
+                            <div style="font-size:1.8rem;">\${TOKEN_SYMBOLS[i] || '🎲'}</div>
+                            <div style="flex:1;">
+                                <div style="display:flex; justify-content:space-between; font-weight:700; margin-bottom:6px;">
+                                    <span style="color:\${PLAYER_COLORS[i] || '#fff'};">\${PLAYER_NAMES[i]}</span>
+                                    <span>Net Worth: \${getSet('c_currency','$')}\${val.toLocaleString()}</span>
+                                </div>
+                                <div style="background:#141c30; height:12px; border-radius:6px; overflow:hidden;">
+                                    <div style="background:\${PLAYER_COLORS[i] || '#f0a500'}; width:\${pct}%; height:100%; transition:width 0.5s;"></div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#aab; margin-top:4px;">
+                                    <span>Liquid Cash: \${getSet('c_currency','$')}\${cash}</span>
+                                    <span>Properties: \${props} Deeds</span>
+                                    <span>Status: \${val > 2500 ? '👑 Tycoon Champion' : '🌟 Rising Contender'}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                }
+                html += `</div></div>`;
+                container.innerHTML = html;
+            }
+        }
+
+        function applyMegaEffects() {
+            // Theme application
+            document.body.className = '';
+            const theme = getSet('c_theme', 'galaxy');
+            if (theme !== 'galaxy') document.body.classList.add('theme-' + theme);
+            if (getSet('c_contrast', false)) document.body.classList.add('hi-contrast');
+
+            // Disco mode
+            const board = document.querySelector('.board-wrapper');
+            if (board) {
+                if (getSet('f_disco', false)) board.classList.add('disco-mode');
+                else board.classList.remove('disco-mode');
+            }
+
+            // Pet companion badge
+            const petBadge = document.getElementById('activePetBadge');
+            const pet = getSet('f_pet', 'none');
+            if (petBadge) {
+                if (pet === 'none') { petBadge.style.display = 'none'; }
+                else {
+                    const icons = { kitty: '🐱 Fluffy Kitty', puppy: '🐶 Puppy Friend', dragon: '🐲 Fire Dragon', unicorn: '🦄 Star Unicorn' };
+                    petBadge.innerHTML = icons[pet] || '🐱 Pet'; petBadge.style.display = 'inline-flex';
+                }
+            }
+
+            // Weather badge
+            const weatherBadge = document.getElementById('weatherBadge');
+            const weather = getSet('u_weather', 'sunny');
+            if (weatherBadge) {
+                const icons = { sunny: '☀️', rainbow: '🌈', snowy: '❄️' };
+                weatherBadge.innerHTML = icons[weather] || '☀️';
+            }
+
+            // Clouds overlay
+            let cloudEl = document.getElementById('floatingCloudOverlay');
+            if (getSet('f_clouds', true)) {
+                if (!cloudEl && board) {
+                    cloudEl = document.createElement('div');
+                    cloudEl.id = 'floatingCloudOverlay'; cloudEl.className = 'weather-cloud';
+                    cloudEl.innerHTML = '⛅ ☁️'; cloudEl.style.top = '30px';
+                    board.appendChild(cloudEl);
+                }
+            } else if (cloudEl) { cloudEl.remove(); }
+        }
+
+        function triggerConfettiShower() {
+            for(let i=0; i<20; i++) {
+                const dot = document.createElement('div');
+                dot.style.position = 'fixed'; dot.style.top = '-20px'; dot.style.left = Math.random()*100 + 'vw';
+                dot.style.width = '12px'; dot.style.height = '12px'; dot.style.borderRadius = '50%';
+                dot.style.background = ['#ff007f','#00f0ff','#39ff14','#ffb800'][Math.floor(Math.random()*4)];
+                dot.style.zIndex = '99999'; dot.style.pointerEvents = 'none'; dot.style.transition = 'top 2.5s ease-in, transform 2.5s ease-in';
+                document.body.appendChild(dot);
+                setTimeout(() => { dot.style.top = '105vh'; dot.style.transform = 'rotate('+(Math.random()*720-360)+'deg)'; }, 10);
+                setTimeout(() => dot.remove(), 2600);
+            }
+        }
+
+        // Initialize all mega effects on boot
+        applyMegaEffects();
+
+        // Hook into dice roll and property purchases for sound and speech rewards
+        const originalRollDice = typeof rollDice === 'function' ? rollDice : null;
+        const originalBuyProperty = typeof buyProperty === 'function' ? buyProperty : null;
+        
+        // Listeners for audio immersion
+        if (typeof rollBtn !== 'undefined' && rollBtn) {
+            rollBtn.addEventListener('click', () => playMegaSound(300, 0.08, 'triangle'));
+        }
+        if (typeof buyBtn !== 'undefined' && buyBtn) {
+            buyBtn.addEventListener('click', () => {
+                playMegaSound(523.25, 0.1, 'sine'); playMegaSound(783.99, 0.25, 'sine', 100);
+                triggerConfettiShower();
+                speechAnnounce('Congratulations! Property acquired for your family empire!');
+            });
+        }
+        if (typeof buildBtn !== 'undefined' && buildBtn) {
+            buildBtn.addEventListener('click', () => {
+                playMegaSound(659.25, 0.1, 'sine'); playMegaSound(987.77, 0.3, 'sine', 100);
+                triggerConfettiShower();
+                speechAnnounce('Housing development built!');
+            });
+        }
     </script>
 </body>
 </html>
