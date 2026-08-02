@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎩 1poly — Super Animated Feature Showcase</title>
+    <link rel="manifest" href="manifest.json" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, -apple-system, sans-serif; }
+        body { background: #050a19; color: #fff; min-height: 100vh; overflow-x: hidden; position: relative; }
+        
+        #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        
+        .container { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+        
+        header { text-align: center; margin-bottom: 50px; animation: fadeInDown 1s ease-out; }
+        .logo-title { font-size: 3.2rem; font-weight: 900; background: linear-gradient(135deg, #00f0ff, #ff007f, #f7d94e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0,240,255,0.4); margin-bottom: 12px; }
+        .subtitle { font-size: 1.2rem; color: #aab8c2; max-width: 700px; margin: 0 auto 24px auto; line-height: 1.6; }
+        
+        .btn-cta { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #ff8c00, #ff007f); color: #fff; text-decoration: none; font-size: 1.2rem; font-weight: 800; padding: 16px 42px; border-radius: 40px; box-shadow: 0 0 30px rgba(255,0,127,0.5); transition: all 0.3s ease; animation: pulseGlow 2s infinite alternate; }
+        .btn-cta:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 0 45px rgba(255,0,127,0.8); }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 50px; }
+        
+        .card { background: rgba(22, 33, 62, 0.7); backdrop-filter: blur(16px); border: 2px solid rgba(0, 240, 255, 0.2); border-radius: 24px; padding: 28px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .card:hover { transform: translateY(-8px); border-color: #00f0ff; box-shadow: 0 15px 35px rgba(0, 240, 255, 0.25); }
+        .card-icon { font-size: 2.8rem; margin-bottom: 14px; }
+        .card-title { font-size: 1.4rem; color: #00f0ff; font-weight: 800; margin-bottom: 10px; }
+        .card-desc { color: #ccc; font-size: 0.95rem; line-height: 1.6; }
+        
+        .interactive-section { background: rgba(16, 25, 45, 0.8); border-radius: 28px; border: 2px solid #ff007f; padding: 32px; margin-bottom: 50px; text-align: center; }
+        .section-title { font-size: 1.8rem; color: #f7d94e; font-weight: 800; margin-bottom: 20px; }
+        
+        .sound-buttons { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 20px; }
+        .sound-btn { background: #1f2b48; color: #00f0ff; border: 2px solid #00f0ff; padding: 12px 24px; border-radius: 20px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; }
+        .sound-btn:hover { background: #00f0ff; color: #050a19; transform: scale(1.05); }
+
+        footer { text-align: center; color: #778899; font-size: 0.9rem; padding: 20px 0; border-top: 1px solid #1a2542; }
+
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 20px rgba(255,0,127,0.4); } 100% { box-shadow: 0 0 40px rgba(255,0,127,0.8); } }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="container">
+        <header>
+            <h1 class="logo-title">🎩 1POLY MONOPOLY</h1>
+            <p class="subtitle">An ultra-modern, 8-player WebRTC real-time multiplayer Monopoly experience built for family game nights, kids, and mobile devices!</p>
+            <a href="index.html" class="btn-cta">🚀 LAUNCH 1POLY GAME NOW 🚀</a>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon">👥</div>
+                <div class="card-title">8-Player WebRTC Engine</div>
+                <div class="card-desc">Real-time peer-to-peer multiplayer powered by PeerJS. Host family rooms instantly with reserved seat synchronization.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">📱</div>
+                <div class="card-title">1-Tap Rooms & QR Codes</div>
+                <div class="card-desc">Kids can tap preset rooms (ROOM 1, FAMILY) or scan camera QR codes to join instantly on iPads or mobile phones.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🤖</div>
+                <div class="card-title">AI Automaton Bots</div>
+                <div class="card-desc">Intelligent AI opponents with distinct personalities (Cautious, Tycoon, Aggressive) to fill empty seats during match play.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">⚙️</div>
+                <div class="card-title">Match Rules Configurator</div>
+                <div class="card-desc">Toggle Passing GO salary ($200/$300/$500), Free Parking Jackpot, property auctions, Quick-Play timers, and metro warps.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🎵</div>
+                <div class="card-title">Web Audio Synthesizer</div>
+                <div class="card-desc">15+ acoustic sound effects synthesized live in JavaScript with stereo panner node support.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">📲</div>
+                <div class="card-title">PWA Offline Caching</div>
+                <div class="card-desc">Service Worker (sw.js) & Manifest (manifest.json) enabling 1-click home screen installation and 100% offline play.</div>
+            </div>
+        </div>
+
+        <div class="interactive-section">
+            <h2 class="section-title">🔊 Web Audio SFX Engine Tester</h2>
+            <p style="color:#aab8c2;">Click below to sample the built-in acoustic Web Audio API synthesizer:</p>
+            <div class="sound-buttons">
+                <button class="sound-btn" onclick="playAudioTest(523, 'triangle')">🎲 Dice Roll Sound</button>
+                <button class="sound-btn" onclick="playAudioTest(784, 'sine')">💰 Pass GO Salary</button>
+                <button class="sound-btn" onclick="playAudioTest(880, 'square')">🎉 Victory Fanfare</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>1poly Monopoly Mega Edition © 2026 — Built with ❤️ for families worldwide!</p>
+            <p style="margin-top:6px;"><a href="index.html" style="color:#00f0ff;">Launch Game</a> | <a href="https://github.com/qamotech/1poly" style="color:#00f0ff;" target="_blank">GitHub Repository</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Particle Background Animation
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = Array.from({ length: 60 }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            radius: Math.random() * 3 + 1,
+            color: ['#00f0ff', '#ff007f', '#f7d94e', '#38ef7d'][Math.floor(Math.random() * 4)],
+            vx: (Math.random() - 0.5) * 0.8,
+            vy: (Math.random() - 0.5) * 0.8
+        }));
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = p.color;
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Web Audio Test Synthesizer
+        let audioCtx;
+        function playAudioTest(freq, type) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } catch(e) { console.log(e); }
+        }
+    </script>
+</body>
+</html>
