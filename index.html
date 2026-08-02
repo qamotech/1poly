@@ -2080,6 +2080,13 @@
                     turnBadge.style.marginLeft = '4px';
                     nameDiv.appendChild(turnBadge);
                 }
+                const isLocal = !isHost && !isConnected;
+                if (isLocal && getSet('u_bots', false) && i !== 0) {
+                    const botBadge = document.createElement('span');
+                    botBadge.style.cssText = 'font-size:0.7rem; font-weight:800; padding:2px 6px; border-radius:8px; margin-left:6px; background:#10192d; border:1px solid #00f0ff; color:#00f0ff;';
+                    botBadge.textContent = (i % 2 === 0) ? '👑 Tycoon' : '🛡️ Cautious';
+                    nameDiv.appendChild(botBadge);
+                }
                 div.appendChild(nameDiv);
 
                 const moneyDiv = document.createElement('div');
@@ -2219,23 +2226,42 @@
             if (typeof syncMobileActionBar === 'function') syncMobileActionBar();
         }
 
-        // Step 1: Inject the Bot Logic Function
-        function executeBotAction() {
+        // Step 1: Inject the Bot Logic Function (with 1.5s staggered delays & distinct Tycoon vs Cautious personalities)
+        async function executeBotAction() {
             if (!G || G.gameOver) return;
-            const p = G.players[G.currentPlayer];
+            const idx = G.currentPlayer;
+            const p = G.players[idx];
             if (p.bankrupt) {
                 endTurn();
                 return;
             }
+
+            // Personality determination: Even index = Tycoon ($10 buffer), Odd index = Cautious ($150 buffer)
+            const isTycoon = (idx % 2 === 0);
+            const trait = isTycoon ? '👑 Tycoon' : '🛡️ Cautious';
+            const bufferNeeded = isTycoon ? 10 : 150;
+
             if (G.phase === 'roll') {
+                addLog(`🤖 ${p.name} (${trait}) is taking a moment before rolling...`);
+                await new Promise(res => setTimeout(res, 1500));
+                if (!G || G.currentPlayer !== idx) return;
                 rollDice();
             } else if (G.phase === 'postroll') {
                 const pos = p.position;
                 const owner = G.propertyOwners[pos];
                 const prop = PROPERTIES[pos];
-                if (owner === -1 && prop && prop.price > 0 && p.money >= prop.price + 50) {
-                    buyProperty(G.currentPlayer);
+
+                addLog(`🤖 ${p.name} (${trait}) is evaluating property options...`);
+                await new Promise(res => setTimeout(res, 1500));
+                if (!G || G.currentPlayer !== idx) return;
+
+                if (owner === -1 && prop && prop.price > 0 && p.money >= prop.price + bufferNeeded) {
+                    addLog(`🤖 ${p.name} (${trait}) decides to BUY ${prop.name} for $${prop.price}!`);
+                    buyProperty(idx);
                 } else {
+                    if (owner === -1 && prop && prop.price > 0) {
+                        addLog(`🤖 ${p.name} (${trait}) passes on ${prop.name} (Requires $${bufferNeeded} cash buffer).`);
+                    }
                     endTurn();
                 }
             }
