@@ -1391,6 +1391,18 @@
             { text: 'Pay school fees $50', action: p => { p.money -= 50; return 'Pay $50'; } },
         ];
 
+        // ─── CHARACTERS ROSTER ────────────────────────────────────────
+        const CHARACTERS = [
+            { id: 'baron', name: 'Baron Von Cash', title: 'The Luxury Tycoon', token: '🎩', color: '#e74c3c', portrait: 'assets/char_baron.png', pitch: 0.98, rate: 1.0, quotes: { roll: "Rolling for prime real estate!", passGo: "Capitalism at its finest! $200 in the vault!", buy: "Another crown jewel added to my empire!", jail: "My lawyers will hear about this outrage!", win: "Indubitably! The empire is victorious!" } },
+            { id: 'nova', name: 'Nova Spark', title: 'The Cyber Investor', token: '🚀', color: '#00f0ff', portrait: 'assets/char_nova.png', pitch: 1.05, rate: 1.05, quotes: { roll: "Executing hyper-speed dice roll!", passGo: "System updated! $200 credited to account!", buy: "High-yield asset successfully acquired!", jail: "System breach! Firewall locked me in jail!", win: "GG! Victory protocol 100% complete!" } },
+            { id: 'sparkle', name: 'Princess Sparkle', title: 'The Rainbow Mogul', token: '🦄', color: '#e84393', portrait: 'assets/char_sparkle.png', pitch: 1.12, rate: 1.0, quotes: { roll: "Tossing the magical sparkly dice!", passGo: "Yay! Rainbow sparkle bonus of $200!", buy: "Ooh, this property is so magical!", jail: "Oh no! Time to sprinkle some magic dust!", win: "Sparkly magical victory for everyone!" } },
+            { id: 'draco', name: 'Draco Goldhoard', title: 'The Treasure Dragon', token: '🐉', color: '#f1c40f', portrait: 'assets/char_draco.png', pitch: 0.95, rate: 0.95, quotes: { roll: "Roar! Rolling for more shiny treasure!", passGo: "More gold for my dragon hoard! $200!", buy: "Mine! All this land belongs to the dragon!", jail: "Guarding the jail dungeon for a moment!", win: "ROAR! The dragon hoards all the riches!" } },
+            { id: 'speedy', name: 'Speedy Vance', title: 'The High-Speed Dealmaker', token: '🏎️', color: '#e67e22', portrait: 'assets/char_speedy.png', pitch: 1.02, rate: 1.05, quotes: { roll: "Pedal to the metal! Rolling fast!", passGo: "Pit stop at GO! Quick $200 boost!", buy: "Fast lane acquisition! Deal closed!", jail: "Speeding ticket! Stuck in pit lane jail!", win: "First place checkered flag! Easy win!" } },
+            { id: 'rex', name: 'Rex Titan', title: 'The Prehistoric Land Baron', token: '🦖', color: '#2ecc71', portrait: 'assets/char_rex.png', pitch: 0.96, rate: 0.98, quotes: { roll: "Stomp! Big dino dice roll!", passGo: "Rawr! Dino collects $200 cash!", buy: "Rex claims new hunting territory!", jail: "Dino trapped in jurassic cage!", win: "Rex is king of the Monopoly continent!" } },
+            { id: 'diamond', name: 'Lady Diamond', title: 'The Empire Builder', token: '💎', color: '#9b59b6', portrait: 'assets/char_diamond.png', pitch: 1.08, rate: 1.0, quotes: { roll: "Rolling with elegance and poise!", passGo: "Exquisite! $200 dividend collected!", buy: "Flawless acquisition for the vault!", jail: "A temporary setback for a lady of class!", win: "Pure brilliance! Total market monopoly!" } },
+            { id: 'mario', name: 'Chef Mario', title: 'The Pizza Master', token: '🍕', color: '#1abc9c', portrait: 'assets/intro_cover.png', pitch: 1.0, rate: 1.0, quotes: { roll: "Mamma mia! Rolling the dice like a fresh pizza dough!", passGo: "Fresh out of the oven! $200 tip!", buy: "Delizioso! Adding another pizza parlor property!", jail: "Mamma mia! Locked up in the kitchen!", win: "Bellissimo! Pizza party victory for everyone!" } }
+        ];
+
         // ─── STATE ────────────────────────────────────────────────────
         let G = null; // game state
         let myPlayerIndex = 0; // which player am I?
@@ -2402,8 +2414,6 @@
         });
 
         // ─── INIT ────────────────────────────────────────────────────
-
-        initGame();
         updateStatus('offline');
         addLog('💡 Enter a room name, then click "Host" or "Join".');
         addLog('👑 One device hosts, others join with the same room name.');
@@ -3226,16 +3236,15 @@
         let voiceEnabled = true;
         let is3DView = true;
 
-        const CHARACTERS = [
-            { id: 'baron', name: 'Baron Von Cash', title: 'The Luxury Tycoon', token: '🎩', color: '#e74c3c', portrait: 'assets/char_baron.png', pitch: 0.8, rate: 0.95, quotes: { roll: "Rolling for prime real estate!", passGo: "Capitalism at its finest! $200 in the vault!", buy: "Another crown jewel added to my empire!", jail: "My lawyers will hear about this outrage!", win: "Indubitably! The empire is victorious!" } },
-            { id: 'nova', name: 'Nova Spark', title: 'The Cyber Investor', token: '🚀', color: '#00f0ff', portrait: 'assets/char_nova.png', pitch: 1.3, rate: 1.1, quotes: { roll: "Executing hyper-speed dice roll!", passGo: "System updated! $200 credited to account!", buy: "High-yield asset successfully acquired!", jail: "System breach! Firewall locked me in jail!", win: "GG! Victory protocol 100% complete!" } },
-            { id: 'sparkle', name: 'Princess Sparkle', title: 'The Rainbow Mogul', token: '🦄', color: '#e84393', portrait: 'assets/char_sparkle.png', pitch: 1.5, rate: 1.05, quotes: { roll: "Tossing the magical sparkly dice!", passGo: "Yay! Rainbow sparkle bonus of $200!", buy: "Ooh, this property is so magical!", jail: "Oh no! Time to sprinkle some magic dust!", win: "Sparkly magical victory for everyone!" } },
-            { id: 'draco', name: 'Draco Goldhoard', title: 'The Treasure Dragon', token: '🐉', color: '#f1c40f', portrait: 'assets/char_draco.png', pitch: 0.6, rate: 0.9, quotes: { roll: "Roar! Rolling for more shiny treasure!", passGo: "More gold for my dragon hoard! $200!", buy: "Mine! All this land belongs to the dragon!", jail: "Guarding the jail dungeon for a moment!", win: "ROAR! The dragon hoards all the riches!" } },
-            { id: 'speedy', name: 'Speedy Vance', title: 'The High-Speed Dealmaker', token: '🏎️', color: '#e67e22', portrait: 'assets/char_speedy.png', pitch: 1.1, rate: 1.25, quotes: { roll: "Pedal to the metal! Rolling fast!", passGo: "Pit stop at GO! Quick $200 boost!", buy: "Fast lane acquisition! Deal closed!", jail: "Speeding ticket! Stuck in pit lane jail!", win: "First place checkered flag! Easy win!" } },
-            { id: 'rex', name: 'Rex Titan', title: 'The Prehistoric Land Baron', token: '🦖', color: '#2ecc71', portrait: 'assets/char_rex.png', pitch: 0.5, rate: 0.85, quotes: { roll: "Stomp! Big dino dice roll!", passGo: "Rawr! Dino collects $200 cash!", buy: "Rex claims new hunting territory!", jail: "Dino trapped in jurassic cage!", win: "Rex is king of the Monopoly continent!" } },
-            { id: 'diamond', name: 'Lady Diamond', title: 'The Empire Builder', token: '💎', color: '#9b59b6', portrait: 'assets/char_diamond.png', pitch: 1.2, rate: 1.0, quotes: { roll: "Rolling with elegance and poise!", passGo: "Exquisite! $200 dividend collected!", buy: "Flawless acquisition for the vault!", jail: "A temporary setback for a lady of class!", win: "Pure brilliance! Total market monopoly!" } },
-            { id: 'mario', name: 'Chef Mario', title: 'The Pizza Master', token: '🍕', color: '#1abc9c', portrait: 'assets/intro_cover.png', pitch: 1.0, rate: 1.05, quotes: { roll: "Mamma mia! Rolling the dice like a fresh pizza dough!", passGo: "Fresh out of the oven! $200 tip!", buy: "Delizioso! Adding another pizza parlor property!", jail: "Mamma mia! Locked up in the kitchen!", win: "Bellissimo! Pizza party victory for everyone!" } }
-        ];
+        function getRealisticVoice() {
+            if (!('speechSynthesis' in window)) return null;
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices || voices.length === 0) return null;
+            const english = voices.filter(v => v.lang && v.lang.startsWith('en'));
+            const pool = english.length > 0 ? english : voices;
+            const natural = pool.find(v => v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('Karen') || v.name.includes('Alex'));
+            return natural || pool[0] || voices[0];
+        }
 
         function characterSpeak(playerIdx, eventType) {
             if (!voiceEnabled || !G || !G.players[playerIdx]) return;
@@ -3250,8 +3259,10 @@
                 try {
                     window.speechSynthesis.cancel();
                     const msg = new SpeechSynthesisUtterance(text);
-                    msg.pitch = charObj.pitch || 1.0;
-                    msg.rate = charObj.rate || 1.0;
+                    const realVoice = getRealisticVoice();
+                    if (realVoice) msg.voice = realVoice;
+                    msg.pitch = Math.max(0.95, Math.min(1.15, charObj.pitch || 1.0));
+                    msg.rate = Math.max(0.95, Math.min(1.1, charObj.rate || 1.0));
                     window.speechSynthesis.speak(msg);
                 } catch(e) {}
             }
@@ -3460,10 +3471,11 @@
             const wrapper = document.querySelector('.board-wrapper');
             if (wrapper) wrapper.classList.add('iso-3d-view');
 
-            // Auto-play intro / open start lobby on boot if no recovery state
+            // Auto-play intro / open start lobby / init game cleanly on boot
             setTimeout(() => {
                 const restored = loadGameState();
                 if (!restored) {
+                    initGame();
                     playIntroVideo();
                 }
             }, 400);
