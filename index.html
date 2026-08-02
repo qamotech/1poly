@@ -1269,11 +1269,15 @@
                 </div>
             </div>
 
-            <!-- DYNAMIC PLAYER SETUP SLOTS -->
+            <!-- DYNAMIC PLAYER SETUP SLOTS & LIVE WAITING ROOM -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:#10192d; padding:8px 14px; border-radius:12px; border:1px solid #2a3b68;">
+                <span id="lobbyConnectedBadge" style="font-weight:700; color:#38ef7d; font-size:0.9rem;">🟢 Player Slots Ready: <span id="connectedCountText">1</span> / <span id="targetCountText">3</span></span>
+                <span style="font-size:0.8rem; color:#aaa;">Board unlocks once setup is complete!</span>
+            </div>
             <div id="lobbySlotsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:14px; max-height:360px; overflow-y:auto; padding-right:6px; margin-bottom:20px;"></div>
 
             <div style="display:flex; justify-content:center;">
-                <button onclick="launchGameFromLobby()" class="primary" style="background:linear-gradient(135deg, #00b09b, #96c93d); color:#fff; font-size:1.2rem; font-weight:800; padding:14px 48px; border-radius:30px; border:none; cursor:pointer; box-shadow:0 0 25px rgba(150,201,61,0.5);">🚀 LAUNCH GAME NOW 🚀</button>
+                <button id="launchMatchBtn" onclick="launchGameFromLobby()" class="primary" style="background:linear-gradient(135deg, #00b09b, #96c93d); color:#fff; font-size:1.2rem; font-weight:800; padding:14px 48px; border-radius:30px; border:none; cursor:pointer; box-shadow:0 0 25px rgba(150,201,61,0.5);">🚀 START MATCH & REVEAL BOARD 🚀</button>
             </div>
         </div>
     </div>
@@ -2178,14 +2182,16 @@
 
             peer.on('connection', (conn) => {
                 // new client connected
-                const clientIdx = connections.length + 1; // player 1 or 2
-                if (clientIdx > 2) {
-                    conn.send({ type: 'error', msg: 'Game is full (max 3 players).' });
+                const clientIdx = connections.length + 1; // player index
+                if (clientIdx >= activePlayerCount) {
+                    conn.send({ type: 'error', msg: `Game room is full (${activePlayerCount} players max).` });
                     conn.close();
                     return;
                 }
                 connections.push(conn);
-                addLog(`🔗 Player ${clientIdx} joined.`);
+                addLog(`🔗 Player ${clientIdx + 1} joined the room!`);
+                if (typeof SFXEngine !== 'undefined') SFXEngine.play('pass_go');
+                renderLobbySlots();
 
                 conn.on('open', () => {
                     // send current state and player index
@@ -2200,6 +2206,7 @@
                     const idx = connections.indexOf(conn);
                     if (idx !== -1) connections.splice(idx, 1);
                     addLog(`🔌 A player disconnected.`);
+                    renderLobbySlots();
                 });
             });
 
@@ -3493,14 +3500,23 @@
         function renderLobbySlots() {
             const container = document.getElementById('lobbySlotsContainer');
             if (!container) return;
+            const targetEl = document.getElementById('targetCountText');
+            const connEl = document.getElementById('connectedCountText');
+            const connectedCount = isHost ? (connections.length + 1) : activePlayerCount;
+            if (targetEl) targetEl.textContent = activePlayerCount;
+            if (connEl) connEl.textContent = connectedCount;
+
             let html = '';
             for (let i = 0; i < activePlayerCount; i++) {
                 const charPreset = CHARACTERS[i % CHARACTERS.length];
                 const name = PLAYER_NAMES[i] || `P${i+1}`;
                 const color = PLAYER_COLORS[i] || charPreset.color;
                 const token = TOKEN_SYMBOLS[i] || charPreset.token;
+                const isSlotConnected = !isHost || (i === 0 || i <= connections.length);
+                const statusBadge = i === 0 ? '👑 Host' : (isSlotConnected ? '🟢 Connected' : '⏳ Waiting...');
+
                 html += `
-                <div style="background:#10192d; padding:14px; border-radius:16px; border:2px solid ${color}; box-shadow:0 4px 14px rgba(0,0,0,0.4);">
+                <div style="background:#10192d; padding:14px; border-radius:16px; border:2px solid ${isSlotConnected ? color : '#344778'}; box-shadow:0 4px 14px rgba(0,0,0,0.4); opacity:${isSlotConnected ? '1' : '0.65'};">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <img src="${charPreset.portrait}" alt="${charPreset.name}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid ${color};" />
@@ -3509,7 +3525,7 @@
                                 <div style="font-size:0.7rem; color:#aaa;">${charPreset.title}</div>
                             </div>
                         </div>
-                        <input type="color" value="${color}" onchange="updateLobbyColor(${i}, this.value)" style="width:38px; height:30px; border:none; background:transparent; cursor:pointer;" title="Pick custom color" />
+                        <span style="font-size:0.75rem; font-weight:700; background:#1a2542; padding:3px 8px; border-radius:10px; color:${isSlotConnected ? '#38ef7d' : '#f39c12'};">${statusBadge}</span>
                     </div>
                     <div style="margin-bottom:8px;">
                         <label style="font-size:0.75rem; color:#aaa; display:block; margin-bottom:3px;">Player Name:</label>
