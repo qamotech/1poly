@@ -2226,7 +2226,7 @@
             if (typeof syncMobileActionBar === 'function') syncMobileActionBar();
         }
 
-        // Step 1: Inject the Bot Logic Function (with 1.5s staggered delays & distinct Tycoon vs Cautious personalities)
+        // Step 1: Inject the Bot Logic Function (with 1.5s staggered delays, Jail escape choices, & automatic house building)
         async function executeBotAction() {
             if (!G || G.gameOver) return;
             const idx = G.currentPlayer;
@@ -2242,7 +2242,21 @@
             const bufferNeeded = isTycoon ? 10 : 150;
 
             if (G.phase === 'roll') {
-                addLog(`🤖 ${p.name} (${trait}) is taking a moment before rolling...`);
+                if (p.jail) {
+                    if (p.jailCards && p.jailCards > 0) {
+                        p.jailCards--;
+                        p.jail = false;
+                        addLog(`🤖 ${p.name} (${trait}) used a 'Get Out of Jail Free' card to exit Jail!`);
+                    } else if (p.money > 500) {
+                        p.money -= 50;
+                        p.jail = false;
+                        addLog(`🤖 ${p.name} (${trait}) paid $50 bail to exit Jail immediately!`);
+                    } else {
+                        addLog(`🤖 ${p.name} (${trait}) rolls for doubles to attempt Jail escape...`);
+                    }
+                } else {
+                    addLog(`🤖 ${p.name} (${trait}) is taking a moment before rolling...`);
+                }
                 await new Promise(res => setTimeout(res, 1500));
                 if (!G || G.currentPlayer !== idx) return;
                 rollDice();
@@ -2262,6 +2276,26 @@
                     if (owner === -1 && prop && prop.price > 0) {
                         addLog(`🤖 ${p.name} (${trait}) passes on ${prop.name} (Requires $${bufferNeeded} cash buffer).`);
                     }
+
+                    // Automatic House Building check before calling endTurn()
+                    const buildable = p.properties.filter(id => {
+                        const pr = PROPERTIES[id];
+                        if (!pr || pr.type !== 'property') return false;
+                        const groupProps = PROPERTIES.filter((_, i) => PROPERTIES[i].group === pr.group && i < BOARD_SIZE);
+                        const ownedGroup = groupProps.filter(pp => G.propertyOwners[pp.id] === idx);
+                        if (ownedGroup.length !== groupProps.length) return false;
+                        const houses = G.houseCounts[id] || 0;
+                        if (houses >= 5) return false;
+                        const minHouses = Math.min(...groupProps.map(pp => G.houseCounts[pp.id] || 0));
+                        if (houses > minHouses) return false;
+                        return p.money >= pr.houseCost + 200;
+                    });
+
+                    if (buildable.length > 0) {
+                        addLog(`🤖 ${p.name} (${trait}) owns a full color set and has $200+ buffer! Building house...`);
+                        buildHouses();
+                    }
+
                     endTurn();
                 }
             }
