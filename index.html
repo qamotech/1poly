@@ -40,6 +40,242 @@
             position: relative;
         }
 
+        /* ─── 8 MAJOR VISUAL UPGRADES (MASTER PROMPT STYLES) ─── */
+
+        /* 1. Dynamic Weather & Cloud Fleet */
+        #weatherContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+        .cloud-fleet-item {
+            position: absolute;
+            font-size: 2.5rem;
+            opacity: 0.75;
+            filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.4));
+            animation: cloudDriftFleet linear infinite;
+        }
+        @keyframes cloudDriftFleet {
+            0% { transform: translateX(-120px) scale(var(--c-scale, 1)); }
+            100% { transform: translateX(calc(100vw + 120px)) scale(var(--c-scale, 1)); }
+        }
+        .celestial-orb {
+            position: fixed;
+            top: 20px;
+            right: 25px;
+            font-size: 2.8rem;
+            filter: drop-shadow(0 0 20px #ffea00);
+            animation: orbPulse 6s ease-in-out infinite;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        @keyframes orbPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 20px #ffea00); }
+            50% { transform: scale(1.1) rotate(15deg); filter: drop-shadow(0 0 35px #ffb800); }
+        }
+
+        /* 2. Grand Animated Centerpiece */
+        .grand-centerpiece {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(255,215,0,0.18) 0%, rgba(15,23,42,0.85) 80%);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 3px solid rgba(255,215,0,0.75);
+            border-radius: 28px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 25px rgba(255,215,0,0.25);
+            animation: centerpieceFloat 4s ease-in-out infinite;
+            z-index: 5;
+            pointer-events: none;
+            user-select: none;
+        }
+        .centerpiece-content {
+            text-align: center;
+            padding: 16px;
+        }
+        .centerpiece-crown {
+            font-size: 2.4rem;
+            filter: drop-shadow(0 4px 10px rgba(255,215,0,0.6));
+        }
+        .centerpiece-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff2a3, #ffd700, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(255,215,0,0.4);
+            margin: 4px 0;
+        }
+        .centerpiece-subtitle {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #00f0ff;
+            text-transform: uppercase;
+        }
+        .centerpiece-jackpot {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #39ff14;
+            background: rgba(0,0,0,0.5);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #39ff14;
+            display: inline-block;
+        }
+        @keyframes centerpieceFloat {
+            0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 25px rgba(255,215,0,0.25); }
+            50% { transform: translateY(-8px) scale(1.015); box-shadow: 0 25px 50px rgba(255,215,0,0.4), inset 0 0 35px rgba(255,215,0,0.4); }
+        }
+
+        /* 3. Cinematic 3D Dice Toss */
+        .toss-dice-3d-wrapper {
+            position: fixed;
+            bottom: 15vh;
+            left: 50vw;
+            transform: translateX(-50%);
+            z-index: 9999;
+            pointer-events: none;
+            display: flex;
+            gap: 16px;
+            perspective: 1200px;
+            animation: diceFlyToss 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .toss-die-face {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #ffffff, #e0e0e0);
+            border-radius: 14px;
+            border: 3px solid #111;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6), inset 0 -4px 8px rgba(0,0,0,0.2);
+        }
+        @keyframes diceFlyToss {
+            0% { transform: translate(-50%, 60vh) scale(0.3) rotateX(720deg) rotateY(0deg); opacity: 0; }
+            40% { transform: translate(-50%, -15vh) scale(1.2) rotateX(360deg) rotateY(540deg); opacity: 1; }
+            70% { transform: translate(-50%, -5vh) scale(1) rotateX(0deg) rotateY(720deg); }
+            85% { transform: translate(-50%, -8vh) scale(1.05); }
+            100% { transform: translate(-50%, -6vh) scale(1); opacity: 0; }
+        }
+
+        /* 4. Player Spotlight & Ambient Shadows */
+        .space {
+            transition: opacity 0.4s ease, transform 0.3s ease, box-shadow 0.4s ease;
+        }
+        .board-spotlight-active .space {
+            opacity: 0.8;
+        }
+        .board-spotlight-active .space.spotlight-current {
+            opacity: 1 !important;
+            box-shadow: 0 0 25px #ffd700, inset 0 0 15px #ffd700 !important;
+            border-color: #ffd700 !important;
+            transform: scale(1.04);
+            z-index: 20;
+        }
+        .board-spotlight-active .space.spotlight-target {
+            opacity: 1 !important;
+            box-shadow: 0 0 18px #00f0ff, inset 0 0 10px #00f0ff !important;
+            border-color: #00f0ff !important;
+            z-index: 15;
+        }
+
+        /* 5. Animated Tile Micro-Interactions */
+        .tile-electric .color-bar, .tile-electric {
+            animation: neonFlicker 3s infinite alternate ease-in-out;
+        }
+        @keyframes neonFlicker {
+            0%, 100% { filter: drop-shadow(0 0 8px #ffea00); opacity: 1; }
+            50% { filter: drop-shadow(0 0 2px #ffea00); opacity: 0.55; }
+        }
+        .tile-water {
+            background: linear-gradient(135deg, #0f3460, #16213e, #005f9e);
+            background-size: 200% 200%;
+            animation: waveMotion 6s infinite ease-in-out;
+        }
+        @keyframes waveMotion {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .tile-railroad {
+            border-style: dashed !important;
+            border-width: 2px !important;
+            animation: trackPan 4s linear infinite;
+        }
+        @keyframes trackPan {
+            from { background-position: 0 0; }
+            to { background-position: 40px 0; }
+        }
+
+        /* 6. Parallax Galaxy & Environment Backgrounds */
+        #galaxyStarfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -2;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            overflow: hidden;
+        }
+        .galaxy-stars {
+            width: 2px;
+            height: 2px;
+            background: transparent;
+            box-shadow: 10vw 20vh #fff, 30vw 80vh #fff, 70vw 15vh #fff, 85vw 60vh #fff, 40vw 40vh #fff, 90vw 90vh #fff, 15vw 90vh #fff, 50vw 10vh #fff, 60vw 70vh #fff;
+            animation: galaxyRotate 120s linear infinite;
+        }
+        @keyframes galaxyRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        body.theme-cyber #app {
+            background: rgba(16, 14, 34, 0.92);
+            border: 2px solid #00f0ff;
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.4);
+        }
+        body.theme-cyber {
+            background: linear-gradient(180deg, #050515 0%, #10002b 100%);
+            background-size: 100% 100%;
+        }
+
+        /* 7. 3D Glassmorphism Hover Cards */
+        .modal-deed-3d {
+            background: rgba(15, 23, 42, 0.88) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 2px solid rgba(255, 255, 255, 0.25) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1) !important;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: transform 0.15s ease-out;
+        }
+
+        /* 8. Central Eruption Particle System */
+        .central-burst-particle {
+            position: absolute;
+            font-size: 1.6rem;
+            pointer-events: none;
+            z-index: 9999;
+            user-select: none;
+            will-change: transform, opacity;
+        }
+
         /* ─── HEADER ─── */
         .header {
             display: flex;
@@ -1930,15 +2166,24 @@
         }
 
         function animateDice(v1, v2) {
-            const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-            die1El.textContent = faces[v1 - 1];
-            die2El.textContent = faces[v2 - 1];
+            die1El.textContent = v1;
+            die2El.textContent = v2;
             die1El.classList.add('rolling');
             die2El.classList.add('rolling');
             setTimeout(() => {
                 die1El.classList.remove('rolling');
                 die2El.classList.remove('rolling');
             }, 400);
+
+            // Feature 3: Cinematic 3D Dice Toss onto Board Center
+            const tossWrapper = document.createElement('div');
+            tossWrapper.className = 'toss-dice-3d-wrapper';
+            tossWrapper.innerHTML = `
+                <div class="toss-die-face">${v1}</div>
+                <div class="toss-die-face">${v2}</div>
+            `;
+            document.body.appendChild(tossWrapper);
+            setTimeout(() => tossWrapper.remove(), 2100);
         }
 
         // ─── RENDER ──────────────────────────────────────────────────
@@ -3138,12 +3383,62 @@
             }
         }
 
+        // Feature 1: Dynamic Weather & Cloud Fleet
+        function generateWeather() {
+            let container = document.getElementById('weatherContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'weatherContainer';
+                document.body.appendChild(container);
+            }
+            container.innerHTML = '';
+
+            const cloudsEnabled = getSet('f_clouds', true);
+            if (!cloudsEnabled) return;
+
+            const cloudIcons = ['☁️', '⛅', '🌨️', '☁️', '⛅', '☁️'];
+            for (let i = 0; i < 6; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud-fleet-item';
+                cloud.textContent = cloudIcons[i % cloudIcons.length];
+                const scale = 0.7 + Math.random() * 0.7;
+                const topPct = 4 + (i * 14) + Math.random() * 4;
+                const duration = 22 + Math.random() * 20;
+                const delay = -(Math.random() * duration);
+
+                cloud.style.setProperty('--c-scale', scale);
+                cloud.style.top = topPct + 'vh';
+                cloud.style.animationDuration = duration + 's';
+                cloud.style.animationDelay = delay + 's';
+                container.appendChild(cloud);
+            }
+
+            let orb = document.getElementById('celestialOrb');
+            if (!orb) {
+                orb = document.createElement('div');
+                orb.id = 'celestialOrb';
+                orb.className = 'celestial-orb';
+                document.body.appendChild(orb);
+            }
+            const theme = getSet('c_theme', 'galaxy');
+            orb.textContent = (theme === 'galaxy' || theme === 'cyber') ? '🌙' : '☀️';
+        }
+
         function applyMegaEffects() {
             // Theme application
             document.body.className = '';
             const theme = getSet('c_theme', 'galaxy');
             if (theme !== 'galaxy') document.body.classList.add('theme-' + theme);
             if (getSet('c_contrast', false)) document.body.classList.add('hi-contrast');
+
+            // Feature 6: Parallax Galaxy Background Starfield
+            let starfield = document.getElementById('galaxyStarfield');
+            if (!starfield) {
+                starfield = document.createElement('div');
+                starfield.id = 'galaxyStarfield';
+                starfield.innerHTML = '<div class="galaxy-stars"></div>';
+                document.body.insertBefore(starfield, document.body.firstChild);
+            }
 
             // Disco mode
             const board = document.querySelector('.board-wrapper');
@@ -3163,36 +3458,63 @@
                 }
             }
 
-            // Weather badge
+            // Weather badge & Fleet
             const weatherBadge = document.getElementById('weatherBadge');
             const weather = getSet('u_weather', 'sunny');
             if (weatherBadge) {
                 const icons = { sunny: '☀️', rainbow: '🌈', snowy: '❄️' };
                 weatherBadge.innerHTML = icons[weather] || '☀️';
             }
-
-            // Clouds overlay
-            let cloudEl = document.getElementById('floatingCloudOverlay');
-            if (getSet('f_clouds', true)) {
-                if (!cloudEl && board) {
-                    cloudEl = document.createElement('div');
-                    cloudEl.id = 'floatingCloudOverlay'; cloudEl.className = 'weather-cloud';
-                    cloudEl.innerHTML = '⛅ ☁️'; cloudEl.style.top = '30px';
-                    board.appendChild(cloudEl);
-                }
-            } else if (cloudEl) { cloudEl.remove(); }
+            generateWeather();
         }
 
+        // Feature 8: Central Eruption Particle System
         function triggerConfettiShower() {
-            for(let i=0; i<20; i++) {
-                const dot = document.createElement('div');
-                dot.style.position = 'fixed'; dot.style.top = '-20px'; dot.style.left = Math.random()*100 + 'vw';
-                dot.style.width = '12px'; dot.style.height = '12px'; dot.style.borderRadius = '50%';
-                dot.style.background = ['#ff007f','#00f0ff','#39ff14','#ffb800'][Math.floor(Math.random()*4)];
-                dot.style.zIndex = '99999'; dot.style.pointerEvents = 'none'; dot.style.transition = 'top 2.5s ease-in, transform 2.5s ease-in';
-                document.body.appendChild(dot);
-                setTimeout(() => { dot.style.top = '105vh'; dot.style.transform = 'rotate('+(Math.random()*720-360)+'deg)'; }, 10);
-                setTimeout(() => dot.remove(), 2600);
+            const board = document.querySelector('.board') || document.body;
+            const rect = board.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const items = ['🪙', '💵', '⭐', '✨', '💎', '🎆', '💰'];
+            for (let i = 0; i < 36; i++) {
+                const p = document.createElement('div');
+                p.className = 'central-burst-particle';
+                p.textContent = items[Math.floor(Math.random() * items.length)];
+                p.style.left = centerX + 'px';
+                p.style.top = centerY + 'px';
+                document.body.appendChild(p);
+
+                const angle = (i / 36) * Math.PI * 2 + (Math.random() * 0.2 - 0.1);
+                const speed = 120 + Math.random() * 220;
+                let vx = Math.cos(angle) * speed;
+                let vy = Math.sin(angle) * speed - 80;
+                let px = centerX;
+                let py = centerY;
+                let opacity = 1;
+                let scale = 0.6 + Math.random() * 0.8;
+                let rot = Math.random() * 360;
+
+                let lastTime = performance.now();
+                function animateParticle(now) {
+                    const dt = Math.min((now - lastTime) / 1000, 0.05);
+                    lastTime = now;
+
+                    vy += 450 * dt;
+                    px += vx * dt;
+                    py += vy * dt;
+                    opacity -= 0.38 * dt;
+                    rot += 180 * dt;
+
+                    p.style.transform = `translate(-50%, -50%) translate(${px - centerX}px, ${py - centerY}px) scale(${scale}) rotate(${rot}deg)`;
+                    p.style.opacity = Math.max(0, opacity);
+
+                    if (opacity > 0) {
+                        requestAnimationFrame(animateParticle);
+                    } else {
+                        p.remove();
+                    }
+                }
+                requestAnimationFrame(animateParticle);
             }
         }
 
@@ -3313,6 +3635,7 @@
             }
         }
 
+        // Feature 7: 3D Glassmorphism Hover Cards
         function inspectDeedCard(pos) {
             const prop = PROPERTIES[pos];
             if (!prop || !['property', 'railroad', 'utility'].includes(prop.type)) return;
@@ -3351,7 +3674,24 @@
             } else {
                 mortBtn.style.display = 'none';
             }
-            document.getElementById('deedInspectOverlay').style.display = 'flex';
+
+            const overlay = document.getElementById('deedInspectOverlay');
+            overlay.style.display = 'flex';
+
+            const cardEl = overlay.querySelector('.modal-content') || overlay;
+            cardEl.classList.add('modal-deed-3d');
+            cardEl.onmousemove = (e) => {
+                const rect = cardEl.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                const tiltX = (y / (rect.height / 2)) * -18;
+                const tiltY = (x / (rect.width / 2)) * 18;
+                cardEl.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.04)`;
+            };
+            cardEl.onmouseleave = () => {
+                cardEl.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+            };
+
             triggerHaptic();
         }
 
