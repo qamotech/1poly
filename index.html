@@ -1050,6 +1050,10 @@
                 <button id="fullscreenToggleBtn" style="background: #344778; color: #fff; border: none; padding: 6px 12px; border-radius: 16px; cursor: pointer; font-size: 0.85rem;" title="Toggle Fullscreen Mode">⛶ Fullscreen</button>
                 <button id="megaHubBtn" class="primary" style="background: linear-gradient(135deg, #ff007a, #7928ca); box-shadow: 0 0 15px rgba(255,0,122,0.5);">🌟 72 Mega-Upgrades Hub</button>
                 <button id="quickSoundBtn" style="background: #20b2aa;">🎵 Sound FX</button>
+                <div style="display:inline-flex; align-items:center; gap:4px; background:#1e2a4a; padding:4px 8px; border-radius:14px; border:1px solid #344778;" title="Master Audio SFX Volume">
+                    <span style="font-size:0.75rem; color:#aaa;">🔊</span>
+                    <input type="range" id="sfxVolSlider" min="0" max="1" step="0.05" value="0.8" oninput="if(typeof SFXEngine!=='undefined') SFXEngine.setVolume(this.value)" style="width:60px; accent-color:#00f0ff; cursor:pointer;" />
+                </div>
                 <button id="quickCoinBtn" style="background: #e67e22;">🪙 Flip Coin</button>
                 <button id="quickFortuneBtn" style="background: #9b59b6;">🔮 Fortune</button>
                 <button id="toggleHudBtn" style="background: #344778; color: #fff; border: none; padding: 6px 12px; border-radius: 16px; cursor: pointer; font-size: 0.8rem;">📊 Leaderboard</button>
@@ -1150,12 +1154,12 @@
                 <button onclick="document.getElementById('soundBoardOverlay').style.display='none'" style="background:#c0392b; color:white; border:none; padding:6px 14px; border-radius:14px; cursor:pointer; font-weight:700;">Close</button>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                <button class="header-controls button primary" style="justify-content:center; padding:16px; font-size:1rem;" onclick="playMegaSound(440,0.1,'square');playMegaSound(880,0.25,'square',120)">🎺 Victory Fanfare</button>
-                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#2ecc71; color:#fff;" onclick="playMegaSound(523.25,0.08,'sine');playMegaSound(659.25,0.08,'sine',80);playMegaSound(783.99,0.15,'sine',160)">✨ Magic Sparkle</button>
-                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#e74c3c; color:#fff;" onclick="playMegaSound(150,0.4,'sawtooth')">⚠️ Uh-Oh Buzzer</button>
-                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#3498db; color:#fff;" onclick="playMegaSound(987.77,0.1,'triangle');playMegaSound(1318.5,0.3,'triangle',100)">💰 Cash Jackpot</button>
-                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#9b59b6; color:#fff;" onclick="playMegaSound(330,0.15,'sine');playMegaSound(261.63,0.3,'sine',150)">😸 Silly Giggle</button>
-                <button class="header-controls button" style="justify-content:center; padding:16px; font-size:1rem; background:#e67e22; color:#fff;" onclick="playMegaSound(600,0.05,'square');playMegaSound(1200,0.2,'square',60)">🪙 Coin Drop</button>
+                <button class="header-controls button primary" style="justify-content:center; padding:14px; font-size:0.95rem;" onclick="SFXEngine.play('victory')">🎺 Victory Fanfare</button>
+                <button class="header-controls button" style="justify-content:center; padding:14px; font-size:0.95rem; background:#2ecc71; color:#fff;" onclick="SFXEngine.play('pass_go')">✨ Pass GO Sparkle</button>
+                <button class="header-controls button" style="justify-content:center; padding:14px; font-size:0.95rem; background:#e74c3c; color:#fff;" onclick="SFXEngine.play('go_to_jail')">🚔 Jail Door Slam</button>
+                <button class="header-controls button" style="justify-content:center; padding:14px; font-size:0.95rem; background:#3498db; color:#fff;" onclick="SFXEngine.play('buy_property')">💰 Cash Register</button>
+                <button class="header-controls button" style="justify-content:center; padding:14px; font-size:0.95rem; background:#9b59b6; color:#fff;" onclick="SFXEngine.play('build_house')">🔨 Hammer Clack</button>
+                <button class="header-controls button" style="justify-content:center; padding:14px; font-size:0.95rem; background:#e67e22; color:#fff;" onclick="SFXEngine.play('dice_tumble')">🎲 Dice Tumble</button>
             </div>
         </div>
     </div>
@@ -3231,7 +3235,148 @@
             setTimeout(() => { loadGameState(); }, 300);
         });
 
-        // ─── 3D CHARACTERS, VOICE SYNTHESIS, REALISTIC 3D VIEW & DICE IMPACT ───
+        // ─── SFX AUDIO ENGINE (PRINCIPAL-GRADE WEB AUDIO SYNTHESIZER) ───
+
+        const SFXEngine = {
+            ctx: null,
+            masterGain: null,
+            volume: 0.8,
+            muted: false,
+
+            init() {
+                if (this.ctx) return;
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                this.ctx = new AudioCtx();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+                this.masterGain.connect(this.ctx.destination);
+            },
+
+            setVolume(val) {
+                this.volume = Math.max(0, Math.min(1, parseFloat(val) || 0.8));
+                if (this.masterGain && this.ctx) {
+                    this.masterGain.gain.setValueAtTime(this.muted ? 0 : this.volume, this.ctx.currentTime);
+                }
+            },
+
+            play(type, panX = 0) {
+                if (this.muted) return;
+                if (!this.ctx) this.init();
+                if (!this.ctx) return;
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+
+                const now = this.ctx.currentTime;
+                const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
+                if (panner) {
+                    panner.pan.setValueAtTime(Math.max(-1, Math.min(1, panX)), now);
+                    panner.connect(this.masterGain);
+                }
+                const output = panner || this.masterGain;
+
+                switch (type) {
+                    case 'dice_tumble':
+                        for (let i = 0; i < 4; i++) {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = 'sawtooth';
+                            osc.frequency.setValueAtTime(140 + Math.random() * 80, now + i * 0.06);
+                            gain.gain.setValueAtTime(0.3, now + i * 0.06);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.08);
+                            osc.connect(gain);
+                            gain.connect(output);
+                            osc.start(now + i * 0.06);
+                            osc.stop(now + i * 0.06 + 0.08);
+                        }
+                        break;
+                    case 'pass_go':
+                        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                            gain.gain.setValueAtTime(0.25, now + i * 0.08);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+                            osc.connect(gain);
+                            gain.connect(output);
+                            osc.start(now + i * 0.08);
+                            osc.stop(now + i * 0.08 + 0.25);
+                        });
+                        break;
+                    case 'buy_property':
+                        [987.77, 1318.5].forEach((freq, i) => {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = 'square';
+                            osc.frequency.setValueAtTime(freq, now + i * 0.07);
+                            gain.gain.setValueAtTime(0.2, now + i * 0.07);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.2);
+                            osc.connect(gain);
+                            gain.connect(output);
+                            osc.start(now + i * 0.07);
+                            osc.stop(now + i * 0.07 + 0.2);
+                        });
+                        break;
+                    case 'build_house':
+                        const oscH = this.ctx.createOscillator();
+                        const gainH = this.ctx.createGain();
+                        oscH.type = 'triangle';
+                        oscH.frequency.setValueAtTime(440, now);
+                        oscH.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+                        gainH.gain.setValueAtTime(0.3, now);
+                        gainH.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                        oscH.connect(gainH);
+                        gainH.connect(output);
+                        oscH.start(now);
+                        oscH.stop(now + 0.12);
+                        break;
+                    case 'go_to_jail':
+                        const oscJ = this.ctx.createOscillator();
+                        const gainJ = this.ctx.createGain();
+                        oscJ.type = 'sawtooth';
+                        oscJ.frequency.setValueAtTime(160, now);
+                        oscJ.frequency.exponentialRampToValueAtTime(50, now + 0.4);
+                        gainJ.gain.setValueAtTime(0.4, now);
+                        gainJ.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                        oscJ.connect(gainJ);
+                        gainJ.connect(output);
+                        oscJ.start(now);
+                        oscJ.stop(now + 0.4);
+                        break;
+                    case 'victory':
+                        [440, 554.37, 659.25, 880].forEach((freq, i) => {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                            gain.gain.setValueAtTime(0.3, now + i * 0.1);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.4);
+                            osc.connect(gain);
+                            gain.connect(output);
+                            osc.start(now + i * 0.1);
+                            osc.stop(now + i * 0.1 + 0.4);
+                        });
+                        break;
+                    case 'button_click':
+                        const oscC = this.ctx.createOscillator();
+                        const gainC = this.ctx.createGain();
+                        oscC.type = 'sine';
+                        oscC.frequency.setValueAtTime(600, now);
+                        gainC.gain.setValueAtTime(0.1, now);
+                        gainC.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                        oscC.connect(gainC);
+                        gainC.connect(output);
+                        oscC.start(now);
+                        oscC.stop(now + 0.04);
+                        break;
+                    default:
+                        playMegaSound(440, 0.1, 'sine');
+                        break;
+                }
+            }
+        };
 
         let voiceEnabled = true;
         let is3DView = true;
