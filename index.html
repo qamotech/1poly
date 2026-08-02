@@ -285,6 +285,15 @@
             box-shadow: 0 0 20px rgba(247, 217, 78, 0.3);
             animation: cardPulse 2s infinite alternate;
         }
+        @keyframes buttonPulseGreen {
+            0% { transform: scale(1); box-shadow: 0 0 10px #2ecc71; }
+            50% { transform: scale(1.06); box-shadow: 0 0 25px #2ecc71, 0 0 40px #38ef7d; }
+            100% { transform: scale(1); box-shadow: 0 0 10px #2ecc71; }
+        }
+        .kid-highlight {
+            animation: buttonPulseGreen 1.2s infinite ease-in-out !important;
+            border: 2px solid #38ef7d !important;
+        }
         @keyframes cardPulse {
             0% { box-shadow: 0 0 10px rgba(247, 217, 78, 0.2); }
             100% { box-shadow: 0 0 25px rgba(247, 217, 78, 0.5); }
@@ -1287,6 +1296,17 @@
                 </div>
             </div>
 
+            <!-- 1-TAP QUICK ROOM PRESETS & QR SHARING FOR KIDS -->
+            <div style="margin-bottom:18px; background:#10192d; padding:12px; border-radius:16px; border:1px solid #2a3b68;">
+                <div style="font-size:0.85rem; color:#f0a500; font-weight:800; margin-bottom:8px;">⚡ 1-Tap Kid Quick-Join Rooms & Instant QR Sharing:</div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button onclick="document.getElementById('peerIdInput').value='ROOM1'; hostGame(); closeStartLobby();" style="background:linear-gradient(135deg,#8e44ad,#9b59b6); color:#fff; font-weight:800; border:none; padding:8px 14px; border-radius:12px; cursor:pointer;">🎮 ROOM 1</button>
+                    <button onclick="document.getElementById('peerIdInput').value='FAMILY'; hostGame(); closeStartLobby();" style="background:linear-gradient(135deg,#e67e22,#f39c12); color:#fff; font-weight:800; border:none; padding:8px 14px; border-radius:12px; cursor:pointer;">🏠 FAMILY ROOM</button>
+                    <button onclick="document.getElementById('peerIdInput').value='PARTY77'; hostGame(); closeStartLobby();" style="background:linear-gradient(135deg,#ff007f,#ff5252); color:#fff; font-weight:800; border:none; padding:8px 14px; border-radius:12px; cursor:pointer;">🎉 PARTY 77</button>
+                    <button onclick="showQRCodeModal()" style="background:linear-gradient(135deg,#00b09b,#96c93d); color:#fff; font-weight:800; border:none; padding:8px 14px; border-radius:12px; cursor:pointer;">📱 SCAN QR CODE</button>
+                </div>
+            </div>
+
             <!-- DYNAMIC PLAYER SETUP SLOTS & LIVE WAITING ROOM -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:#10192d; padding:8px 14px; border-radius:12px; border:1px solid #2a3b68;">
                 <span id="lobbyConnectedBadge" style="font-weight:700; color:#38ef7d; font-size:0.9rem;">🟢 Player Slots Ready: <span id="connectedCountText">1</span> / <span id="targetCountText">3</span></span>
@@ -2140,7 +2160,48 @@
             } else {
                 buyBtn.style.display = 'none';
             }
+
+            // Kid-Friendly Dynamic Action Guide Banner & Pulsing Highlights
+            let guideEl = document.getElementById('actionGuideBanner');
+            if (!guideEl) {
+                guideEl = document.createElement('div');
+                guideEl.id = 'actionGuideBanner';
+                guideEl.style.cssText = 'background:linear-gradient(135deg, #16213e, #0f3460); color:#00f0ff; font-weight:800; font-size:1.05rem; padding:10px 16px; border-radius:14px; border:2px solid #00f0ff; text-align:center; margin-bottom:12px; box-shadow:0 4px 15px rgba(0,240,255,0.3); transition:all 0.3s ease; grid-column: 1 / -1;';
+                const ctrlBox = document.querySelector('.controls') || document.querySelector('.panel');
+                if (ctrlBox) ctrlBox.insertBefore(guideEl, ctrlBox.firstChild);
+            }
+
+            rollBtn.classList.remove('kid-highlight');
+            buyBtn.classList.remove('kid-highlight');
+            endTurnBtn.classList.remove('kid-highlight');
+
+            if (G.gameOver) {
+                guideEl.innerHTML = `🏆 <b>GAME OVER!</b> Tap 🔄 <b>RESTART MATCH</b> to play again!`;
+            } else if (!isMyTurn) {
+                guideEl.innerHTML = `⏳ Waiting for <b>${p.name}</b>'s turn...`;
+            } else if (canRoll) {
+                guideEl.innerHTML = `👉 <b>${p.name}</b>'s turn! Tap 🎲 <b>ROLL DICE</b> to move!`;
+                rollBtn.classList.add('kid-highlight');
+            } else if (buyBtn.style.display !== 'none') {
+                guideEl.innerHTML = `👉 Landed on <b>${PROPERTIES[p.position].name}</b>! Tap 💰 <b>BUY PROPERTY</b> or 🏁 <b>END TURN</b>!`;
+                buyBtn.classList.add('kid-highlight');
+            } else if (canEnd) {
+                guideEl.innerHTML = `👉 Turn finished! Tap 🏁 <b>END TURN</b> for the next player!`;
+                endTurnBtn.classList.add('kid-highlight');
+            }
+
             if (typeof syncMobileActionBar === 'function') syncMobileActionBar();
+        }
+
+        function showQRCodeModal() {
+            const currentRoom = document.getElementById('peerIdInput') ? document.getElementById('peerIdInput').value : 'FAMILY';
+            const shareUrl = `https://qamotech.github.io/1poly/?room=${encodeURIComponent(currentRoom)}`;
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}`;
+            showModal('📱 SCAN QR CODE TO JOIN', `<div style="text-align:center;">
+                <img src="${qrApiUrl}" alt="QR Code" style="width:200px; height:200px; border-radius:16px; border:3px solid #00f0ff; margin-bottom:14px; box-shadow:0 0 20px rgba(0,240,255,0.4);" />
+                <p style="color:#aaa; font-size:0.9rem; margin-bottom:12px;">Scan with iPad or phone camera to join Room: <b style="color:#38ef7d;">${currentRoom}</b></p>
+                <button onclick="navigator.clipboard.writeText('${shareUrl}'); toast('Share Link Copied!');" class="primary" style="background:#3498db; color:#fff; font-weight:800; padding:10px 24px; border-radius:20px; border:none; cursor:pointer;">📋 Copy Share Link</button>
+            </div>`);
         }
 
         function updateStatus(state, msg) {
