@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>🏠 Monopoly – Family Game</title>
+    <!-- PeerJS for easy WebRTC signaling -->
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js">
+    </script>
+    <style>
+        /* ─── RESET & BASE ─── */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            user-select: none;
+        }
+        #app {
+            max-width: 1100px;
+            width: 100%;
+            background: #16213e;
+            border-radius: 28px;
+            padding: 18px 18px 22px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+            position: relative;
+        }
+
+        /* ─── HEADER ─── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding: 0 4px;
+        }
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #f7d94e, #f0a500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .header-controls button {
+            background: #2a3a5e;
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header-controls button:hover {
+            background: #3a4a7e;
+        }
+        .header-controls button.primary {
+            background: #f0a500;
+            color: #1a1a2e;
+        }
+        .header-controls button.primary:hover {
+            background: #ffb800;
+        }
+        .header-controls button.danger {
+            background: #c0392b;
+        }
+        .header-controls button.danger:hover {
+            background: #e74c3c;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            background: #2a3a5e;
+            padding: 4px 14px;
+            border-radius: 30px;
+            color: #aac;
+            white-space: nowrap;
+        }
+        .status-badge.online {
+            background: #1e7a4a;
+            color: #9fdfb2;
+        }
+        .status-badge.connecting {
+            background: #b8860b;
+            color: #fff3cd;
+        }
+
+        /* ─── BOARD ─── */
+        .board-wrapper {
+            position: relative;
+            aspect-ratio: 1/1;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            background: #1e2a4a;
+            border-radius: 18px;
+            padding: 8px;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            grid-template-rows: repeat(11, 1fr);
+            gap: 3px;
+            width: 100%;
+            height: 100%;
+        }
+        .space {
+            background: #2a3a5e;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.45rem;
+            text-align: center;
+            padding: 2px 1px;
+            position: relative;
+            transition: background 0.15s;
+            min-height: 0;
+            overflow: hidden;
+            color: #ddd;
+            font-weight: 500;
+            border: 1px solid #3a4a6e;
+        }
+        .space .color-bar {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            flex-shrink: 0;
+            margin-bottom: 1px;
+        }
+        .space .name {
+            font-size: 0.4rem;
+            line-height: 1.1;
+            font-weight: 600;
+            padding: 0 1px;
+            word-break: break-word;
+        }
+        .space .price {
+            font-size: 0.35rem;
+            opacity: 0.7;
+        }
+        .space.corner {
+            background: #1a2a4a;
+            border-color: #2a4a6a;
+        }
+        .space.corner .name {
+            font-size: 0.5rem;
+        }
+        .space .tokens {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1px;
+            margin-top: 1px;
+        }
+        .space .token {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1.5px solid #fff;
+            font-size: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        }
+        .space .token.t0 {
+            background: #e74c3c;
+        }
+        .space .token.t1 {
+            background: #3498db;
+        }
+        .space .token.t2 {
+            background: #2ecc71;
+        }
+        .space .house {
+            font-size: 0.5rem;
+            color: #f7d94e;
+            line-height: 1;
+        }
+        .space.owned {
+            border-color: #f7d94e;
+            box-shadow: 0 0 8px rgba(247, 217, 78, 0.2);
+        }
+        .space .highlight {
+            position: absolute;
+            inset: -2px;
+            border-radius: 8px;
+            border: 2px solid #f7d94e;
+            animation: pulse 1s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: scale(0.98);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+        }
+
+        /* ─── BOTTOM PANEL ─── */
+        .panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 16px;
+        }
+        .panel-left {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .panel-right {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card {
+            background: #1e2a4a;
+            border-radius: 16px;
+            padding: 12px 14px;
+            border: 1px solid #2a3a5e;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .card-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8a9abb;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        /* players info */
+        .players-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+        }
+        .player-card {
+            background: #121c2e;
+            border-radius: 12px;
+            padding: 8px 10px;
+            border-left: 4px solid #555;
+            transition: all 0.2s;
+        }
+        .player-card.active {
+            border-left-color: #f7d94e;
+            background: #1a2a44;
+            box-shadow: 0 0 16px rgba(247, 217, 78, 0.08);
+        }
+        .player-card .pname {
+            font-weight: 700;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .player-card .pname .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .player-card .pmoney {
+            font-size: 0.75rem;
+            color: #7ddf8a;
+            font-weight: 600;
+        }
+        .player-card .pprops {
+            font-size: 0.55rem;
+            color: #8a9abb;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .player-card .pstatus {
+            font-size: 0.5rem;
+            color: #f0a500;
+        }
+
+        /* dice */
+        .dice-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .dice {
+            display: flex;
+            gap: 10px;
+        }
+        .die {
+            width: 44px;
+            height: 44px;
+            background: #fff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: transform 0.15s;
+        }
+        .die.rolling {
+            animation: roll 0.3s ease 3;
+        }
+        @keyframes roll {
+            0%,
+            100% {
+                transform: rotate(0deg) scale(1);
+            }
+            25% {
+                transform: rotate(10deg) scale(1.05);
+            }
+            75% {
+                transform: rotate(-10deg) scale(1.05);
+            }
+        }
+        .dice-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .dice-actions button {
+            background: #2a3a5e;
+            border: none;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .dice-actions button:hover {
+            background: #3a4a7e;
+        }
+        .dice-actions button.primary {
+            background: #f0a500;
+            color: #1a1a2e;
+        }
+        .dice-actions button.primary:hover {
+            background: #ffb800;
+        }
+        .dice-actions button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* log */
+        .log {
+            max-height: 90px;
+            overflow-y: auto;
+            font-size: 0.7rem;
+            line-height: 1.5;
+            color: #aac;
+            padding-right: 4px;
+        }
+        .log::-webkit-scrollbar {
+            width: 4px;
+        }
+        .log::-webkit-scrollbar-track {
+            background: #121c2e;
+            border-radius: 4px;
+        }
+        .log::-webkit-scrollbar-thumb {
+            background: #2a3a5e;
+            border-radius: 4px;
+        }
+        .log .entry {
+            padding: 2px 0;
+            border-bottom: 1px solid #1a2a3e;
+        }
+        .log .entry.highlight {
+            color: #f7d94e;
+        }
+
+        /* connection area */
+        .conn-area {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .conn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .conn-row input {
+            flex: 1;
+            min-width: 120px;
+            background: #121c2e;
+            border: 1px solid #2a3a5e;
+            border-radius: 10px;
+            color: #eee;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+        .conn-row input::placeholder {
+            color: #556;
+        }
+        .conn-row button {
+            background: #2a3a5e;
+            border: none;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .conn-row button:hover {
+            background: #3a4a7e;
+        }
+        .conn-row button.primary {
+            background: #f0a500;
+            color: #1a1a2e;
+        }
+        .conn-row button.primary:hover {
+            background: #ffb800;
+        }
+        .conn-row button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* modal overlay */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal {
+            background: #1e2a4a;
+            border-radius: 24px;
+            padding: 30px 28px;
+            max-width: 420px;
+            width: 100%;
+            border: 1px solid #3a4a6e;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            text-align: center;
+        }
+        .modal h2 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+        .modal p {
+            color: #aac;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .modal button {
+            background: #f0a500;
+            border: none;
+            color: #1a1a2e;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin: 4px;
+        }
+        .modal button:hover {
+            background: #ffb800;
+        }
+        .modal button.secondary {
+            background: #2a3a5e;
+            color: #fff;
+        }
+        .modal button.secondary:hover {
+            background: #3a4a7e;
+        }
+        .modal .flex-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* responsive */
+        @media (max-width: 720px) {
+            .panel {
+                grid-template-columns: 1fr;
+            }
+            .players-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .space .name {
+                font-size: 0.3rem;
+            }
+            .space .price {
+                font-size: 0.25rem;
+            }
+            .space .token {
+                width: 10px;
+                height: 10px;
+                font-size: 5px;
+            }
+            .die {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2rem;
+            }
+            .header h1 {
+                font-size: 1.1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .board {
+                gap: 2px;
+            }
+            .space {
+                border-radius: 4px;
+                padding: 1px 0;
+            }
+            .space .name {
+                font-size: 0.22rem;
+            }
+            .space .price {
+                font-size: 0.2rem;
+            }
+            .space .token {
+                width: 8px;
+                height: 8px;
+                font-size: 4px;
+                border-width: 1px;
+            }
+            .space .color-bar {
+                height: 3px;
+            }
+            .space.corner .name {
+                font-size: 0.3rem;
+            }
+            .players-grid {
+                grid-template-columns: 1fr;
+            }
+            .die {
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+            }
+            .header h1 {
+                font-size: 0.9rem;
+            }
+            .modal {
+                padding: 20px 16px;
+            }
+            .conn-row input {
+                min-width: 80px;
+                font-size: 0.8rem;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121c2e;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3a5e;
+            border-radius: 6px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .gap-4 {
+            gap: 4px;
+        }
+        .w-full {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🏠 MONOPOLY</h1>
+            <div class="header-controls">
+                <span class="status-badge" id="statusBadge">⚡ Offline</span>
+                <button id="resetBtn" class="danger">⟳ New Game</button>
+            </div>
+        </div>
+
+        <!-- BOARD -->
+        <div class="board-wrapper">
+            <div class="board" id="boardContainer"></div>
+        </div>
+
+        <!-- PANEL -->
+        <div class="panel">
+            <div class="panel-left">
+                <!-- Players -->
+                <div class="card">
+                    <div class="card-title">👥 Players</div>
+                    <div class="players-grid" id="playersContainer"></div>
+                </div>
+                <!-- Dice & Actions -->
+                <div class="card">
+                    <div class="card-title">🎲 Dice</div>
+                    <div class="dice-area">
+                        <div class="dice">
+                            <div class="die" id="die1">⚀</div>
+                            <div class="die" id="die2">⚀</div>
+                        </div>
+                        <div class="dice-actions">
+                            <button id="rollBtn" class="primary">Roll</button>
+                            <button id="endTurnBtn">End Turn</button>
+                            <button id="buyBtn">Buy</button>
+                            <button id="buildBtn">🏠 Build</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-right">
+                <!-- Log -->
+                <div class="card" style="flex:1;">
+                    <div class="card-title">📜 Log</div>
+                    <div class="log" id="logContainer"></div>
+                </div>
+                <!-- Connection -->
+                <div class="card">
+                    <div class="card-title">📡 Join Game</div>
+                    <div class="conn-area">
+                        <div class="conn-row">
+                            <input type="text" id="roomInput" placeholder="Room name (e.g. monopoly123)" value="familygame" />
+                            <button id="hostBtn" class="primary">👑 Host</button>
+                            <button id="joinBtn">🔗 Join</button>
+                            <button id="leaveBtn" class="danger">Leave</button>
+                        </div>
+                        <div style="font-size:0.65rem; color:#8a9abb; margin-top:4px;">
+                            All players must use the <strong>same room name</strong>.
+                            One device hosts, others join.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContent">
+            <h2 id="modalTitle">🎉</h2>
+            <p id="modalMessage"></p>
+            <div class="flex-btns" id="modalButtons"></div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        //  MONOPOLY – PEER‑TO‑PEER with PeerJS (automatic signaling)
+        // ═══════════════════════════════════════════════════════════════
+
+        // ─── CONSTANTS ────────────────────────────────────────────────
+        const BOARD_SIZE = 40;
+        const PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71'];
+        const PLAYER_NAMES = ['You', 'Daughter 1', 'Daughter 2'];
+        const TOKEN_SYMBOLS = ['⭐', '🌈', '🦄'];
+
+        const PROPERTIES = [
+            { id: 0, name: 'GO', type: 'go', group: -1, price: 0, rent: 0, color: null },
+            { id: 1, name: 'Mediterranean Ave', type: 'property', group: 0, price: 60, rent: 2, houseCost: 50,
+                color: '#8B4513' },
+            { id: 2, name: 'Community Chest', type: 'chest', group: -1, price: 0, rent: 0, color: null },
+            { id: 3, name: 'Baltic Ave', type: 'property', group: 0, price: 60, rent: 4, houseCost: 50, color: '#8B4513' },
+            { id: 4, name: 'Income Tax', type: 'tax', group: -1, price: 0, rent: -200, color: null },
+            { id: 5, name: 'Reading Railroad', type: 'railroad', group: 1, price: 200, rent: 25, color: '#aaa' },
+            { id: 6, name: 'Oriental Ave', type: 'property', group: 2, price: 100, rent: 6, houseCost: 50,
+            color: '#87CEEB' },
+            { id: 7, name: 'Chance', type: 'chance', group: -1, price: 0, rent: 0, color: null },
+            { id: 8, name: 'Vermont Ave', type: 'property', group: 2, price: 100, rent: 6, houseCost: 50,
+            color: '#87CEEB' },
+            { id: 9, name: 'Connecticut Ave', type: 'property', group: 2, price: 120, rent: 8, houseCost: 50,
+                color: '#87CEEB' },
+            { id: 10, name: 'Jail / Just Visiting', type: 'jail', group: -1, price: 0, rent: 0, color: null },
+            { id: 11, name: 'St. Charles Pl', type: 'property', group: 3, price: 140, rent: 10, houseCost: 100,
+                color: '#B57EDC' },
+            { id: 12, name: 'Electric Company', type: 'utility', group: 4, price: 150, rent: 0, color: '#f7d94e' },
+            { id: 13, name: 'States Ave', type: 'property', group: 3, price: 140, rent: 10, houseCost: 100,
+            color: '#B57EDC' },
+            { id: 14, name: 'Virginia Ave', type: 'property', group: 3, price: 160, rent: 12, houseCost: 100,
+                color: '#B57EDC' },
+            { id: 15, name: 'Pennsylvania RR', type: 'railroad', group: 1, price: 200, rent: 25, color: '#aaa' },
+            { id: 16, name: 'St. James Pl', type: 'property', group: 5, price: 180, rent: 14, houseCost: 100,
+                color: '#FFA07A' },
+            { id: 17, name: 'Community Chest', type: 'chest', group: -1, price: 0, rent: 0, color: null },
+            { id: 18, name: 'Tennessee Ave', type: 'property', group: 5, price: 180, rent: 14, houseCost: 100,
+                color: '#FFA07A' },
+            { id: 19, name: 'New York Ave', type: 'property', group: 5, price: 200, rent: 16, houseCost: 100,
+                color: '#FFA07A' },
+            { id: 20, name: 'Free Parking', type: 'freeparking', group: -1, price: 0, rent: 0, color: null },
+            { id: 21, name: 'Kentucky Ave', type: 'property', group: 6, price: 220, rent: 18, houseCost: 150,
+                color: '#F08080' },
+            { id: 22, name: 'Chance', type: 'chance', group: -1, price: 0, rent: 0, color: null },
+            { id: 23, name: 'Indiana Ave', type: 'property', group: 6, price: 220, rent: 18, houseCost: 150,
+                color: '#F08080' },
+            { id: 24, name: 'Illinois Ave', type: 'property', group: 6, price: 240, rent: 20, houseCost: 150,
+                color: '#F08080' },
+            { id: 25, name: 'B&O Railroad', type: 'railroad', group: 1, price: 200, rent: 25, color: '#aaa' },
+            { id: 26, name: 'Atlantic Ave', type: 'property', group: 7, price: 260, rent: 22, houseCost: 150,
+                color: '#F5DEB3' },
+            { id: 27, name: 'Ventnor Ave', type: 'property', group: 7, price: 260, rent: 22, houseCost: 150,
+                color: '#F5DEB3' },
+            { id: 28, name: 'Water Works', type: 'utility', group: 4, price: 150, rent: 0, color: '#4FC3F7' },
+            { id: 29, name: 'Marvin Gardens', type: 'property', group: 7, price: 280, rent: 24, houseCost: 150,
+                color: '#F5DEB3' },
+            { id: 30, name: 'Go to Jail', type: 'gotojail', group: -1, price: 0, rent: 0, color: null },
+            { id: 31, name: 'Pacific Ave', type: 'property', group: 8, price: 300, rent: 26, houseCost: 200,
+                color: '#98FB98' },
+            { id: 32, name: 'N. Carolina Ave', type: 'property', group: 8, price: 300, rent: 26, houseCost: 200,
+                color: '#98FB98' },
+            { id: 33, name: 'Community Chest', type: 'chest', group: -1, price: 0, rent: 0, color: null },
+            { id: 34, name: 'Pennsylvania Ave', type: 'property', group: 8, price: 320, rent: 28, houseCost: 200,
+                color: '#98FB98' },
+            { id: 35, name: 'Short Line RR', type: 'railroad', group: 1, price: 200, rent: 25, color: '#aaa' },
+            { id: 36, name: 'Chance', type: 'chance', group: -1, price: 0, rent: 0, color: null },
+            { id: 37, name: 'Park Place', type: 'property', group: 9, price: 350, rent: 35, houseCost: 200,
+                color: '#D4A574' },
+            { id: 38, name: 'Luxury Tax', type: 'tax', group: -1, price: 0, rent: -100, color: null },
+            { id: 39, name: 'Boardwalk', type: 'property', group: 9, price: 400, rent: 50, houseCost: 200,
+            color: '#D4A574' },
+        ];
+
+        const CHANCE_CARDS = [
+            { text: 'Advance to GO', action: p => { p.position = 0;
+                    p.money += 200;
+                    return 'Advance to GO – collect $200'; } },
+            { text: 'Go to Jail', action: p => { p.position = 10;
+                    p.jail = true; return 'Go to Jail!'; } },
+            { text: 'Bank pays you $50', action: p => { p.money += 50; return 'Collect $50'; } },
+            { text: 'Pay poor tax $15', action: p => { p.money -= 15; return 'Pay $15'; } },
+            { text: 'Advance to Illinois Ave', action: p => { p.position = 24; return 'Advance to Illinois Ave'; } },
+            { text: 'Advance to St. Charles Pl', action: p => { p.position = 11; return 'Advance to St. Charles Pl'; } },
+            { text: 'Get out of Jail Free', action: p => { p.jailFree = true; return 'Get Out of Jail Free card'; } },
+            { text: 'Go back 3 spaces', action: p => { p.position = Math.max(0, p.position - 3); return 'Go back 3 spaces'; } },
+            { text: 'You have been elected Chairman – pay $50', action: p => { p.money -= 50; return 'Pay $50'; } },
+        ];
+        const CHEST_CARDS = [
+            { text: 'Advance to GO', action: p => { p.position = 0;
+                    p.money += 200; return 'Advance to GO – collect $200'; } },
+            { text: 'Bank error in your favor – collect $200', action: p => { p.money += 200; return 'Collect $200'; } },
+            { text: 'Doctor fees – pay $50', action: p => { p.money -= 50; return 'Pay $50'; } },
+            { text: 'You inherit $100', action: p => { p.money += 100; return 'Collect $100'; } },
+            { text: 'Pay hospital fees $100', action: p => { p.money -= 100; return 'Pay $100'; } },
+            { text: 'Get Out of Jail Free', action: p => { p.jailFree = true; return 'Get Out of Jail Free card'; } },
+            { text: 'It\'s your birthday – collect $10', action: p => { p.money += 10; return 'Collect $10'; } },
+            { text: 'Pay school fees $50', action: p => { p.money -= 50; return 'Pay $50'; } },
+        ];
+
+        // ─── STATE ────────────────────────────────────────────────────
+        let G = null; // game state
+        let myPlayerIndex = 0; // which player am I?
+        let isHost = false;
+        let isConnected = false;
+        let peer = null;
+        let connections = []; // for host: array of data connections
+        let myConn = null; // for client: connection to host
+        let roomName = '';
+
+        // DOM refs
+        const $ = id => document.getElementById(id);
+        const boardEl = $('boardContainer');
+        const playersEl = $('playersContainer');
+        const logEl = $('logContainer');
+        const die1El = $('die1');
+        const die2El = $('die2');
+        const rollBtn = $('rollBtn');
+        const endTurnBtn = $('endTurnBtn');
+        const buyBtn = $('buyBtn');
+        const buildBtn = $('buildBtn');
+        const hostBtn = $('hostBtn');
+        const joinBtn = $('joinBtn');
+        const leaveBtn = $('leaveBtn');
+        const roomInput = $('roomInput');
+        const statusBadge = $('statusBadge');
+        const resetBtn = $('resetBtn');
+        const modalOverlay = $('modalOverlay');
+        const modalTitle = $('modalTitle');
+        const modalMessage = $('modalMessage');
+        const modalButtons = $('modalButtons');
+
+        // ─── GAME LOGIC ──────────────────────────────────────────────
+
+        function createGame() {
+            const players = [];
+            for (let i = 0; i < 3; i++) {
+                players.push({
+                    id: i,
+                    name: PLAYER_NAMES[i],
+                    color: PLAYER_COLORS[i],
+                    token: TOKEN_SYMBOLS[i],
+                    money: 1500,
+                    position: 0,
+                    properties: [],
+                    houses: {},
+                    jail: false,
+                    jailTurns: 0,
+                    jailFree: false,
+                    bankrupt: false,
+                    turn: false,
+                    rolled: false,
+                });
+            }
+            players[0].turn = true;
+            return {
+                players: players,
+                currentPlayer: 0,
+                phase: 'roll',
+                dice: [1, 1],
+                doublesCount: 0,
+                turnCount: 0,
+                log: ['🎲 Game started! Roll the dice to begin.'],
+                propertyOwners: new Array(BOARD_SIZE).fill(-1),
+                houseCounts: new Array(BOARD_SIZE).fill(0),
+                chanceIndex: 0,
+                chestIndex: 0,
+                gameOver: false,
+                winner: -1,
+            };
+        }
+
+        function initGame() {
+            G = createGame();
+            renderAll();
+            updateControls();
+            updateStatus('ready');
+        }
+
+        // ─── ACTIONS ──────────────────────────────────────────────────
+
+        function rollDice() {
+            if (!G || G.gameOver) return;
+            const p = G.players[G.currentPlayer];
+            if (p.bankrupt) { endTurn(); return; }
+            if (G.phase !== 'roll') return;
+            if (p.jail) {
+                const d1 = rand(1, 6),
+                    d2 = rand(1, 6);
+                G.dice = [d1, d2];
+                if (d1 === d2) {
+                    p.jail = false;
+                    p.jailTurns = 0;
+                    addLog(`🎲 ${p.name} rolled doubles and gets out of jail!`);
+                    movePlayer(G.currentPlayer, d1 + d2);
+                    return;
+                } else if (p.jailFree) {
+                    p.jailFree = false;
+                    p.jail = false;
+                    p.jailTurns = 0;
+                    addLog(`🔓 ${p.name} used Get Out of Jail Free card!`);
+                    movePlayer(G.currentPlayer, d1 + d2);
+                    return;
+                } else {
+                    p.jailTurns++;
+                    if (p.jailTurns >= 3) {
+                        p.money -= 50;
+                        p.jail = false;
+                        p.jailTurns = 0;
+                        addLog(`💰 ${p.name} paid $50 bail after 3 turns.`);
+                        movePlayer(G.currentPlayer, d1 + d2);
+                    } else {
+                        addLog(`⛓️ ${p.name} remains in jail (turn ${p.jailTurns}/3)`);
+                        endTurn();
+                    }
+                    return;
+                }
+            }
+
+            const d1 = rand(1, 6),
+                d2 = rand(1, 6);
+            G.dice = [d1, d2];
+            const total = d1 + d2;
+            animateDice(d1, d2);
+
+            if (d1 === d2) {
+                G.doublesCount++;
+                if (G.doublesCount >= 3) {
+                    addLog(`🚨 ${p.name} rolled 3 doubles in a row – Go to Jail!`);
+                    p.position = 10;
+                    p.jail = true;
+                    p.jailTurns = 0;
+                    G.doublesCount = 0;
+                    G.phase = 'postroll';
+                    endTurn();
+                    return;
+                }
+                addLog(`🎲 ${p.name} rolled doubles (${d1}+${d2})!`);
+                movePlayer(G.currentPlayer, total);
+                if (!p.jail && !G.gameOver) {
+                    G.phase = 'roll';
+                    renderAll();
+                    updateControls();
+                    return;
+                }
+            } else {
+                G.doublesCount = 0;
+                addLog(`🎲 ${p.name} rolled ${d1}+${d2}=${total}`);
+                movePlayer(G.currentPlayer, total);
+            }
+        }
+
+        function movePlayer(playerIdx, steps) {
+            const p = G.players[playerIdx];
+            if (p.bankrupt) return;
+            const oldPos = p.position;
+            let newPos = (oldPos + steps) % BOARD_SIZE;
+            p.position = newPos;
+            if (newPos < oldPos && oldPos + steps >= BOARD_SIZE) {
+                p.money += 200;
+                addLog(`💰 ${p.name} passed GO – collected $200`);
+            }
+            triggerSpace(playerIdx);
+            renderAll();
+            updateControls();
+            checkGameOver();
+        }
+
+        function triggerSpace(playerIdx) {
+            const p = G.players[playerIdx];
+            const pos = p.position;
+            const prop = PROPERTIES[pos];
+            if (!prop) return;
+
+            switch (prop.type) {
+                case 'go':
+                    break;
+                case 'jail':
+                    break;
+                case 'gotojail':
+                    p.position = 10;
+                    p.jail = true;
+                    p.jailTurns = 0;
+                    addLog(`🚔 ${p.name} went to Jail!`);
+                    G.phase = 'postroll';
+                    endTurn();
+                    break;
+                case 'freeparking':
+                    addLog(`🅿️ ${p.name} is at Free Parking – nothing happens.`);
+                    break;
+                case 'tax':
+                    const tax = Math.abs(prop.rent);
+                    p.money -= tax;
+                    addLog(`💸 ${p.name} paid $${tax} in tax.`);
+                    if (p.money < 0) handleBankruptcy(playerIdx);
+                    break;
+                case 'property':
+                case 'railroad':
+                case 'utility':
+                    handleProperty(playerIdx);
+                    break;
+                case 'chance':
+                    drawCard(playerIdx, 'chance');
+                    break;
+                case 'chest':
+                    drawCard(playerIdx, 'chest');
+                    break;
+                default:
+                    break;
+            }
+            checkGameOver();
+        }
+
+        function handleProperty(playerIdx) {
+            const p = G.players[playerIdx];
+            const pos = p.position;
+            const prop = PROPERTIES[pos];
+            const owner = G.propertyOwners[pos];
+
+            if (owner === -1) {
+                if (p.money >= prop.price) {
+                    G.phase = 'postroll';
+                    showModal(
+                        `🏠 Buy ${prop.name}?`,
+                        `Price: $${prop.price}\nYour balance: $${p.money}`,
+                        [
+                            { text: '✅ Buy', action: () => { buyProperty(playerIdx);
+                                    closeModal();
+                                    renderAll();
+                                    updateControls(); } },
+                            { text: '❌ Skip', action: () => { closeModal();
+                                    G.phase = 'postroll';
+                                    endTurn();
+                                    renderAll();
+                                    updateControls(); } }
+                        ]
+                    );
+                } else {
+                    addLog(`💔 ${p.name} can't afford ${prop.name} ($${prop.price})`);
+                    G.phase = 'postroll';
+                    endTurn();
+                }
+            } else if (owner !== playerIdx) {
+                payRent(playerIdx, owner, pos);
+            } else {
+                G.phase = 'postroll';
+                endTurn();
+            }
+        }
+
+        function buyProperty(playerIdx) {
+            const p = G.players[playerIdx];
+            const pos = p.position;
+            const prop = PROPERTIES[pos];
+            if (G.propertyOwners[pos] !== -1) return;
+            if (p.money < prop.price) return;
+
+            p.money -= prop.price;
+            G.propertyOwners[pos] = playerIdx;
+            p.properties.push(pos);
+            addLog(`🏠 ${p.name} bought ${prop.name} for $${prop.price}`);
+            G.phase = 'postroll';
+            endTurn();
+        }
+
+        function payRent(playerIdx, ownerIdx, pos) {
+            const p = G.players[playerIdx];
+            const owner = G.players[ownerIdx];
+            const prop = PROPERTIES[pos];
+            let rent = prop.rent;
+
+            if (prop.type === 'railroad') {
+                const owned = owner.properties.filter(id => PROPERTIES[id].type === 'railroad').length;
+                rent = 25 * owned;
+            }
+            if (prop.type === 'utility') {
+                const owned = owner.properties.filter(id => PROPERTIES[id].type === 'utility').length;
+                const diceTotal = G.dice[0] + G.dice[1];
+                rent = owned === 1 ? 4 * diceTotal : 10 * diceTotal;
+            }
+            const houseCount = G.houseCounts[pos] || 0;
+            if (houseCount > 0 && prop.type === 'property') {
+                const baseRent = prop.rent;
+                const houseRent = [baseRent, baseRent * 2, baseRent * 3, baseRent * 4, baseRent * 5, baseRent * 7];
+                rent = houseRent[Math.min(houseCount, 5)] || baseRent;
+            }
+
+            if (p.money >= rent) {
+                p.money -= rent;
+                owner.money += rent;
+                addLog(`💵 ${p.name} paid $${rent} rent to ${owner.name} for ${prop.name}`);
+            } else {
+                const paid = p.money;
+                owner.money += paid;
+                p.money = 0;
+                addLog(`💀 ${p.name} couldn't pay $${rent} rent – paid $${paid} and is bankrupt!`);
+                handleBankruptcy(playerIdx);
+            }
+            G.phase = 'postroll';
+            endTurn();
+        }
+
+        function drawCard(playerIdx, type) {
+            const p = G.players[playerIdx];
+            const deck = type === 'chance' ? CHANCE_CARDS : CHEST_CARDS;
+            const idx = type === 'chance' ? G.chanceIndex : G.chestIndex;
+            const card = deck[idx % deck.length];
+            if (type === 'chance') G.chanceIndex = (G.chanceIndex + 1) % deck.length;
+            else G.chestIndex = (G.chestIndex + 1) % deck.length;
+
+            const result = card.action(p);
+            addLog(`📄 ${type.toUpperCase()}: ${result}`);
+            if (p.money < 0) handleBankruptcy(playerIdx);
+            if (p.position === 10 && p.jail) {
+                G.phase = 'postroll';
+                endTurn();
+            } else {
+                G.phase = 'postroll';
+                endTurn();
+            }
+            checkGameOver();
+        }
+
+        function handleBankruptcy(playerIdx) {
+            const p = G.players[playerIdx];
+            if (p.money >= 0) return;
+            p.bankrupt = true;
+            for (const propId of p.properties) {
+                G.propertyOwners[propId] = -1;
+                G.houseCounts[propId] = 0;
+            }
+            p.properties = [];
+            p.houses = {};
+            addLog(`💀 ${p.name} is bankrupt!`);
+            G.phase = 'postroll';
+            endTurn();
+            checkGameOver();
+        }
+
+        function endTurn() {
+            if (!G || G.gameOver) return;
+            let next = (G.currentPlayer + 1) % 3;
+            let attempts = 0;
+            while (G.players[next].bankrupt && attempts < 3) {
+                next = (next + 1) % 3;
+                attempts++;
+            }
+            if (attempts >= 3 || G.players.filter(p => !p.bankrupt).length <= 1) {
+                checkGameOver();
+                return;
+            }
+            G.players[G.currentPlayer].turn = false;
+            G.players[G.currentPlayer].rolled = false;
+            G.currentPlayer = next;
+            G.players[next].turn = true;
+            G.phase = 'roll';
+            G.doublesCount = 0;
+            G.turnCount++;
+            addLog(`🔄 ${G.players[next].name}'s turn`);
+            renderAll();
+            updateControls();
+            checkGameOver();
+        }
+
+        function buildHouses() {
+            if (!G || G.gameOver) return;
+            const p = G.players[G.currentPlayer];
+            if (p.bankrupt) return;
+            if (G.phase !== 'roll' && G.phase !== 'postroll') return;
+
+            const buildable = p.properties.filter(id => {
+                const prop = PROPERTIES[id];
+                if (prop.type !== 'property') return false;
+                const group = prop.group;
+                const groupProps = PROPERTIES.filter((_, i) => PROPERTIES[i].group === group && i < BOARD_SIZE);
+                const ownedGroup = groupProps.filter(pp => G.propertyOwners[pp.id] === G.currentPlayer);
+                if (ownedGroup.length !== groupProps.length) return false;
+                const houses = G.houseCounts[id] || 0;
+                if (houses >= 5) return false;
+                const minHouses = Math.min(...groupProps.map(pp => G.houseCounts[pp.id] || 0));
+                if (houses > minHouses) return false;
+                return true;
+            });
+
+            if (buildable.length === 0) {
+                addLog(`🏗️ No properties available to build on.`);
+                return;
+            }
+            const id = buildable[0];
+            const prop = PROPERTIES[id];
+            const cost = prop.houseCost;
+            if (p.money < cost) {
+                addLog(`💰 Not enough money to build on ${prop.name} ($${cost})`);
+                return;
+            }
+            p.money -= cost;
+            const current = G.houseCounts[id] || 0;
+            G.houseCounts[id] = current + 1;
+            if (current + 1 === 5) {
+                addLog(`🏨 ${p.name} built a HOTEL on ${prop.name}!`);
+            } else {
+                addLog(`🏠 ${p.name} built a house on ${prop.name} (${current+1}/5)`);
+            }
+            renderAll();
+            updateControls();
+        }
+
+        function checkGameOver() {
+            if (!G) return;
+            const active = G.players.filter(p => !p.bankrupt);
+            if (active.length <= 1) {
+                G.gameOver = true;
+                G.winner = active[0] ? active[0].id : -1;
+                const winnerName = G.winner >= 0 ? G.players[G.winner].name : 'Nobody';
+                addLog(`🏆 GAME OVER! ${winnerName} wins! 🎉`);
+                showModal(
+                    '🏆 Game Over!',
+                    `${winnerName} wins the game! 🎉\nTotal turns: ${G.turnCount}`,
+                    [{ text: '🔄 New Game', action: () => { closeModal();
+                            resetGame(); } }]
+                );
+                renderAll();
+                updateControls();
+                return true;
+            }
+            return false;
+        }
+
+        // ─── HELPERS ──────────────────────────────────────────────────
+
+        function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function addLog(msg) {
+            if (!G) return;
+            G.log.push(msg);
+            if (G.log.length > 100) G.log.shift();
+            renderLog();
+            // broadcast state update if host
+            if (isHost && isConnected) {
+                broadcastState();
+            }
+        }
+
+        function animateDice(v1, v2) {
+            const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            die1El.textContent = faces[v1 - 1];
+            die2El.textContent = faces[v2 - 1];
+            die1El.classList.add('rolling');
+            die2El.classList.add('rolling');
+            setTimeout(() => {
+                die1El.classList.remove('rolling');
+                die2El.classList.remove('rolling');
+            }, 400);
+        }
+
+        // ─── RENDER ──────────────────────────────────────────────────
+
+        function renderBoard() {
+            if (!G) return;
+            boardEl.innerHTML = '';
+            const layout = [];
+            for (let r = 0; r < 11; r++) {
+                const row = [];
+                for (let c = 0; c < 11; c++) {
+                    if (r === 0) row.push(30 - c);
+                    else if (r === 10) row.push(c);
+                    else if (c === 0) row.push(40 - r);
+                    else if (c === 10) row.push(10 + r);
+                    else row.push(-1);
+                }
+                layout.push(row);
+            }
+
+            for (let r = 0; r < 11; r++) {
+                for (let c = 0; c < 11; c++) {
+                    const pos = layout[r][c];
+                    const space = document.createElement('div');
+                    space.className = 'space';
+                    if (pos === -1) {
+                        space.style.background = 'transparent';
+                        space.style.border = 'none';
+                        boardEl.appendChild(space);
+                        continue;
+                    }
+                    const prop = PROPERTIES[pos];
+                    const owner = G.propertyOwners[pos];
+                    const houses = G.houseCounts[pos] || 0;
+
+                    if (prop.color) {
+                        const bar = document.createElement('div');
+                        bar.className = 'color-bar';
+                        bar.style.background = prop.color;
+                        space.appendChild(bar);
+                    }
+
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'name';
+                    let shortName = prop.name;
+                    if (shortName.length > 14) shortName = shortName.slice(0, 12) + '…';
+                    nameEl.textContent = shortName;
+                    space.appendChild(nameEl);
+
+                    if (prop.price > 0 && prop.type !== 'railroad' && prop.type !== 'utility') {
+                        const priceEl = document.createElement('div');
+                        priceEl.className = 'price';
+                        priceEl.textContent = `$${prop.price}`;
+                        space.appendChild(priceEl);
+                    } else if (prop.type === 'railroad' || prop.type === 'utility') {
+                        const priceEl = document.createElement('div');
+                        priceEl.className = 'price';
+                        priceEl.textContent = `$${prop.price}`;
+                        space.appendChild(priceEl);
+                    }
+
+                    if (houses > 0 && prop.type === 'property') {
+                        const houseEl = document.createElement('div');
+                        houseEl.className = 'house';
+                        houseEl.textContent = houses === 5 ? '🏨' : '🏠'.repeat(houses);
+                        space.appendChild(houseEl);
+                    }
+
+                    const tokens = document.createElement('div');
+                    tokens.className = 'tokens';
+                    for (let i = 0; i < G.players.length; i++) {
+                        const p = G.players[i];
+                        if (!p.bankrupt && p.position === pos) {
+                            const tok = document.createElement('div');
+                            tok.className = `token t${i}`;
+                            tok.textContent = TOKEN_SYMBOLS[i];
+                            tokens.appendChild(tok);
+                        }
+                    }
+                    if (tokens.children.length > 0) space.appendChild(tokens);
+
+                    if (owner >= 0) {
+                        space.classList.add('owned');
+                        space.style.borderColor = G.players[owner].color;
+                    }
+
+                    if (['go', 'jail', 'freeparking', 'gotojail'].includes(prop.type)) {
+                        space.classList.add('corner');
+                        if (prop.type === 'go') nameEl.textContent = '🏁 GO';
+                        else if (prop.type === 'jail') nameEl.textContent = '⛓️ Jail';
+                        else if (prop.type === 'freeparking') nameEl.textContent = '🅿️ Free';
+                        else if (prop.type === 'gotojail') nameEl.textContent = '🚔 Go to Jail';
+                    }
+
+                    if (G.currentPlayer >= 0 && G.players[G.currentPlayer].position === pos) {
+                        const hl = document.createElement('div');
+                        hl.className = 'highlight';
+                        space.appendChild(hl);
+                    }
+
+                    boardEl.appendChild(space);
+                }
+            }
+        }
+
+        function renderPlayers() {
+            if (!G) return;
+            playersEl.innerHTML = '';
+            for (let i = 0; i < G.players.length; i++) {
+                const p = G.players[i];
+                const div = document.createElement('div');
+                div.className = 'player-card';
+                if (i === G.currentPlayer && !p.bankrupt) div.classList.add('active');
+                if (p.bankrupt) div.style.opacity = '0.4';
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'pname';
+                const dot = document.createElement('span');
+                dot.className = 'dot';
+                dot.style.background = p.color;
+                nameDiv.appendChild(dot);
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = p.bankrupt ? `${p.name} 💀` : p.name;
+                nameDiv.appendChild(nameSpan);
+                if (p.turn && !p.bankrupt) {
+                    const turnBadge = document.createElement('span');
+                    turnBadge.textContent = '🎯';
+                    turnBadge.style.marginLeft = '4px';
+                    nameDiv.appendChild(turnBadge);
+                }
+                div.appendChild(nameDiv);
+
+                const moneyDiv = document.createElement('div');
+                moneyDiv.className = 'pmoney';
+                moneyDiv.textContent = `$${p.money}`;
+                div.appendChild(moneyDiv);
+
+                const propsDiv = document.createElement('div');
+                propsDiv.className = 'pprops';
+                const propNames = p.properties.map(id => PROPERTIES[id].name.split(' ')[0]).join(', ') || '—';
+                propsDiv.textContent = `🏠 ${propNames}`;
+                div.appendChild(propsDiv);
+
+                if (p.jail && !p.bankrupt) {
+                    const jailDiv = document.createElement('div');
+                    jailDiv.className = 'pstatus';
+                    jailDiv.textContent = '⛓️ In Jail';
+                    div.appendChild(jailDiv);
+                }
+
+                playersEl.appendChild(div);
+            }
+        }
+
+        function renderLog() {
+            if (!G) return;
+            logEl.innerHTML = '';
+            const entries = G.log.slice(-20);
+            for (const entry of entries) {
+                const div = document.createElement('div');
+                div.className = 'entry';
+                div.textContent = entry;
+                if (entry.includes('🎲') || entry.includes('🏆') || entry.includes('🎉')) {
+                    div.classList.add('highlight');
+                }
+                logEl.appendChild(div);
+            }
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function renderAll() {
+            renderBoard();
+            renderPlayers();
+            renderLog();
+            updateDiceDisplay();
+        }
+
+        function updateDiceDisplay() {
+            if (!G) return;
+            const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            die1El.textContent = faces[(G.dice[0] || 1) - 1];
+            die2El.textContent = faces[(G.dice[1] || 1) - 1];
+        }
+
+        function updateControls() {
+            if (!G) {
+                rollBtn.disabled = true;
+                endTurnBtn.disabled = true;
+                buyBtn.disabled = true;
+                buildBtn.disabled = true;
+                return;
+            }
+            const p = G.players[G.currentPlayer];
+            const isMyTurn = G.currentPlayer === myPlayerIndex && !p.bankrupt && !G.gameOver;
+            const canRoll = isMyTurn && G.phase === 'roll' && !p.jail;
+            const canEnd = isMyTurn && (G.phase === 'postroll' || p.jail) && !G.gameOver;
+            const canBuild = isMyTurn && (G.phase === 'roll' || G.phase === 'postroll') && !G.gameOver;
+
+            rollBtn.disabled = !canRoll || !isConnected;
+            endTurnBtn.disabled = !canEnd || !isConnected;
+            buyBtn.disabled = !isConnected || !isMyTurn || G.phase !== 'postroll';
+            buildBtn.disabled = !canBuild || !isConnected;
+
+            // show/hide buy
+            if (G.phase === 'postroll' && G.currentPlayer === myPlayerIndex && isConnected) {
+                const pos = p.position;
+                const owner = G.propertyOwners[pos];
+                const prop = PROPERTIES[pos];
+                if (owner === -1 && prop.price > 0 && p.money >= prop.price) {
+                    buyBtn.style.display = 'inline-block';
+                } else {
+                    buyBtn.style.display = 'none';
+                }
+            } else {
+                buyBtn.style.display = 'none';
+            }
+        }
+
+        function updateStatus(state, msg) {
+            const badges = {
+                'ready': { text: '✅ Ready', cls: 'online' },
+                'connecting': { text: '⏳ Connecting…', cls: 'connecting' },
+                'host': { text: '👑 Hosting', cls: 'online' },
+                'joined': { text: '🔗 Connected', cls: 'online' },
+                'error': { text: '❌ Error', cls: '' },
+                'offline': { text: '💻 Offline', cls: '' },
+            };
+            const s = badges[state] || badges['offline'];
+            statusBadge.textContent = s.text + (msg ? ' ' + msg : '');
+            statusBadge.className = 'status-badge' + (s.cls ? ' ' + s.cls : '');
+        }
+
+        // ─── MODAL ────────────────────────────────────────────────────
+
+        function showModal(title, message, buttons) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalButtons.innerHTML = '';
+            for (const btn of buttons) {
+                const b = document.createElement('button');
+                b.textContent = btn.text;
+                b.onclick = btn.action;
+                modalButtons.appendChild(b);
+            }
+            modalOverlay.classList.add('open');
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('open');
+        }
+
+        // ─── PEERJS NETWORKING ──────────────────────────────────────
+
+        function hostGame() {
+            const room = roomInput.value.trim() || 'monopoly';
+            roomName = room;
+            const peerId = 'monopoly-' + roomName;
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+            peer = new Peer(peerId, { debug: 2 });
+
+            peer.on('open', (id) => {
+                isHost = true;
+                isConnected = true;
+                myPlayerIndex = 0; // host is player 0
+                initGame();
+                updateStatus('host', `(${id})`);
+                addLog(`👑 Hosting room "${roomName}" – waiting for players…`);
+                // enable join button for others
+            });
+
+            peer.on('connection', (conn) => {
+                // new client connected
+                const clientIdx = connections.length + 1; // player 1 or 2
+                if (clientIdx > 2) {
+                    conn.send({ type: 'error', msg: 'Game is full (max 3 players).' });
+                    conn.close();
+                    return;
+                }
+                connections.push(conn);
+                addLog(`🔗 Player ${clientIdx} joined.`);
+
+                conn.on('open', () => {
+                    // send current state and player index
+                    conn.send({ type: 'init', playerIdx: clientIdx, game: G });
+                });
+
+                conn.on('data', (data) => {
+                    handleClientMessage(data, conn);
+                });
+
+                conn.on('close', () => {
+                    const idx = connections.indexOf(conn);
+                    if (idx !== -1) connections.splice(idx, 1);
+                    addLog(`🔌 A player disconnected.`);
+                });
+            });
+
+            peer.on('error', (err) => {
+                if (err.type === 'unavailable-id') {
+                    updateStatus('error', 'Room name taken. Choose another.');
+                    addLog(`❌ Room "${roomName}" is already in use.`);
+                } else {
+                    updateStatus('error', err.message);
+                    addLog(`❌ Peer error: ${err.message}`);
+                }
+                isHost = false;
+                isConnected = false;
+            });
+        }
+
+        function joinGame() {
+            const room = roomInput.value.trim() || 'monopoly';
+            roomName = room;
+            const hostId = 'monopoly-' + roomName;
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+            peer = new Peer({ debug: 2 });
+
+            peer.on('open', () => {
+                isHost = false;
+                // connect to host
+                const conn = peer.connect(hostId);
+                myConn = conn;
+                updateStatus('connecting', `to "${roomName}"…`);
+
+                conn.on('open', () => {
+                    isConnected = true;
+                    updateStatus('joined');
+                    addLog(`🔗 Joined room "${roomName}" as client.`);
+                    // wait for init from host
+                });
+
+                conn.on('data', (data) => {
+                    handleHostMessage(data);
+                });
+
+                conn.on('close', () => {
+                    isConnected = false;
+                    updateStatus('error', 'Disconnected from host.');
+                    addLog('❌ Lost connection to host.');
+                });
+            });
+
+            peer.on('error', (err) => {
+                updateStatus('error', err.message);
+                addLog(`❌ Join error: ${err.message}`);
+                isConnected = false;
+            });
+        }
+
+        function leaveGame() {
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+            connections = [];
+            myConn = null;
+            isHost = false;
+            isConnected = false;
+            myPlayerIndex = 0;
+            initGame();
+            updateStatus('offline');
+            addLog('👋 Left the game.');
+        }
+
+        // ─── MESSAGE HANDLING ──────────────────────────────────────
+
+        function handleClientMessage(data, conn) {
+            if (!isHost) return;
+            switch (data.type) {
+                case 'action':
+                    executeAction(data.action);
+                    // broadcast updated state to all clients
+                    broadcastState();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        function handleHostMessage(data) {
+            switch (data.type) {
+                case 'init':
+                    myPlayerIndex = data.playerIdx;
+                    G = data.game;
+                    renderAll();
+                    updateControls();
+                    addLog(`📥 Joined as ${G.players[myPlayerIndex].name}`);
+                    break;
+                case 'state':
+                    G = data.game;
+                    renderAll();
+                    updateControls();
+                    break;
+                case 'error':
+                    addLog(`❌ Host error: ${data.msg}`);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        function executeAction(action) {
+            switch (action) {
+                case 'roll':
+                    rollDice();
+                    break;
+                case 'endturn':
+                    endTurn();
+                    break;
+                case 'buy':
+                    buyProperty(G.currentPlayer);
+                    break;
+                case 'build':
+                    buildHouses();
+                    break;
+                case 'reset':
+                    resetGame();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        function broadcastState() {
+            if (!isHost) return;
+            const stateMsg = { type: 'state', game: G };
+            for (const conn of connections) {
+                if (conn.open) {
+                    conn.send(stateMsg);
+                }
+            }
+        }
+
+        function sendAction(action) {
+            if (isHost) {
+                executeAction(action);
+                broadcastState();
+            } else {
+                if (myConn && myConn.open) {
+                    myConn.send({ type: 'action', action: action });
+                }
+            }
+        }
+
+        function resetGame() {
+            initGame();
+            if (isHost) {
+                broadcastState();
+            }
+        }
+
+        // ─── UI EVENT BINDING ───────────────────────────────────────
+
+        hostBtn.addEventListener('click', () => {
+            if (isConnected) leaveGame();
+            hostGame();
+        });
+
+        joinBtn.addEventListener('click', () => {
+            if (isConnected) leaveGame();
+            joinGame();
+        });
+
+        leaveBtn.addEventListener('click', leaveGame);
+
+        rollBtn.addEventListener('click', () => {
+            if (isHost || isConnected) {
+                sendAction('roll');
+            } else {
+                // offline mode
+                rollDice();
+            }
+        });
+
+        endTurnBtn.addEventListener('click', () => {
+            if (isHost || isConnected) {
+                sendAction('endturn');
+            } else {
+                endTurn();
+            }
+        });
+
+        buyBtn.addEventListener('click', () => {
+            if (isHost || isConnected) {
+                sendAction('buy');
+            } else {
+                buyProperty(G.currentPlayer);
+            }
+        });
+
+        buildBtn.addEventListener('click', () => {
+            if (isHost || isConnected) {
+                sendAction('build');
+            } else {
+                buildHouses();
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            if (confirm('Start a new game?')) {
+                if (isHost && isConnected) {
+                    sendAction('reset');
+                } else {
+                    resetGame();
+                }
+            }
+        });
+
+        // ─── INIT ────────────────────────────────────────────────────
+
+        initGame();
+        updateStatus('offline');
+        addLog('💡 Enter a room name, then click "Host" or "Join".');
+        addLog('👑 One device hosts, others join with the same room name.');
+        addLog('📱 All devices must be on the same WiFi and have internet access for signaling.');
+
+        // Auto-scroll log
+        const logObserver = new MutationObserver(() => {
+            logEl.scrollTop = logEl.scrollHeight;
+        });
+        logObserver.observe(logEl, { childList: true });
+
+        console.log('🏠 Monopoly with PeerJS!');
+        console.log('👑 Host: enter room name → click Host');
+        console.log('🔗 Join: same room name → click Join');
+    </script>
+</body>
+</html>
