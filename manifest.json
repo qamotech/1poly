@@ -1,0 +1,9 @@
+{
+  "name": "1poly Monopoly 8-Player Family Mega Edition",
+  "short_name": "1poly",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050a19",
+  "theme_color": "#16213e",
+  "orientation": "any"
+}
