@@ -1686,6 +1686,14 @@
             if (owner === -1) {
                 if (p.money >= prop.price) {
                     G.phase = 'postroll';
+
+                    // Step 3: Bypass the Buy Modal for Bots in handleProperty()
+                    const isLocal = !isHost && !isConnected;
+                    if (isLocal && getSet('u_bots', false) && playerIdx !== 0) {
+                        updateControls();
+                        return;
+                    }
+
                     showModal(
                         `🏠 Buy ${prop.name}?`,
                         `Price: $${prop.price}\nYour balance: $${p.money}`,
@@ -2191,8 +2199,48 @@
                 endTurnBtn.classList.add('kid-highlight');
             }
 
+            // Step 2: Automate the Bot's Turn in updateControls()
+            const isLocal = !isHost && !isConnected;
+            const botsEnabled = getSet('u_bots', false);
+            if (isLocal && botsEnabled && G.currentPlayer !== 0 && !p.bankrupt && !G.gameOver) {
+                rollBtn.disabled = true;
+                endTurnBtn.disabled = true;
+                buyBtn.disabled = true;
+                buildBtn.disabled = true;
+
+                if (G.botTimer) clearTimeout(G.botTimer);
+                G.botTimer = setTimeout(() => {
+                    if (typeof window.executeBotAction === 'function') {
+                        window.executeBotAction();
+                    }
+                }, 1200);
+            }
+
             if (typeof syncMobileActionBar === 'function') syncMobileActionBar();
         }
+
+        // Step 1: Inject the Bot Logic Function
+        function executeBotAction() {
+            if (!G || G.gameOver) return;
+            const p = G.players[G.currentPlayer];
+            if (p.bankrupt) {
+                endTurn();
+                return;
+            }
+            if (G.phase === 'roll') {
+                rollDice();
+            } else if (G.phase === 'postroll') {
+                const pos = p.position;
+                const owner = G.propertyOwners[pos];
+                const prop = PROPERTIES[pos];
+                if (owner === -1 && prop && prop.price > 0 && p.money >= prop.price + 50) {
+                    buyProperty(G.currentPlayer);
+                } else {
+                    endTurn();
+                }
+            }
+        }
+        window.executeBotAction = executeBotAction;
 
         // 🃏 MONOPOLY DEAL CARD GAME INTEGRATION
         function drawMonopolyDealCard() {
