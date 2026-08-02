@@ -966,6 +966,64 @@
             border-color: #f7d94e;
             background: #2a3b68;
         }
+
+        /* ─── REALISTIC 3D ISOMETRIC BOARD VIEW & FELT CENTER ─── */
+        .board-wrapper.iso-3d-view {
+            transform: perspective(1100px) rotateX(24deg) rotateZ(-1deg) scale(0.96);
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.6s;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(0,0,0,0.8), 0 0 30px rgba(247, 217, 78, 0.3) !important;
+            border: 4px solid #f7d94e !important;
+            background: radial-gradient(circle at center, #1b4d2e 0%, #0e2e1b 80%, #07170d 100%) !important;
+        }
+        .board-wrapper {
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes dieTumble3D {
+            0% { transform: rotateX(0deg) rotateY(0deg) scale(1); }
+            25% { transform: rotateX(180deg) rotateY(90deg) scale(1.25); }
+            50% { transform: rotateX(360deg) rotateY(180deg) scale(0.9); }
+            75% { transform: rotateX(540deg) rotateY(270deg) scale(1.15); }
+            100% { transform: rotateX(720deg) rotateY(360deg) scale(1); }
+        }
+        .die.rolling {
+            animation: dieTumble3D 0.4s ease-in-out infinite !important;
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.6) !important;
+        }
+        .char-avatar-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #f7d94e;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+        .speech-bubble {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 999;
+            animation: floatBubble 2s infinite ease-in-out;
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px 6px 0;
+            border-style: solid;
+            border-color: #fff transparent;
+        }
     </style>
 </head>
 <body>
@@ -984,6 +1042,8 @@
                     <option value="7">👥 7 Players</option>
                     <option value="8">🔥 8 Players (Party!)</option>
                 </select>
+                <button id="voiceToggleBtn" style="background: linear-gradient(135deg, #e040fb, #00e5ff); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(224,64,251,0.5);" title="Toggle Character Speech Voice Synthesis">🔊 Voice: ON</button>
+                <button id="view3dToggleBtn" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1a2e; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(255,215,0,0.5);" title="Toggle Realistic 3D Isometric View">📐 3D View</button>
                 <button id="openIntroBtn" style="background: linear-gradient(135deg, #ff8c00, #ff007f); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(255,140,0,0.5);">▶ Intro</button>
                 <button id="openLobbyBtn" style="background: linear-gradient(135deg, #00f0ff, #7000ff); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(0,240,255,0.4);">🎮 Start Lobby</button>
                 <button id="openStudioBtn" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(56,239,125,0.4);">🎨 Piece Studio</button>
@@ -1115,6 +1175,7 @@
         <button id="mobBuyBtn" style="background:#2ecc71; color:#fff;">💰 Buy</button>
         <button id="mobBuildBtn" style="background:#3498db; color:#fff;">🏠 Build</button>
         <button id="mobEndBtn" style="background:#e74c3c; color:#fff;">🛑 End</button>
+        <button id="mob3dBtn" style="background:#f39c12; color:#fff;">📐 3D</button>
         <button id="mobFsBtn" style="background:#8e44ad; color:#fff;">⛶ Fullscreen</button>
     </div>
 
@@ -1416,6 +1477,8 @@
             const p = G.players[G.currentPlayer];
             if (p.bankrupt) { endTurn(); return; }
             if (G.phase !== 'roll') return;
+            playDiceWoodImpactSound();
+            if (typeof characterSpeak === 'function') characterSpeak(G.currentPlayer, 'roll');
             if (p.jail) {
                 const d1 = rand(1, 6),
                     d2 = rand(1, 6);
@@ -1927,6 +1990,16 @@
 
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'pname';
+
+                const charObj = (typeof CHARACTERS !== 'undefined') ? (CHARACTERS.find(c => c.name === p.name || c.token === p.token) || CHARACTERS[i % CHARACTERS.length]) : null;
+                if (charObj && charObj.portrait) {
+                    const avatarImg = document.createElement('img');
+                    avatarImg.className = 'char-avatar-img';
+                    avatarImg.src = charObj.portrait;
+                    avatarImg.style.borderColor = p.color;
+                    nameDiv.appendChild(avatarImg);
+                }
+
                 const dot = document.createElement('span');
                 dot.className = 'dot';
                 dot.style.background = p.color;
@@ -3128,6 +3201,84 @@
             setTimeout(() => { loadGameState(); }, 300);
         });
 
+        // ─── 3D CHARACTERS, VOICE SYNTHESIS, REALISTIC 3D VIEW & DICE IMPACT ───
+
+        let voiceEnabled = true;
+        let is3DView = true;
+
+        const CHARACTERS = [
+            { id: 'baron', name: 'Baron Von Cash', title: 'The Luxury Tycoon', token: '🎩', color: '#e74c3c', portrait: 'assets/char_baron.png', pitch: 0.8, rate: 0.95, quotes: { roll: "Rolling for prime real estate!", passGo: "Capitalism at its finest! $200 in the vault!", buy: "Another crown jewel added to my empire!", jail: "My lawyers will hear about this outrage!", win: "Indubitably! The empire is victorious!" } },
+            { id: 'nova', name: 'Nova Spark', title: 'The Cyber Investor', token: '🚀', color: '#00f0ff', portrait: 'assets/char_nova.png', pitch: 1.3, rate: 1.1, quotes: { roll: "Executing hyper-speed dice roll!", passGo: "System updated! $200 credited to account!", buy: "High-yield asset successfully acquired!", jail: "System breach! Firewall locked me in jail!", win: "GG! Victory protocol 100% complete!" } },
+            { id: 'sparkle', name: 'Princess Sparkle', title: 'The Rainbow Mogul', token: '🦄', color: '#e84393', portrait: 'assets/char_sparkle.png', pitch: 1.5, rate: 1.05, quotes: { roll: "Tossing the magical sparkly dice!", passGo: "Yay! Rainbow sparkle bonus of $200!", buy: "Ooh, this property is so magical!", jail: "Oh no! Time to sprinkle some magic dust!", win: "Sparkly magical victory for everyone!" } },
+            { id: 'draco', name: 'Draco Goldhoard', title: 'The Treasure Dragon', token: '🐉', color: '#f1c40f', portrait: 'assets/char_draco.png', pitch: 0.6, rate: 0.9, quotes: { roll: "Roar! Rolling for more shiny treasure!", passGo: "More gold for my dragon hoard! $200!", buy: "Mine! All this land belongs to the dragon!", jail: "Guarding the jail dungeon for a moment!", win: "ROAR! The dragon hoards all the riches!" } },
+            { id: 'speedy', name: 'Speedy Vance', title: 'The High-Speed Dealmaker', token: '🏎️', color: '#e67e22', portrait: 'assets/char_speedy.png', pitch: 1.1, rate: 1.25, quotes: { roll: "Pedal to the metal! Rolling fast!", passGo: "Pit stop at GO! Quick $200 boost!", buy: "Fast lane acquisition! Deal closed!", jail: "Speeding ticket! Stuck in pit lane jail!", win: "First place checkered flag! Easy win!" } },
+            { id: 'rex', name: 'Rex Titan', title: 'The Prehistoric Land Baron', token: '🦖', color: '#2ecc71', portrait: 'assets/char_rex.png', pitch: 0.5, rate: 0.85, quotes: { roll: "Stomp! Big dino dice roll!", passGo: "Rawr! Dino collects $200 cash!", buy: "Rex claims new hunting territory!", jail: "Dino trapped in jurassic cage!", win: "Rex is king of the Monopoly continent!" } },
+            { id: 'diamond', name: 'Lady Diamond', title: 'The Empire Builder', token: '💎', color: '#9b59b6', portrait: 'assets/char_diamond.png', pitch: 1.2, rate: 1.0, quotes: { roll: "Rolling with elegance and poise!", passGo: "Exquisite! $200 dividend collected!", buy: "Flawless acquisition for the vault!", jail: "A temporary setback for a lady of class!", win: "Pure brilliance! Total market monopoly!" } },
+            { id: 'mario', name: 'Chef Mario', title: 'The Pizza Master', token: '🍕', color: '#1abc9c', portrait: 'assets/intro_cover.png', pitch: 1.0, rate: 1.05, quotes: { roll: "Mamma mia! Rolling the dice like a fresh pizza dough!", passGo: "Fresh out of the oven! $200 tip!", buy: "Delizioso! Adding another pizza parlor property!", jail: "Mamma mia! Locked up in the kitchen!", win: "Bellissimo! Pizza party victory for everyone!" } }
+        ];
+
+        function characterSpeak(playerIdx, eventType) {
+            if (!voiceEnabled || !G || !G.players[playerIdx]) return;
+            const p = G.players[playerIdx];
+            const charObj = CHARACTERS.find(c => c.name === p.name || c.token === p.token) || CHARACTERS[playerIdx % CHARACTERS.length];
+            if (!charObj || !charObj.quotes || !charObj.quotes[eventType]) return;
+
+            const text = charObj.quotes[eventType];
+            showSpeechBubble(playerIdx, text);
+
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance(text);
+                    msg.pitch = charObj.pitch || 1.0;
+                    msg.rate = charObj.rate || 1.0;
+                    window.speechSynthesis.speak(msg);
+                } catch(e) {}
+            }
+        }
+
+        function showSpeechBubble(playerIdx, text) {
+            const cards = document.querySelectorAll('.player-card');
+            if (!cards[playerIdx]) return;
+            let bubble = cards[playerIdx].querySelector('.speech-bubble');
+            if (!bubble) {
+                bubble = document.createElement('div');
+                bubble.className = 'speech-bubble';
+                cards[playerIdx].style.position = 'relative';
+                cards[playerIdx].appendChild(bubble);
+            }
+            bubble.textContent = text;
+            bubble.style.display = 'block';
+            setTimeout(() => { if (bubble) bubble.style.display = 'none'; }, 3500);
+        }
+
+        function toggleVoiceSpeech() {
+            voiceEnabled = !voiceEnabled;
+            const btn = document.getElementById('voiceToggleBtn');
+            if (btn) btn.textContent = voiceEnabled ? '🔊 Voice: ON' : '🔇 Voice: OFF';
+            if (!voiceEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+            triggerHaptic();
+        }
+
+        function toggle3DView() {
+            is3DView = !is3DView;
+            const wrapper = document.querySelector('.board-wrapper');
+            const btn = document.getElementById('view3dToggleBtn');
+            const mobBtn = document.getElementById('mob3dBtn');
+            if (wrapper) {
+                if (is3DView) wrapper.classList.add('iso-3d-view');
+                else wrapper.classList.remove('iso-3d-view');
+            }
+            if (btn) btn.textContent = is3DView ? '📐 3D View' : '🗺️ Flat View';
+            if (mobBtn) mobBtn.textContent = is3DView ? '📐 3D' : '🗺️ Flat';
+            triggerHaptic();
+        }
+
+        function playDiceWoodImpactSound() {
+            playMegaSound(120, 0.08, 'sawtooth');
+            playMegaSound(180, 0.05, 'triangle', 40);
+        }
+
         // ─── INTRO VIDEO, START LOBBY, FULLSCREEN POPUPS & FULLSCREEN TOGGLE ───
 
         function playIntroVideo() {
@@ -3168,13 +3319,20 @@
             if (!container) return;
             let html = '';
             for (let i = 0; i < activePlayerCount; i++) {
-                const name = PLAYER_NAMES[i] || `Player ${i+1}`;
-                const color = PLAYER_COLORS[i] || '#3498db';
-                const token = TOKEN_SYMBOLS[i] || '⭐';
+                const charPreset = CHARACTERS[i % CHARACTERS.length];
+                const name = PLAYER_NAMES[i] || charPreset.name;
+                const color = PLAYER_COLORS[i] || charPreset.color;
+                const token = TOKEN_SYMBOLS[i] || charPreset.token;
                 html += `
                 <div style="background:#10192d; padding:14px; border-radius:16px; border:2px solid ${color}; box-shadow:0 4px 14px rgba(0,0,0,0.4);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <span style="font-weight:800; color:${color}; font-size:1.05rem;">Player ${i + 1} (${token})</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <img src="${charPreset.portrait}" alt="${charPreset.name}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid ${color};" />
+                            <div>
+                                <span style="font-weight:800; color:${color}; font-size:1.05rem;">${charPreset.name}</span>
+                                <div style="font-size:0.7rem; color:#aaa;">${charPreset.title}</div>
+                            </div>
+                        </div>
                         <input type="color" value="${color}" onchange="updateLobbyColor(${i}, this.value)" style="width:38px; height:30px; border:none; background:transparent; cursor:pointer;" title="Pick custom color" />
                     </div>
                     <div style="margin-bottom:8px;">
@@ -3255,7 +3413,7 @@
             }
         }
 
-        // Bind event listeners for Intro, Lobby, Fullscreen
+        // Bind event listeners for Intro, Lobby, Fullscreen, Voice, 3D
         window.addEventListener('DOMContentLoaded', () => {
             const introBtn = document.getElementById('openIntroBtn');
             if (introBtn) introBtn.addEventListener('click', playIntroVideo);
@@ -3263,11 +3421,24 @@
             const lobbyBtn = document.getElementById('openLobbyBtn');
             if (lobbyBtn) lobbyBtn.addEventListener('click', openStartLobby);
 
+            const voiceBtn = document.getElementById('voiceToggleBtn');
+            if (voiceBtn) voiceBtn.addEventListener('click', toggleVoiceSpeech);
+
+            const view3dBtn = document.getElementById('view3dToggleBtn');
+            if (view3dBtn) view3dBtn.addEventListener('click', toggle3DView);
+
+            const mob3dBtn = document.getElementById('mob3dBtn');
+            if (mob3dBtn) mob3dBtn.addEventListener('click', toggle3DView);
+
             const fsBtn = document.getElementById('fullscreenToggleBtn');
             if (fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
 
             const mobFsBtn = document.getElementById('mobFsBtn');
             if (mobFsBtn) mobFsBtn.addEventListener('click', toggleFullscreen);
+
+            // Enable 3D view by default
+            const wrapper = document.querySelector('.board-wrapper');
+            if (wrapper) wrapper.classList.add('iso-3d-view');
 
             // Auto-play intro / open start lobby on boot if no recovery state
             setTimeout(() => {
