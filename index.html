@@ -984,7 +984,10 @@
                     <option value="7">👥 7 Players</option>
                     <option value="8">🔥 8 Players (Party!)</option>
                 </select>
+                <button id="openIntroBtn" style="background: linear-gradient(135deg, #ff8c00, #ff007f); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(255,140,0,0.5);">▶ Intro</button>
+                <button id="openLobbyBtn" style="background: linear-gradient(135deg, #00f0ff, #7000ff); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(0,240,255,0.4);">🎮 Start Lobby</button>
                 <button id="openStudioBtn" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(56,239,125,0.4);">🎨 Piece Studio</button>
+                <button id="fullscreenToggleBtn" style="background: #344778; color: #fff; border: none; padding: 6px 12px; border-radius: 16px; cursor: pointer; font-size: 0.85rem;" title="Toggle Fullscreen Mode">⛶ Fullscreen</button>
                 <button id="megaHubBtn" class="primary" style="background: linear-gradient(135deg, #ff007a, #7928ca); box-shadow: 0 0 15px rgba(255,0,122,0.5);">🌟 72 Mega-Upgrades Hub</button>
                 <button id="quickSoundBtn" style="background: #20b2aa;">🎵 Sound FX</button>
                 <button id="quickCoinBtn" style="background: #e67e22;">🪙 Flip Coin</button>
@@ -1112,6 +1115,7 @@
         <button id="mobBuyBtn" style="background:#2ecc71; color:#fff;">💰 Buy</button>
         <button id="mobBuildBtn" style="background:#3498db; color:#fff;">🏠 Build</button>
         <button id="mobEndBtn" style="background:#e74c3c; color:#fff;">🛑 End</button>
+        <button id="mobFsBtn" style="background:#8e44ad; color:#fff;">⛶ Fullscreen</button>
     </div>
 
     <!-- PIECE CUSTOMIZER STUDIO MODAL -->
@@ -1147,6 +1151,77 @@
                 <button id="concedeBankruptBtn" class="danger" style="background:#5a1e22; color:#ccc;">💀 Concede Bankruptcy</button>
                 <button onclick="checkDefenseResolved()" class="primary" style="background:#2ecc71;">✅ Continue Turn</button>
             </div>
+        </div>
+    </div>
+
+    <!-- CUTE ANIMATED INTRO VIDEO OVERLAY -->
+    <div class="mega-modal-overlay" id="introVideoOverlay" style="background:rgba(5, 10, 25, 0.95);">
+        <div class="mega-modal" style="max-width:680px; padding:30px; background:#0c182c; border-radius:28px; border:2px solid #ff8c00; box-shadow: 0 0 50px rgba(255,140,0,0.4); text-align:center; position:relative; overflow:hidden;">
+            <div style="position:relative; width:100%; border-radius:20px; overflow:hidden; border:2px solid #344778; box-shadow:0 10px 30px rgba(0,0,0,0.6); margin-bottom:20px;">
+                <img src="assets/intro_cover.png" alt="Intro Cartoon Scene" style="width:100%; max-height:340px; object-fit:cover; display:block; animation: pulse 4s infinite ease-in-out;" />
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(12,24,44,0.9), transparent 60%); display:flex; flex-direction:column; justify-content:flex-end; padding:20px;">
+                    <h2 style="font-size:2rem; font-weight:800; background:linear-gradient(135deg, #f7d94e, #ff8c00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:0;">🏠 MONOPOLY 8-PLAYER PARTY!</h2>
+                    <p style="color:#ddd; font-size:0.95rem; margin-top:6px;">Experience the ultimate 3D cartoon family monopoly game!</p>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+                <button onclick="closeIntroVideo(); openStartLobby();" class="primary" style="background:linear-gradient(135deg, #ff8c00, #ff007f); color:#fff; font-size:1.1rem; font-weight:800; padding:14px 36px; border-radius:30px; border:none; cursor:pointer; box-shadow:0 0 20px rgba(255,0,127,0.5);">✨ ENTER GAME LOBBY ✨</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- START SCREEN & JOIN LOBBY MODAL -->
+    <div class="mega-modal-overlay" id="startLobbyOverlay" style="background:rgba(5, 10, 25, 0.95);">
+        <div class="mega-modal" style="max-width:750px; padding:28px; background:#16213e; border-radius:28px; border:2px solid #00f0ff; box-shadow: 0 0 40px rgba(0,240,255,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #344778; padding-bottom:12px; margin-bottom:18px;">
+                <div>
+                    <h2 style="color:#00f0ff; margin:0; font-size:1.5rem;">🎮 START GAME LOBBY</h2>
+                    <p style="color:#aaa; font-size:0.85rem; margin:2px 0 0 0;">Customize player names, pick custom emoji tokens, and launch your match!</p>
+                </div>
+                <button onclick="closeStartLobby()" style="background:#344778; color:#fff; border:none; padding:6px 14px; border-radius:16px; font-weight:700; cursor:pointer;">✖ Close</button>
+            </div>
+
+            <!-- MATCH MODE & PLAYER COUNT SELECTION -->
+            <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px; background:#10192d; padding:14px; border-radius:18px; border:1px solid #2a3b68;">
+                <div style="flex:1; min-width:200px;">
+                    <label style="font-size:0.85rem; color:#00f0ff; font-weight:700; display:block; margin-bottom:6px;">Select Player Count:</label>
+                    <select id="lobbyPlayerCount" onchange="updateLobbyPlayerCount(this.value)" style="width:100%; background:#1a2542; color:#fff; border:2px solid #344778; border-radius:12px; padding:8px 12px; font-weight:700; outline:none; cursor:pointer;">
+                        <option value="2">👥 2 Players</option>
+                        <option value="3" selected>👥 3 Players</option>
+                        <option value="4">👥 4 Players</option>
+                        <option value="5">👥 5 Players</option>
+                        <option value="6">👥 6 Players</option>
+                        <option value="7">👥 7 Players</option>
+                        <option value="8">🔥 8 Players (Party Mode!)</option>
+                    </select>
+                </div>
+                <div style="flex:1; min-width:200px;">
+                    <label style="font-size:0.85rem; color:#38ef7d; font-weight:700; display:block; margin-bottom:6px;">Multiplayer Connection:</label>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="hostGame(); closeStartLobby();" style="flex:1; background:#2ecc71; color:#fff; font-weight:700; border:none; padding:8px 12px; border-radius:12px; cursor:pointer;">👑 Host Room</button>
+                        <button onclick="joinGame(); closeStartLobby();" style="flex:1; background:#3498db; color:#fff; font-weight:700; border:none; padding:8px 12px; border-radius:12px; cursor:pointer;">🔗 Join Room</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DYNAMIC PLAYER SETUP SLOTS -->
+            <div id="lobbySlotsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:14px; max-height:360px; overflow-y:auto; padding-right:6px; margin-bottom:20px;"></div>
+
+            <div style="display:flex; justify-content:center;">
+                <button onclick="launchGameFromLobby()" class="primary" style="background:linear-gradient(135deg, #00b09b, #96c93d); color:#fff; font-size:1.2rem; font-weight:800; padding:14px 48px; border-radius:30px; border:none; cursor:pointer; box-shadow:0 0 25px rgba(150,201,61,0.5);">🚀 LAUNCH GAME NOW 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN ACTION EVENT PICTURE POPUP MODAL -->
+    <div class="mega-modal-overlay" id="fullscreenEventOverlay" style="background:rgba(0, 0, 0, 0.9);">
+        <div class="mega-modal" style="max-width:560px; padding:24px; background:#16213e; border-radius:28px; border:3px solid #f7d94e; box-shadow: 0 0 50px rgba(247,217,78,0.5); text-align:center; position:relative;" onclick="closeFullscreenPopup()">
+            <div style="width:100%; border-radius:20px; overflow:hidden; border:2px solid #344778; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,0.6);">
+                <img id="eventPopupImg" src="assets/pass_go.png" alt="Event Graphic" style="width:100%; max-height:300px; object-fit:cover; display:block;" />
+            </div>
+            <h2 id="eventPopupTitle" style="color:#f7d94e; font-size:1.6rem; margin:0 0 8px 0; font-weight:800;">🎉 EVENT TITLE</h2>
+            <p id="eventPopupDesc" style="color:#eee; font-size:1rem; line-height:1.5; margin:0 0 18px 0;"></p>
+            <button onclick="closeFullscreenPopup()" class="primary" style="background:linear-gradient(135deg, #f7d94e, #f0a500); color:#1a1a2e; font-size:1rem; font-weight:800; padding:10px 32px; border-radius:24px; border:none; cursor:pointer;">Tap to Continue ✨</button>
         </div>
     </div>
 
@@ -1450,6 +1525,7 @@
                     p.jail = true;
                     p.jailTurns = 0;
                     addLog(`🚔 ${p.name} went to Jail!`);
+                    triggerFullscreenPopup('jail', '🚔 SENT TO JAIL!', `${p.name} was arrested and sent straight to Jail!`, 'assets/jail.png');
                     G.phase = 'postroll';
                     endTurn();
                     break;
@@ -1527,6 +1603,7 @@
             G.propertyOwners[pos] = playerIdx;
             p.properties.push(pos);
             addLog(`🏠 ${p.name} bought ${prop.name} for $${prop.price}`);
+            triggerFullscreenPopup('property_buy', '🏠 PROPERTY ACQUIRED!', `${p.name} purchased ${prop.name} for $${prop.price}!`, 'assets/property_buy.png');
             G.phase = 'postroll';
             endTurn();
         }
@@ -1578,6 +1655,7 @@
 
             const result = card.action(p);
             addLog(`📄 ${type.toUpperCase()}: ${result}`);
+            triggerFullscreenPopup(type, type === 'chance' ? '🔮 CHANCE CARD DRAWN!' : '🎁 COMMUNITY CHEST CARD!', `${p.name} drew: ${card.text}`, 'assets/chance.png');
             if (p.money < 0) handleBankruptcy(playerIdx);
             if (p.position === 10 && p.jail) {
                 G.phase = 'postroll';
@@ -3048,6 +3126,156 @@
 
             // Check for previous recovery state
             setTimeout(() => { loadGameState(); }, 300);
+        });
+
+        // ─── INTRO VIDEO, START LOBBY, FULLSCREEN POPUPS & FULLSCREEN TOGGLE ───
+
+        function playIntroVideo() {
+            const overlay = document.getElementById('introVideoOverlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                playMegaSound(523.25, 0.1, 'sine');
+                playMegaSound(659.25, 0.15, 'sine', 100);
+                playMegaSound(783.99, 0.25, 'sine', 200);
+            }
+        }
+
+        function closeIntroVideo() {
+            const overlay = document.getElementById('introVideoOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function openStartLobby() {
+            const overlay = document.getElementById('startLobbyOverlay');
+            if (!overlay) return;
+            renderLobbySlots();
+            overlay.style.display = 'flex';
+            triggerHaptic();
+        }
+
+        function closeStartLobby() {
+            const overlay = document.getElementById('startLobbyOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function updateLobbyPlayerCount(val) {
+            activePlayerCount = parseInt(val, 10) || 3;
+            renderLobbySlots();
+        }
+
+        function renderLobbySlots() {
+            const container = document.getElementById('lobbySlotsContainer');
+            if (!container) return;
+            let html = '';
+            for (let i = 0; i < activePlayerCount; i++) {
+                const name = PLAYER_NAMES[i] || `Player ${i+1}`;
+                const color = PLAYER_COLORS[i] || '#3498db';
+                const token = TOKEN_SYMBOLS[i] || '⭐';
+                html += `
+                <div style="background:#10192d; padding:14px; border-radius:16px; border:2px solid ${color}; box-shadow:0 4px 14px rgba(0,0,0,0.4);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-weight:800; color:${color}; font-size:1.05rem;">Player ${i + 1} (${token})</span>
+                        <input type="color" value="${color}" onchange="updateLobbyColor(${i}, this.value)" style="width:38px; height:30px; border:none; background:transparent; cursor:pointer;" title="Pick custom color" />
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <label style="font-size:0.75rem; color:#aaa; display:block; margin-bottom:3px;">Player Name:</label>
+                        <input type="text" id="lobbyName_${i}" value="${name}" onchange="updateLobbyName(${i}, this.value)" style="background:#1a2542; color:#fff; border:1px solid #344778; border-radius:8px; padding:6px 10px; width:100%; font-weight:600; outline:none;" />
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; color:#aaa; display:block; margin-bottom:4px;">Emoji Token:</label>
+                        <div class="custom-emoji-picker" style="max-height:85px;">
+                            ${AVAILABLE_EMOJIS.map(em => `<span class="emoji-opt ${token === em ? 'selected' : ''}" onclick="selectLobbyToken(${i}, '${em}')">${em}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function updateLobbyName(i, val) {
+            PLAYER_NAMES[i] = val || `Player ${i+1}`;
+        }
+
+        function updateLobbyColor(i, val) {
+            PLAYER_COLORS[i] = val;
+            renderLobbySlots();
+        }
+
+        function selectLobbyToken(i, token) {
+            TOKEN_SYMBOLS[i] = token;
+            renderLobbySlots();
+        }
+
+        function launchGameFromLobby() {
+            for (let i = 0; i < activePlayerCount; i++) {
+                const input = document.getElementById(`lobbyName_${i}`);
+                if (input && input.value.trim()) {
+                    PLAYER_NAMES[i] = input.value.trim();
+                }
+            }
+            initGame();
+            closeStartLobby();
+            addLog(`🚀 Game Launched with ${activePlayerCount} Customized Players!`);
+            triggerFullscreenPopup('pass_go', '🚀 WELCOME TO MONOPOLY!', `Game launched! ${PLAYER_NAMES[0]}'s turn to roll!`, 'assets/intro_cover.png');
+        }
+
+        function triggerFullscreenPopup(type, title, desc, customImg) {
+            const overlay = document.getElementById('fullscreenEventOverlay');
+            const img = document.getElementById('eventPopupImg');
+            const tEl = document.getElementById('eventPopupTitle');
+            const dEl = document.getElementById('eventPopupDesc');
+            if (!overlay || !img || !tEl || !dEl) return;
+
+            img.src = customImg || 'assets/pass_go.png';
+            tEl.textContent = title;
+            dEl.textContent = desc;
+
+            overlay.style.display = 'flex';
+            triggerHaptic('alert');
+            playMegaSound(600, 0.1, 'sine');
+            playMegaSound(900, 0.2, 'sine', 100);
+        }
+
+        function closeFullscreenPopup() {
+            const overlay = document.getElementById('fullscreenEventOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                const el = document.documentElement;
+                if (el.requestFullscreen) el.requestFullscreen();
+                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+                else if (el.msRequestFullscreen) el.msRequestFullscreen();
+                triggerHaptic();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
+            }
+        }
+
+        // Bind event listeners for Intro, Lobby, Fullscreen
+        window.addEventListener('DOMContentLoaded', () => {
+            const introBtn = document.getElementById('openIntroBtn');
+            if (introBtn) introBtn.addEventListener('click', playIntroVideo);
+
+            const lobbyBtn = document.getElementById('openLobbyBtn');
+            if (lobbyBtn) lobbyBtn.addEventListener('click', openStartLobby);
+
+            const fsBtn = document.getElementById('fullscreenToggleBtn');
+            if (fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
+
+            const mobFsBtn = document.getElementById('mobFsBtn');
+            if (mobFsBtn) mobFsBtn.addEventListener('click', toggleFullscreen);
+
+            // Auto-play intro / open start lobby on boot if no recovery state
+            setTimeout(() => {
+                const restored = loadGameState();
+                if (!restored) {
+                    playIntroVideo();
+                }
+            }, 400);
         });
 
         // Initialize all mega effects on boot
