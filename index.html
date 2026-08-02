@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🏠 Monopoly – 8-Player Family Mega Edition</title>
     <meta name="description" content="Play the ultimate 8-Player Family Monopoly Party Game online with interactive customizer studio, 72 mega-upgrades, real-time trading, haptic touch feedback, and mobile-first design." />
     <meta property="og:title" content="🏠 Monopoly – 8-Player Family Mega Edition" />
@@ -27,6 +27,7 @@
             justify-content: center;
             align-items: center;
             padding: 12px;
+            -webkit-user-select: none;
             user-select: none;
         }
         #app {
@@ -472,6 +473,7 @@
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.7);
+            -webkit-backdrop-filter: blur(4px);
             backdrop-filter: blur(4px);
             display: none;
             align-items: center;
@@ -531,77 +533,262 @@
             flex-wrap: wrap;
         }
 
-        /* responsive */
+        /* ─── RESPONSIVE: TABLET ─── */
         @media (max-width: 720px) {
+            #app {
+                padding: 10px 8px 16px;
+                border-radius: 16px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .header h1 {
+                font-size: 1.15rem;
+                text-align: center;
+            }
+            .header-controls {
+                justify-content: center;
+                gap: 6px;
+            }
+            /* Hide non-essential header buttons on narrow screens */
+            #quickSoundBtn, #quickCoinBtn, #quickFortuneBtn, #toggleHudBtn {
+                display: none;
+            }
             .panel {
                 grid-template-columns: 1fr;
             }
             .players-grid {
-                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .board-wrapper {
+                max-width: 100%;
+                padding: 4px;
+                border-radius: 12px;
+            }
+            .board {
+                gap: 2px;
+            }
+            .space {
+                font-size: 0.4rem;
+                border-radius: 4px;
+                padding: 1px;
+                border-width: 1px;
             }
             .space .name {
-                font-size: 0.3rem;
+                font-size: clamp(0.28rem, 1.2vw, 0.4rem);
             }
             .space .price {
-                font-size: 0.25rem;
+                font-size: clamp(0.22rem, 1vw, 0.35rem);
             }
             .space .token {
                 width: 10px;
                 height: 10px;
                 font-size: 5px;
             }
+            .space .color-bar {
+                height: 3px;
+            }
             .die {
                 width: 36px;
                 height: 36px;
                 font-size: 1.2rem;
             }
-            .header h1 {
-                font-size: 1.1rem;
+            .mega-modal {
+                max-width: 96vw;
+                max-height: 85vh;
+            }
+            .mega-content {
+                grid-template-columns: 1fr;
+                padding: 12px;
+            }
+            .mega-tab-btn {
+                min-width: 110px;
+                padding: 10px 6px;
+                font-size: 0.8rem;
             }
         }
+
+        /* ─── RESPONSIVE: PHONE ─── */
         @media (max-width: 480px) {
+            body {
+                padding: 4px;
+                align-items: flex-start;
+            }
+            #app {
+                padding: 6px 4px 14px;
+                border-radius: 10px;
+            }
+            .header {
+                margin-bottom: 6px;
+            }
+            .header h1 {
+                font-size: 0.95rem;
+            }
+            .header-controls {
+                gap: 4px;
+            }
+            .header-controls button {
+                padding: 5px 10px;
+                font-size: 0.7rem;
+            }
+            #playerCountSelect {
+                font-size: 0.75rem !important;
+                padding: 4px 8px !important;
+                height: 32px !important;
+            }
+            /* Hide even more buttons on phone */
+            #megaHubBtn {
+                display: none;
+            }
+            .board-wrapper {
+                padding: 2px;
+                border-radius: 8px;
+            }
             .board {
-                gap: 2px;
+                gap: 1px;
             }
             .space {
-                border-radius: 4px;
-                padding: 1px 0;
+                border-radius: 3px;
+                padding: 0;
+                border-width: 0.5px;
             }
             .space .name {
-                font-size: 0.22rem;
+                font-size: clamp(0.18rem, 1vw, 0.28rem);
+                line-height: 1;
+                padding: 0;
             }
             .space .price {
-                font-size: 0.2rem;
+                font-size: clamp(0.16rem, 0.9vw, 0.22rem);
+                display: none; /* hide prices on tiny screens to save space */
             }
             .space .token {
-                width: 8px;
-                height: 8px;
-                font-size: 4px;
-                border-width: 1px;
+                width: 7px;
+                height: 7px;
+                font-size: 3px;
+                border-width: 0.5px;
+            }
+            .space .tokens {
+                gap: 0;
+                margin-top: 0;
             }
             .space .color-bar {
-                height: 3px;
+                height: 2px;
+                margin-bottom: 0;
             }
             .space.corner .name {
-                font-size: 0.3rem;
+                font-size: clamp(0.24rem, 1.2vw, 0.4rem);
+            }
+            .space .house {
+                font-size: 0.35rem;
+            }
+            .players-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 4px;
+            }
+            .player-card {
+                padding: 5px 6px;
+                border-radius: 8px;
+                border-left-width: 3px;
+            }
+            .player-card .pname {
+                font-size: 0.65rem;
+            }
+            .player-card .pmoney {
+                font-size: 0.65rem;
+            }
+            .player-card .pprops {
+                font-size: 0.5rem;
+            }
+            .die {
+                width: 28px;
+                height: 28px;
+                font-size: 0.9rem;
+                border-radius: 6px;
+            }
+            .dice {
+                gap: 6px;
+            }
+            .dice-area {
+                gap: 8px;
+            }
+            .dice-actions button {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+            .panel {
+                gap: 8px;
+                margin-top: 8px;
+            }
+            .card {
+                padding: 8px 8px;
+                border-radius: 10px;
+            }
+            .card-title {
+                font-size: 0.6rem;
+            }
+            .log {
+                max-height: 60px;
+                font-size: 0.6rem;
+            }
+            .conn-area {
+                gap: 4px;
+            }
+            .conn-row {
+                gap: 4px;
+            }
+            .conn-row input {
+                min-width: 70px;
+                font-size: 0.75rem;
+                padding: 6px 8px;
+            }
+            .conn-row button {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+            .modal {
+                padding: 16px 12px;
+                border-radius: 16px;
+            }
+            .modal h2 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* ─── RESPONSIVE: VERY SMALL PHONE ─── */
+        @media (max-width: 360px) {
+            .space .name {
+                font-size: 0.16rem;
+            }
+            .space .token {
+                width: 6px;
+                height: 6px;
+                font-size: 2.5px;
+                border-width: 0;
+            }
+            .header-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-controls button, #playerCountSelect {
+                width: 100%;
+                justify-content: center;
             }
             .players-grid {
                 grid-template-columns: 1fr;
             }
-            .die {
-                width: 30px;
-                height: 30px;
-                font-size: 1rem;
+        }
+
+        /* ─── SUPPRESS HOVER EFFECTS ON TOUCH ─── */
+        @media (hover: none) {
+            .space:hover {
+                transform: none !important;
+                box-shadow: none !important;
             }
-            .header h1 {
-                font-size: 0.9rem;
-            }
-            .modal {
-                padding: 20px 16px;
-            }
-            .conn-row input {
-                min-width: 80px;
-                font-size: 0.8rem;
+            .feature-card:hover {
+                transform: none;
             }
         }
 
@@ -640,9 +827,10 @@
         }
         .w-full {
             width: 100%;
+        }
         /* ─── 72 MEGA-UPGRADE SUITE STYLES & ANIMATIONS ─── */
         .mega-modal-overlay {
-            position: fixed; inset: 0; background: rgba(10,14,26,0.85); backdrop-filter: blur(8px);
+            position: fixed; inset: 0; background: rgba(10,14,26,0.85); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
             display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px;
         }
         .mega-modal {
@@ -695,6 +883,7 @@
             top: 15px;
             left: 15px;
             background: rgba(22, 33, 62, 0.85);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             padding: 10px 14px;
@@ -713,6 +902,7 @@
             left: 0;
             right: 0;
             background: rgba(22, 33, 62, 0.95);
+            -webkit-backdrop-filter: blur(12px);
             backdrop-filter: blur(12px);
             border-top: 2px solid #344778;
             display: none;
@@ -785,7 +975,7 @@
         <div class="header">
             <h1 style="display:flex; align-items:center; gap:8px;">🏠 MONOPOLY <span id="activePetBadge" class="pet-badge" style="display:none;">🐱 Kitty</span> <span id="weatherBadge" style="font-size:1.1rem;" title="Current Weather">☀️</span></h1>
             <div class="header-controls">
-                <select id="playerCountSelect" style="background: #1e2a4a; color: #fff; border: 2px solid #344778; border-radius: 16px; padding: 6px 12px; font-weight: 700; font-size: 0.85rem; outline: none; cursor: pointer; height: 36px;">
+                <select id="playerCountSelect" aria-label="Number of players" title="Select number of players" style="background: #1e2a4a; color: #fff; border: 2px solid #344778; border-radius: 16px; padding: 6px 12px; font-weight: 700; font-size: 0.85rem; outline: none; cursor: pointer; height: 36px;">
                     <option value="2">👥 2 Players</option>
                     <option value="3" selected>👥 3 Players</option>
                     <option value="4">👥 4 Players</option>
