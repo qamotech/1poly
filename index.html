@@ -8,9 +8,10 @@
     <meta property="og:title" content="🏠 Monopoly – 8-Player Family Mega Edition" />
     <meta property="og:description" content="Experience the ultimate 8-Player Party Mode Monopoly game with custom token pieces, glassmorphism UI, liquidity defense, and more!" />
     <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://unpkg.com" crossorigin />
+    <meta name="theme-color" content="#1a1a2e" />
     <!-- PeerJS for easy WebRTC signaling -->
-    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js">
-    </script>
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
     <style>
         /* ─── RESET & BASE ─── */
         * {
@@ -85,14 +86,15 @@
             align-items: center;
             justify-content: center;
             background: radial-gradient(circle, rgba(255,215,0,0.18) 0%, rgba(15,23,42,0.85) 80%);
-            backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
             border: 3px solid rgba(255,215,0,0.75);
             border-radius: 28px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 25px rgba(255,215,0,0.25);
             animation: centerpieceFloat 4s ease-in-out infinite;
             z-index: 5;
             pointer-events: none;
+            -webkit-user-select: none;
             user-select: none;
         }
         .centerpiece-content {
@@ -256,8 +258,8 @@
         /* 7. 3D Glassmorphism Hover Cards */
         .modal-deed-3d {
             background: rgba(15, 23, 42, 0.88) !important;
-            backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
+            backdrop-filter: blur(20px) !important;
             border: 2px solid rgba(255, 255, 255, 0.25) !important;
             border-radius: 24px !important;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1) !important;
@@ -272,6 +274,7 @@
             font-size: 1.6rem;
             pointer-events: none;
             z-index: 9999;
+            -webkit-user-select: none;
             user-select: none;
             will-change: transform, opacity;
         }
@@ -1305,21 +1308,7 @@
                     <option value="7">👥 7 Players</option>
                     <option value="8">🔥 8 Players (Party!)</option>
                 </select>
-                <button id="voiceToggleBtn" style="background: linear-gradient(135deg, #e040fb, #00e5ff); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(224,64,251,0.5);" title="Toggle Character Speech Voice Synthesis">🔊 Voice: ON</button>
-                <button id="view3dToggleBtn" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1a2e; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(255,215,0,0.5);" title="Toggle Realistic 3D Isometric View">📐 3D View</button>
-                <button id="openIntroBtn" style="background: linear-gradient(135deg, #ff8c00, #ff007f); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(255,140,0,0.5);">▶ Intro</button>
-                <button id="openLobbyBtn" style="background: linear-gradient(135deg, #00f0ff, #7000ff); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(0,240,255,0.4);">🎮 Start Lobby</button>
-                <button id="openStudioBtn" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(56,239,125,0.4);">🎨 Piece Studio</button>
-                <button id="fullscreenToggleBtn" style="background: #344778; color: #fff; border: none; padding: 6px 12px; border-radius: 16px; cursor: pointer; font-size: 0.85rem;" title="Toggle Fullscreen Mode">⛶ Fullscreen</button>
-                <button id="megaHubBtn" class="primary" style="background: linear-gradient(135deg, #ff007a, #7928ca); box-shadow: 0 0 15px rgba(255,0,122,0.5);">🌟 72 Mega-Upgrades Hub</button>
-                <button id="quickSoundBtn" style="background: #20b2aa;">🎵 Sound FX</button>
-                <div style="display:inline-flex; align-items:center; gap:4px; background:#1e2a4a; padding:4px 8px; border-radius:14px; border:1px solid #344778;" title="Master Audio SFX Volume">
-                    <span style="font-size:0.75rem; color:#aaa;">🔊</span>
-                    <input type="range" id="sfxVolSlider" min="0" max="1" step="0.05" value="0.8" oninput="if(typeof SFXEngine!=='undefined') SFXEngine.setVolume(this.value)" style="width:60px; accent-color:#00f0ff; cursor:pointer;" />
-                </div>
-                <button id="quickCoinBtn" style="background: #e67e22;">🪙 Flip Coin</button>
-                <button id="quickFortuneBtn" style="background: #9b59b6;">🔮 Fortune</button>
-                <button id="toggleHudBtn" style="background: #344778; color: #fff; border: none; padding: 6px 12px; border-radius: 16px; cursor: pointer; font-size: 0.8rem;">📊 Leaderboard</button>
+                <button id="optionsBtn" onclick="openOptionsMenu()" class="primary" style="background: linear-gradient(135deg, #ff007a, #7928ca); box-shadow: 0 0 18px rgba(255,0,122,0.5); font-weight:800; border-radius:18px; padding: 8px 20px; border:none; color:#fff; cursor:pointer; transition: transform 0.15s ease;" title="Open Game Options, Settings, Audio, Controls & 72 Mega Upgrades">⚙️ Options & Upgrades Hub</button>
                 <span class="status-badge" id="statusBadge">⚡ Offline</span>
                 <button id="resetBtn" class="danger">⟳ New Game</button>
             </div>
@@ -1567,6 +1556,99 @@
             <p id="eventPopupDesc" style="color:#eee; font-size:1rem; line-height:1.5; margin:0 0 18px 0;"></p>
             <button onclick="closeFullscreenPopup()" class="primary" style="background:linear-gradient(135deg, #f7d94e, #f0a500); color:#1a1a2e; font-size:1rem; font-weight:800; padding:10px 32px; border-radius:24px; border:none; cursor:pointer;">Tap to Continue ✨</button>
         </div>
+    <!-- CONSOLIDATED OPTIONS & MEGA-UPGRADES HUB MODAL -->
+    <div class="mega-modal-overlay" id="optionsMenuOverlay" style="display:none; background:rgba(5, 10, 25, 0.95);">
+        <div class="mega-modal" style="max-width:820px; width:92vw; max-height:85vh; overflow-y:auto; padding:28px; background:#16213e; border-radius:28px; border:2px solid #ff007a; box-shadow: 0 0 45px rgba(255,0,122,0.4);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #344778; padding-bottom:12px; margin-bottom:18px;">
+                <div>
+                    <h2 style="color:#ff007a; margin:0; font-size:1.6rem; font-weight:800;">⚙️ OPTIONS & MEGA-UPGRADES HUB</h2>
+                    <p style="color:#aaa; font-size:0.85rem; margin:2px 0 0 0;">Toggle all game settings, audio controls, display modes, game tools & 72 Mega Upgrades in one place!</p>
+                </div>
+                <button onclick="closeOptionsMenu()" style="background:#344778; color:#fff; border:none; padding:8px 16px; border-radius:16px; font-weight:700; cursor:pointer;">✖ Close</button>
+            </div>
+
+            <!-- OPTIONS CATEGORY TABS -->
+            <div style="display:flex; gap:10px; overflow-x:auto; margin-bottom:20px; padding-bottom:4px;">
+                <button id="optTab-audio" onclick="switchOptionsTab('audio')" style="padding:8px 16px; border-radius:20px; background:#ff007a; color:#fff; border:none; font-weight:700; cursor:pointer;">🔊 Audio & Voice</button>
+                <button id="optTab-display" onclick="switchOptionsTab('display')" style="padding:8px 16px; border-radius:20px; background:#243256; color:#aaa; border:none; font-weight:700; cursor:pointer;">📐 Display & View</button>
+                <button id="optTab-tools" onclick="switchOptionsTab('tools')" style="padding:8px 16px; border-radius:20px; background:#243256; color:#aaa; border:none; font-weight:700; cursor:pointer;">🎮 Game Tools & Studio</button>
+                <button id="optTab-upgrades" onclick="switchOptionsTab('upgrades')" style="padding:8px 16px; border-radius:20px; background:#243256; color:#aaa; border:none; font-weight:700; cursor:pointer;">🌟 72 Mega Upgrades</button>
+            </div>
+
+            <!-- TAB 1: AUDIO & VOICE -->
+            <div id="optPanel-audio" style="display:block; background:#10192d; padding:18px; border-radius:18px; border:1px solid #2a3b68;">
+                <h3 style="color:#00f0ff; margin-top:0; font-size:1.1rem;">🔊 Audio & Speech Controls</h3>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:14px;">
+                    <div style="background:#1a2542; padding:14px; border-radius:14px;">
+                        <label style="color:#fff; font-weight:700; display:block; margin-bottom:8px;">🔊 Master SFX Volume:</label>
+                        <input type="range" id="sfxVolSlider" title="Master SFX Volume Slider" aria-label="Master SFX Volume Slider" min="0" max="1" step="0.05" value="0.8" oninput="if(typeof SFXEngine!=='undefined') SFXEngine.setVolume(this.value)" style="width:100%; accent-color:#00f0ff; cursor:pointer;" />
+                    </div>
+                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="color:#fff; font-weight:700; display:block;">🗣️ Voice Synthesis:</span>
+                            <span style="color:#aaa; font-size:0.75rem;">Character speech SFX</span>
+                        </div>
+                        <button id="voiceToggleBtn" onclick="toggleVoiceSetting()" style="background: linear-gradient(135deg, #e040fb, #00e5ff); color: #fff; font-weight: bold; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer;" title="Toggle Character Speech Voice Synthesis">🔊 Voice: ON</button>
+                    </div>
+                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="color:#fff; font-weight:700; display:block;">🎵 Sound FX Engine:</span>
+                            <span style="color:#aaa; font-size:0.75rem;">Interactive audio feedback</span>
+                        </div>
+                        <button id="quickSoundBtn" onclick="toggleSoundFxSetting()" style="background: #20b2aa; color: #fff; font-weight: bold; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer;">🎵 Sound: ON</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: DISPLAY & VIEW -->
+            <div id="optPanel-display" style="display:none; background:#10192d; padding:18px; border-radius:18px; border:1px solid #2a3b68;">
+                <h3 style="color:#ffd700; margin-top:0; font-size:1.1rem;">📐 Display, View & Graphics Mode</h3>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:14px;">
+                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="color:#fff; font-weight:700; display:block;">📐 3D Isometric View:</span>
+                            <span style="color:#aaa; font-size:0.75rem;">3D realistic tilt perspective</span>
+                        </div>
+                        <button id="view3dToggleBtn" onclick="toggle3dSetting()" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1a2e; font-weight: bold; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer;">📐 3D View</button>
+                    </div>
+                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="color:#fff; font-weight:700; display:block;">⛶ Fullscreen Display:</span>
+                            <span style="color:#aaa; font-size:0.75rem;">Expand board to fullscreen</span>
+                        </div>
+                        <button id="fullscreenToggleBtn" onclick="toggleFullscreenSetting()" style="background: #344778; color: #fff; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer; font-weight:700;">⛶ Fullscreen</button>
+                    </div>
+                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="color:#fff; font-weight:700; display:block;">⚡ Fast Movement Animation:</span>
+                            <span style="color:#aaa; font-size:0.75rem;">Tap anywhere to skip hop step</span>
+                        </div>
+                        <span style="color:#38ef7d; font-weight:800; font-size:0.85rem;">✨ Tap to Skip Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: GAME TOOLS -->
+            <div id="optPanel-tools" style="display:none; background:#10192d; padding:18px; border-radius:18px; border:1px solid #2a3b68;">
+                <h3 style="color:#38ef7d; margin-top:0; font-size:1.1rem;">🎮 Game Tools, Lobby & Studios</h3>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-top:14px;">
+                    <button onclick="closeOptionsMenu(); openStartLobby();" style="background: linear-gradient(135deg, #00f0ff, #7000ff); color: #fff; font-weight: bold; border: none; padding: 12px; border-radius: 16px; cursor: pointer;">🎮 Start Lobby</button>
+                    <button onclick="closeOptionsMenu(); openPieceStudio();" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; font-weight: bold; border: none; padding: 12px; border-radius: 16px; cursor: pointer;">🎨 Piece Studio</button>
+                    <button onclick="closeOptionsMenu(); quickCoinFlip();" style="background: #e67e22; color:#fff; font-weight:bold; border:none; padding:12px; border-radius:16px; cursor:pointer;">🪙 Flip Coin</button>
+                    <button onclick="closeOptionsMenu(); quickFortune();" style="background: #9b59b6; color:#fff; font-weight:bold; border:none; padding:12px; border-radius:16px; cursor:pointer;">🔮 Fortune Teller</button>
+                    <button onclick="closeOptionsMenu(); toggleLeaderboardHud();" style="background: #344778; color: #fff; border: none; padding: 12px; border-radius: 16px; cursor: pointer; font-weight:bold;">📊 Leaderboard</button>
+                    <button onclick="closeOptionsMenu(); openIntroVideo();" style="background: linear-gradient(135deg, #ff8c00, #ff007f); color: #fff; font-weight: bold; border: none; padding: 12px; border-radius: 16px; cursor: pointer;">▶ Replay Intro</button>
+                </div>
+            </div>
+
+            <!-- TAB 4: 72 MEGA UPGRADES HUB -->
+            <div id="optPanel-upgrades" style="display:none; background:#10192d; padding:18px; border-radius:18px; border:1px solid #2a3b68;">
+                <h3 style="color:#ff007a; margin-top:0; font-size:1.1rem;">🌟 72 Mega Upgrades & Rules Engine</h3>
+                <div id="megaUpgradesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px; max-height:300px; overflow-y:auto; margin-top:12px; padding-right:6px;">
+                    <!-- Dynamically populated 72 Upgrades -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1701,6 +1783,137 @@
         const boardEl = $('boardContainer');
         const playersEl = $('playersContainer');
         const logEl = $('logContainer');
+
+        // ─── CONSOLIDATED OPTIONS MENU LOGIC ───
+        let currentOptionsTab = 'audio';
+        let voiceSynthesisEnabled = true;
+        let soundFxEnabled = true;
+        let is3dViewEnabled = false;
+
+        function openOptionsMenu() {
+            const overlay = $('optionsMenuOverlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                populateMegaUpgradesGrid();
+            }
+        }
+
+        function closeOptionsMenu() {
+            const overlay = $('optionsMenuOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function switchOptionsTab(tabName) {
+            currentOptionsTab = tabName;
+            ['audio', 'display', 'tools', 'upgrades'].forEach(t => {
+                const btn = $(`optTab-${t}`);
+                const panel = $(`optPanel-${t}`);
+                if (btn && panel) {
+                    if (t === tabName) {
+                        btn.style.background = '#ff007a';
+                        btn.style.color = '#fff';
+                        panel.style.display = 'block';
+                    } else {
+                        btn.style.background = '#243256';
+                        btn.style.color = '#aaa';
+                        panel.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function toggleVoiceSetting() {
+            voiceSynthesisEnabled = !voiceSynthesisEnabled;
+            const btn = $('voiceToggleBtn');
+            if (btn) {
+                btn.textContent = voiceSynthesisEnabled ? '🔊 Voice: ON' : '🔇 Voice: OFF';
+                btn.style.background = voiceSynthesisEnabled ? 'linear-gradient(135deg, #e040fb, #00e5ff)' : '#444';
+            }
+            if (typeof playMegaSound === 'function') playMegaSound(440, 0.1, 'sine');
+        }
+
+        function toggleSoundFxSetting() {
+            soundFxEnabled = !soundFxEnabled;
+            const btn = $('quickSoundBtn');
+            if (btn) {
+                btn.textContent = soundFxEnabled ? '🎵 Sound: ON' : '🔇 Sound: OFF';
+                btn.style.background = soundFxEnabled ? '#20b2aa' : '#555';
+            }
+        }
+
+        function toggle3dSetting() {
+            is3dViewEnabled = !is3dViewEnabled;
+            const board = $('boardContainer');
+            if (board) {
+                if (is3dViewEnabled) {
+                    board.style.transform = 'rotateX(25deg) rotateZ(-5deg) scale(0.96)';
+                    board.style.boxShadow = '0 35px 70px rgba(0,0,0,0.7)';
+                } else {
+                    board.style.transform = 'none';
+                    board.style.boxShadow = 'none';
+                }
+            }
+            const btn = $('view3dToggleBtn');
+            if (btn) {
+                btn.textContent = is3dViewEnabled ? '📐 3D View: ON' : '📐 3D View: OFF';
+            }
+        }
+
+        function toggleFullscreenSetting() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        function triggerTilePulseEffect(spaceIdx) {
+            const tile = document.querySelector(`[data-space-id="${spaceIdx}"]`);
+            if (tile) {
+                tile.style.transition = 'transform 0.12s ease, box-shadow 0.12s ease';
+                tile.style.transform = 'scale(1.1)';
+                tile.style.boxShadow = '0 0 25px #00f0ff, inset 0 0 15px #00f0ff';
+                setTimeout(() => {
+                    tile.style.transform = 'none';
+                    tile.style.boxShadow = 'none';
+                }, 220);
+            }
+        }
+
+        function populateMegaUpgradesGrid() {
+            const grid = $('megaUpgradesGrid');
+            if (!grid || grid.children.length > 0) return;
+            const UPGRADE_LIST = [
+                "1. Liquidity Defense Emergency Vault", "2. Rent Surge Amplifier", "3. Tax Evasion Loophole",
+                "4. Rail Hyperloop Express", "5. Utility Overdrive Surge", "6. Free Parking Jackpot",
+                "7. Chance Oracle Insight", "8. Community Chest Grant", "9. Hotel Skyscraper Expansion",
+                "10. Monopoly Empire Shield", "11. Double Dice Velocity", "12. Mortgage Repurchase Discount",
+                "13. Monopoly Stock Dividend", "14. Bankruptcy Auto-Bailout", "15. Haptic Touch Impulse",
+                "16. 3D Isometric Projection", "17. PeerJS WebRTC P2P Room", "18. Voice Synthesis AI Speech",
+                "19. Dynamic Cloud Fleet Weather", "20. Celestial Orb Sun/Moon Cycle", "21. Token Customizer Studio",
+                "22. Sound Engine Synthesizer", "23. Leaderboard Telemetry HUD", "24. Turn Idle Auto-Roll",
+                "25. Fortune Teller Wheel", "26. Coin Flip Arbitrage", "27. Intro Video Cinema",
+                "28. Fullscreen Bezel Sandbox", "29. Color Palette Shift", "30. Glassmorphism Card Depth",
+                "31. Particle Eruption Blast", "32. GO Bonus Multiplier", "33. Rent Lock Guarantee",
+                "34. Property Swap Exchange", "35. Auction House Bidding", "36. Jail Bail Discount",
+                "37. Speed Die Accelerator", "38. Luxury Tax Refund", "39. Reading Railroad Hyperloop",
+                "40. Boardwalk Penthouse Suite", "41. Park Place Garden", "42. Marvin Gardens Oasis", "43. Atlantic Ave Pier",
+                "44. Illinois Ave Expressway", "45. Indiana Ave Hub", "46. Kentucky Ave Track", "47. New York Ave Tower",
+                "48. Tennessee Ave Plaza", "49. St. James Pl Court", "50. Virginia Ave Estate", "51. States Ave Center",
+                "52. Electric Co Solar Grid", "53. St. Charles Pl Villa", "54. Connecticut Ave Metro", "55. Vermont Ave Park",
+                "56. Oriental Ave Bazaar", "57. B&O RR Terminal", "58. Baltic Ave Cottage", "59. Med Ave Inn",
+                "60. Penn RR Depot", "61. Water Works Reservoir", "62. Pacific Ave Shore", "63. N Carolina Ave Forest",
+                "64. Penn Ave Capitol", "65. Short Line RR Shunt", "66. Chance Wild Card", "67. Chest Gold Chest",
+                "68. Income Tax Flat Rate", "69. Jail Visitor Lounge", "70. Free Parking Fuel Station",
+                "71. Property Mortgage Vault", "72. Monopoly Victory Crown"
+            ];
+            grid.innerHTML = UPGRADE_LIST.map(item => `
+                <div style="background:#1a2542; padding:10px 12px; border-radius:12px; border:1px solid #344778; font-size:0.8rem; color:#fff; display:flex; align-items:center; gap:8px;">
+                    <span style="color:#ff007a; font-weight:800;">⚡</span>
+                    <span>${item}</span>
+                </div>
+            `).join('');
+        }
         const die1El = $('die1');
         const die2El = $('die2');
         const rollBtn = $('rollBtn');
@@ -1840,22 +2053,76 @@
             }
         }
 
+        let activeMoveState = null;
+
+        function skipPlayerMovement() {
+            if (!activeMoveState || !activeMoveState.active) return;
+            const state = activeMoveState;
+            clearInterval(state.interval);
+            state.active = false;
+            activeMoveState = null;
+
+            const p = G.players[state.playerIdx];
+            p.position = state.targetPos;
+
+            if (state.passedGo) {
+                p.money += 200;
+                addLog(`💰 ${p.name} passed GO – collected $200`);
+                playMegaSound(587, 0.25, 'triangle');
+                triggerHaptic('buy');
+            }
+
+            triggerTilePulseEffect(state.targetPos);
+            playMegaSound(440, 0.12, 'sine');
+            triggerSpace(state.playerIdx);
+            renderAll();
+            updateControls();
+            checkGameOver();
+            saveGameState();
+        }
+
+        // Tap or click anywhere on the screen during token movement to skip to target square!
+        document.addEventListener('pointerdown', (e) => {
+            if (activeMoveState && activeMoveState.active) {
+                skipPlayerMovement();
+            }
+        }, true);
+
         function movePlayer(playerIdx, steps) {
             const p = G.players[playerIdx];
             if (p.bankrupt) return;
+
+            // If a previous movement was active, cancel it immediately
+            if (activeMoveState && activeMoveState.active) {
+                skipPlayerMovement();
+            }
+
             const oldPos = p.position;
             const targetPos = (oldPos + steps) % BOARD_SIZE;
+            const passedGo = (oldPos + steps >= BOARD_SIZE);
             let currentStep = 0;
-            const hopInterval = setInterval(() => {
+
+            const interval = setInterval(() => {
                 currentStep++;
                 p.position = (oldPos + currentStep) % BOARD_SIZE;
-                playMegaSound(250 + (currentStep * 35), 0.04, 'sine');
+                
+                // Enhanced Audio SFX: Pitch-ascending harmonic tick
+                const pitchFreq = 300 + (currentStep * 40);
+                playMegaSound(pitchFreq, 0.05, 'triangle');
+                
+                // Visual Enhancement: Tile pulse highlight on hop
+                triggerTilePulseEffect(p.position);
                 renderBoard();
+
                 if (currentStep >= steps) {
-                    clearInterval(hopInterval);
-                    if (targetPos < oldPos && oldPos + steps >= BOARD_SIZE) {
+                    clearInterval(interval);
+                    if (activeMoveState) activeMoveState.active = false;
+                    activeMoveState = null;
+
+                    if (passedGo) {
                         p.money += 200;
                         addLog(`💰 ${p.name} passed GO – collected $200`);
+                        playMegaSound(587, 0.25, 'triangle');
                         triggerHaptic('buy');
                     }
                     triggerSpace(playerIdx);
@@ -1865,6 +2132,15 @@
                     saveGameState();
                 }
             }, 110);
+
+            activeMoveState = {
+                active: true,
+                playerIdx: playerIdx,
+                oldPos: oldPos,
+                targetPos: targetPos,
+                passedGo: passedGo,
+                interval: interval
+            };
         }
 
         function triggerSpace(playerIdx) {
