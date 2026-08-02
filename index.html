@@ -1115,6 +1115,7 @@
                             <button id="endTurnBtn">End Turn</button>
                             <button id="buyBtn">Buy</button>
                             <button id="buildBtn">🏠 Build</button>
+                            <button id="dealBtn" onclick="drawMonopolyDealCard()" style="background:linear-gradient(135deg,#e67e22,#f39c12); color:#fff; font-weight:800; border-radius:12px; border:none; padding:8px 12px; cursor:pointer;">🃏 Deal Card</button>
                         </div>
                     </div>
                 </div>
@@ -2193,6 +2194,64 @@
             if (typeof syncMobileActionBar === 'function') syncMobileActionBar();
         }
 
+        // 🃏 MONOPOLY DEAL CARD GAME INTEGRATION
+        function drawMonopolyDealCard() {
+            if (!G || G.gameOver) return;
+            const p = G.players[G.currentPlayer];
+            if (p.bankrupt) return;
+            if (typeof SFXEngine !== 'undefined') SFXEngine.play('button_click');
+
+            const dealCards = [
+                { id: 'sly', name: '💳 Sly Deal', desc: 'Steal 1 uncompleted property deed from an opponent!' },
+                { id: 'forced', name: '🔄 Forced Deal', desc: 'Swap 1 of your properties for an opponent property!' },
+                { id: 'debt', name: '💰 Debt Collector', desc: 'Demand $50 cash from an opponent!' },
+                { id: 'bday', name: '🎂 It\'s My Birthday!', desc: 'Collect $20 gift money from all active players!' },
+                { id: 'no', name: '🛑 Just Say No', desc: 'Block an incoming Monopoly Deal attack!' }
+            ];
+            const drawn = dealCards[Math.floor(Math.random() * dealCards.length)];
+
+            if (drawn.id === 'bday') {
+                let total = 0;
+                G.players.forEach((op, idx) => {
+                    if (idx !== G.currentPlayer && !op.bankrupt) {
+                        const paid = Math.min(op.money, 20);
+                        op.money -= paid;
+                        total += paid;
+                    }
+                });
+                p.money += total;
+                addLog(`🎂 ${p.name} played IT'S MY BIRTHDAY! Collected $${total} from all players!`);
+                showModal('🎂 Birthday Gift!', `You played 🎂 It's My Birthday and collected $${total} gift money!`);
+            } else if (drawn.id === 'debt') {
+                const targetIdx = (G.currentPlayer + 1) % G.players.length;
+                const target = G.players[targetIdx];
+                const paid = Math.min(target.money, 50);
+                target.money -= paid;
+                p.money += paid;
+                addLog(`💰 ${p.name} played DEBT COLLECTOR on ${target.name}! Collected $${paid}!`);
+                showModal('💰 Debt Collector!', `You collected $${paid} from ${target.name}!`);
+            } else if (drawn.id === 'sly') {
+                const opponents = G.players.map((op, i) => ({ op, i })).filter(x => x.i !== G.currentPlayer && !x.op.bankrupt && x.op.properties.length > 0);
+                if (opponents.length > 0) {
+                    const target = opponents[0].op;
+                    const stolenId = target.properties.pop();
+                    p.properties.push(stolenId);
+                    G.propertyOwners[stolenId] = G.currentPlayer;
+                    addLog(`💳 ${p.name} played SLY DEAL! Stole ${PROPERTIES[stolenId].name} from ${target.name}!`);
+                    showModal('💳 Sly Deal Executed!', `You stole ${PROPERTIES[stolenId].name} from ${target.name}!`);
+                } else {
+                    addLog(`💳 ${p.name} played Sly Deal, but opponents have no properties to steal.`);
+                }
+            } else {
+                addLog(`🃏 ${p.name} played ${drawn.name}! ${drawn.desc}`);
+                showModal(`🃏 ${drawn.name}`, drawn.desc);
+            }
+
+            renderAll();
+            updateControls();
+            broadcastGameState();
+        }
+
         function showQRCodeModal() {
             const currentRoom = document.getElementById('peerIdInput') ? document.getElementById('peerIdInput').value : 'FAMILY';
             const shareUrl = `https://qamotech.github.io/1poly/?room=${encodeURIComponent(currentRoom)}`;
@@ -2291,8 +2350,16 @@
                 renderLobbySlots();
 
                 conn.on('open', () => {
-                    // send current state and player index
-                    conn.send({ type: 'init', playerIdx: clientIdx, game: G });
+                    // send current state, piece art symbols, roster names, and player index
+                    conn.send({ 
+                        type: 'init', 
+                        playerIdx: clientIdx, 
+                        game: G, 
+                        tokenSymbols: TOKEN_SYMBOLS, 
+                        playerNames: PLAYER_NAMES, 
+                        playerColors: PLAYER_COLORS 
+                    });
+                    broadcastRosterPieceArt();
                 });
 
                 conn.on('data', (data) => {
@@ -2345,7 +2412,29 @@
                 });
 
                 conn.on('data', (data) => {
-                    handleHostMessage(data);
+                    if (data.type === 'init') {
+                        myPlayerIndex = data.playerIdx;
+                        G = data.game;
+                        if (data.tokenSymbols) TOKEN_SYMBOLS = data.tokenSymbols;
+                        if (data.playerNames) PLAYER_NAMES = data.playerNames;
+                        if (data.playerColors) PLAYER_COLORS = data.playerColors;
+                        addLog(`🔗 Connected as ${PLAYER_NAMES[myPlayerIndex]}! Syncing board...`);
+                        renderAll();
+                        updateControls();
+                    } else if (data.type === 'state') {
+                        G = data.game;
+                        if (data.tokenSymbols) TOKEN_SYMBOLS = data.tokenSymbols;
+                        if (data.playerNames) PLAYER_NAMES = data.playerNames;
+                        if (data.playerColors) PLAYER_COLORS = data.playerColors;
+                        renderAll();
+                        updateControls();
+                    } else if (data.type === 'roster_sync') {
+                        if (data.tokenSymbols) TOKEN_SYMBOLS = data.tokenSymbols;
+                        if (data.playerNames) PLAYER_NAMES = data.playerNames;
+                        if (data.playerColors) PLAYER_COLORS = data.playerColors;
+                        renderPlayers();
+                        renderLobbySlots();
+                    }
                 });
 
                 conn.on('close', () => {
