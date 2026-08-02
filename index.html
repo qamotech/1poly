@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>🏠 Monopoly – Family Game</title>
+    <title>🏠 Monopoly – 8-Player Family Mega Edition</title>
+    <meta name="description" content="Play the ultimate 8-Player Family Monopoly Party Game online with interactive customizer studio, 72 mega-upgrades, real-time trading, haptic touch feedback, and mobile-first design." />
+    <meta property="og:title" content="🏠 Monopoly – 8-Player Family Mega Edition" />
+    <meta property="og:description" content="Experience the ultimate 8-Player Party Mode Monopoly game with custom token pieces, glassmorphism UI, liquidity defense, and more!" />
+    <meta property="og:type" content="website" />
     <!-- PeerJS for easy WebRTC signaling -->
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js">
     </script>
@@ -190,15 +194,14 @@
             text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
         }
-        .space .token.t0 {
-            background: #e74c3c;
-        }
-        .space .token.t1 {
-            background: #3498db;
-        }
-        .space .token.t2 {
-            background: #2ecc71;
-        }
+        .space .token.t0 { background: #e74c3c; box-shadow: 0 0 6px #e74c3c; }
+        .space .token.t1 { background: #3498db; box-shadow: 0 0 6px #3498db; }
+        .space .token.t2 { background: #2ecc71; box-shadow: 0 0 6px #2ecc71; }
+        .space .token.t3 { background: #9b59b6; box-shadow: 0 0 6px #9b59b6; }
+        .space .token.t4 { background: #f1c40f; box-shadow: 0 0 6px #f1c40f; }
+        .space .token.t5 { background: #e67e22; box-shadow: 0 0 6px #e67e22; }
+        .space .token.t6 { background: #1abc9c; box-shadow: 0 0 6px #1abc9c; }
+        .space .token.t7 { background: #e84393; box-shadow: 0 0 6px #e84393; }
         .space .house {
             font-size: 0.5rem;
             color: #f7d94e;
@@ -676,6 +679,103 @@
         body.theme-cyber #app { background: #0c182c !important; box-shadow: 0 0 40px rgba(0,255,255,0.4) !important; }
         body.theme-cyber .space { border-color: #00ffff !important; }
         body.hi-contrast * { font-weight: 800 !important; letter-spacing: 0.5px !important; }
+
+        /* ─── 8-PLAYER MEGA UPGRADE STYLES ─── */
+        .space {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, background 0.2s !important;
+        }
+        .space:hover {
+            transform: translateY(-3px) scale(1.04) !important;
+            z-index: 10 !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7), 0 0 12px rgba(247, 217, 78, 0.5) !important;
+            cursor: pointer;
+        }
+        #leaderboardHUD {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: rgba(22, 33, 62, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 10px 14px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            z-index: 900;
+            max-width: 230px;
+            font-size: 0.75rem;
+            display: none;
+            transition: all 0.3s ease;
+        }
+        #leaderboardHUD:hover { transform: scale(1.02); background: rgba(22, 33, 62, 0.95); }
+        .mobile-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(22, 33, 62, 0.95);
+            backdrop-filter: blur(12px);
+            border-top: 2px solid #344778;
+            display: none;
+            padding: 10px 16px;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 950;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.6);
+        }
+        .mobile-action-bar button {
+            min-width: 50px;
+            min-height: 44px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        @media (max-width: 850px) {
+            #leaderboardHUD { top: auto; bottom: 75px; left: 10px; max-width: 190px; }
+            .mobile-action-bar { display: flex !important; }
+            body { padding-bottom: 70px !important; }
+            .header h1 { font-size: 1.2rem; }
+        }
+        @keyframes idlePulsar {
+            0% { box-shadow: 0 0 5px #e74c3c; border-color: #e74c3c; transform: scale(1); }
+            50% { box-shadow: 0 0 20px #00ffff; border-color: #00ffff; transform: scale(1.02); }
+            100% { box-shadow: 0 0 5px #e74c3c; border-color: #e74c3c; transform: scale(1); }
+        }
+        .turn-idle-pulse {
+            animation: idlePulsar 1.5s infinite alternate !important;
+        }
+        .custom-emoji-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 140px;
+            overflow-y: auto;
+            padding: 8px;
+            background: #10192d;
+            border-radius: 10px;
+            border: 1px solid #344778;
+        }
+        .emoji-opt {
+            font-size: 1.4rem;
+            padding: 4px 6px;
+            background: #1a2542;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .emoji-opt:hover, .emoji-opt.selected {
+            transform: scale(1.2);
+            border-color: #f7d94e;
+            background: #2a3b68;
+        }
     </style>
 </head>
 <body>
@@ -685,10 +785,21 @@
         <div class="header">
             <h1 style="display:flex; align-items:center; gap:8px;">🏠 MONOPOLY <span id="activePetBadge" class="pet-badge" style="display:none;">🐱 Kitty</span> <span id="weatherBadge" style="font-size:1.1rem;" title="Current Weather">☀️</span></h1>
             <div class="header-controls">
+                <select id="playerCountSelect" style="background: #1e2a4a; color: #fff; border: 2px solid #344778; border-radius: 16px; padding: 6px 12px; font-weight: 700; font-size: 0.85rem; outline: none; cursor: pointer; height: 36px;">
+                    <option value="2">👥 2 Players</option>
+                    <option value="3" selected>👥 3 Players</option>
+                    <option value="4">👥 4 Players</option>
+                    <option value="5">👥 5 Players</option>
+                    <option value="6">👥 6 Players</option>
+                    <option value="7">👥 7 Players</option>
+                    <option value="8">🔥 8 Players (Party!)</option>
+                </select>
+                <button id="openStudioBtn" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; font-weight: bold; border: none; padding: 6px 14px; border-radius: 18px; cursor: pointer; box-shadow: 0 0 12px rgba(56,239,125,0.4);">🎨 Piece Studio</button>
                 <button id="megaHubBtn" class="primary" style="background: linear-gradient(135deg, #ff007a, #7928ca); box-shadow: 0 0 15px rgba(255,0,122,0.5);">🌟 72 Mega-Upgrades Hub</button>
                 <button id="quickSoundBtn" style="background: #20b2aa;">🎵 Sound FX</button>
                 <button id="quickCoinBtn" style="background: #e67e22;">🪙 Flip Coin</button>
                 <button id="quickFortuneBtn" style="background: #9b59b6;">🔮 Fortune</button>
+                <button id="toggleHudBtn" style="background: #344778; color: #fff; border: none; padding: 6px 12px; border-radius: 16px; cursor: pointer; font-size: 0.8rem;">📊 Leaderboard</button>
                 <span class="status-badge" id="statusBadge">⚡ Offline</span>
                 <button id="resetBtn" class="danger">⟳ New Game</button>
             </div>
@@ -796,6 +907,59 @@
         </div>
     </div>
 
+    <!-- FLOATING LEADERBOARD HUD -->
+    <div id="leaderboardHUD">
+        <div style="font-weight:800; color:#f7d94e; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+            <span>🏆 Live Leaderboard</span>
+            <span onclick="document.getElementById('leaderboardHUD').style.display='none'" style="cursor:pointer; font-size:0.8rem; color:#aaa;">✖</span>
+        </div>
+        <div id="leaderboardHUDList"></div>
+    </div>
+
+    <!-- STICKY MOBILE ACTION BAR -->
+    <div class="mobile-action-bar" id="mobileActionBar">
+        <button id="mobRollBtn" style="background:linear-gradient(135deg, #f7d94e, #e67e22); color:#000;">🎲 Roll</button>
+        <button id="mobBuyBtn" style="background:#2ecc71; color:#fff;">💰 Buy</button>
+        <button id="mobBuildBtn" style="background:#3498db; color:#fff;">🏠 Build</button>
+        <button id="mobEndBtn" style="background:#e74c3c; color:#fff;">🛑 End</button>
+    </div>
+
+    <!-- PIECE CUSTOMIZER STUDIO MODAL -->
+    <div class="mega-modal-overlay" id="pieceStudioOverlay">
+        <div class="mega-modal" style="max-width:600px; padding:24px; background:#16213e; border-radius:24px; border:2px solid #38ef7d; box-shadow: 0 0 30px rgba(56,239,125,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #344778; padding-bottom:12px; margin-bottom:16px;">
+                <h3 style="color:#38ef7d; margin:0; font-size:1.3rem;">🎨 Interactive Piece Customizer Studio</h3>
+                <button onclick="closePieceStudio()" style="background:#c0392b; color:#fff; border:none; padding:6px 14px; border-radius:16px; font-weight:700; cursor:pointer;">✖ Done</button>
+            </div>
+            <div id="studioPlayersContainer" style="display:flex; flex-direction:column; gap:16px; max-height:450px; overflow-y:auto; padding-right:6px;"></div>
+        </div>
+    </div>
+
+    <!-- PROPERTY DEED INSPECT MODAL -->
+    <div class="mega-modal-overlay" id="deedInspectOverlay">
+        <div class="mega-modal" style="max-width:400px; padding:24px; background:rgba(22, 33, 62, 0.95); backdrop-filter:blur(15px); border-radius:24px; border:2px solid #f7d94e; text-align:center; box-shadow:0 15px 35px rgba(0,0,0,0.7);">
+            <div id="deedHeader" style="padding:16px; border-radius:16px 16px 0 0; font-size:1.4rem; font-weight:800; color:#fff; margin:-24px -24px 16px -24px;">Deed Card</div>
+            <div id="deedDetails" style="font-size:0.95rem; line-height:1.8; color:#ddd; text-align:left; padding:0 12px; margin-bottom:20px;"></div>
+            <div style="display:flex; justify-content:center; gap:12px;">
+                <button id="deedMortgageBtn" class="primary" style="display:none; background:#e67e22;">🏦 Mortgage ($<span id="deedMortgageVal"></span>)</button>
+                <button onclick="document.getElementById('deedInspectOverlay').style.display='none'" class="button" style="background:#344778; color:#fff; padding:10px 24px; border-radius:16px; border:none; font-weight:700; cursor:pointer;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BANKRUPTCY LIQUIDITY DEFENSE MODAL -->
+    <div class="mega-modal-overlay" id="liquidityDefenseOverlay">
+        <div class="mega-modal" style="max-width:480px; padding:24px; background:#2c1517; border:2px solid #e74c3c; border-radius:24px; box-shadow:0 0 35px rgba(231,76,60,0.6); text-align:center;">
+            <h2 style="color:#e74c3c; font-size:1.5rem; margin-bottom:10px;">🛡️ Bankruptcy Liquidity Defense!</h2>
+            <p style="color:#eee; font-size:0.9rem; margin-bottom:16px;">You owe more money than cash on hand! Rather than immediate bankruptcy, sell houses or mortgage properties to stay alive in the game!</p>
+            <div id="defenseList" style="max-height:200px; overflow-y:auto; margin-bottom:18px; text-align:left; background:#1b0b0c; padding:12px; border-radius:12px; border:1px solid #5a2a2e;"></div>
+            <div style="display:flex; justify-content:space-between; gap:12px;">
+                <button id="concedeBankruptBtn" class="danger" style="background:#5a1e22; color:#ccc;">💀 Concede Bankruptcy</button>
+                <button onclick="checkDefenseResolved()" class="primary" style="background:#2ecc71;">✅ Continue Turn</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ═══════════════════════════════════════════════════════════════
         //  MONOPOLY – PEER‑TO‑PEER with PeerJS (automatic signaling)
@@ -803,9 +967,13 @@
 
         // ─── CONSTANTS ────────────────────────────────────────────────
         const BOARD_SIZE = 40;
-        const PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71'];
-        const PLAYER_NAMES = ['You', 'Daughter 1', 'Daughter 2'];
-        const TOKEN_SYMBOLS = ['⭐', '🌈', '🦄'];
+        let activePlayerCount = 3;
+        let PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#e84393'];
+        let PLAYER_NAMES = ['You', 'Daughter 1', 'Daughter 2', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8'];
+        let TOKEN_SYMBOLS = ['⭐', '🌈', '🦄', '🚀', '👑', '🐱', '🎸', '🔥'];
+        const AVAILABLE_EMOJIS = ['⭐', '🌈', '🦄', '🚀', '👑', '🐱', '🎸', '🔥', '🎩', '🏎️', '🚢', '🦖', '🧚', '🍕', '💎', '🐉', '🐼', '⚡', '🤖', '👻', '🧜‍♀️', '🍦', '🍒', '🎲', '🧩', '🏆', '🧸', '🛰️', '🚁', '🏝️', '🧿', '👑'];
+        let idleTurnTimer = null;
+        let activeDefensePlayer = -1;
 
         const PROPERTIES = [
             { id: 0, name: 'GO', type: 'go', group: -1, price: 0, rent: 0, color: null },
@@ -933,7 +1101,7 @@
 
         function createGame() {
             const players = [];
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < activePlayerCount; i++) {
                 players.push({
                     id: i,
                     name: PLAYER_NAMES[i],
@@ -1053,16 +1221,27 @@
             const p = G.players[playerIdx];
             if (p.bankrupt) return;
             const oldPos = p.position;
-            let newPos = (oldPos + steps) % BOARD_SIZE;
-            p.position = newPos;
-            if (newPos < oldPos && oldPos + steps >= BOARD_SIZE) {
-                p.money += 200;
-                addLog(`💰 ${p.name} passed GO – collected $200`);
-            }
-            triggerSpace(playerIdx);
-            renderAll();
-            updateControls();
-            checkGameOver();
+            const targetPos = (oldPos + steps) % BOARD_SIZE;
+            let currentStep = 0;
+            const hopInterval = setInterval(() => {
+                currentStep++;
+                p.position = (oldPos + currentStep) % BOARD_SIZE;
+                playMegaSound(250 + (currentStep * 35), 0.04, 'sine');
+                renderBoard();
+                if (currentStep >= steps) {
+                    clearInterval(hopInterval);
+                    if (targetPos < oldPos && oldPos + steps >= BOARD_SIZE) {
+                        p.money += 200;
+                        addLog(`💰 ${p.name} passed GO – collected $200`);
+                        triggerHaptic('buy');
+                    }
+                    triggerSpace(playerIdx);
+                    renderAll();
+                    updateControls();
+                    checkGameOver();
+                    saveGameState();
+                }
+            }, 110);
         }
 
         function triggerSpace(playerIdx) {
@@ -1223,6 +1402,15 @@
         function handleBankruptcy(playerIdx) {
             const p = G.players[playerIdx];
             if (p.money >= 0) return;
+            if (p.properties.length > 0) {
+                openLiquidityDefenseModal(playerIdx);
+                return;
+            }
+            executeFinalBankruptcy(playerIdx);
+        }
+
+        function executeFinalBankruptcy(playerIdx) {
+            const p = G.players[playerIdx];
             p.bankrupt = true;
             for (const propId of p.properties) {
                 G.propertyOwners[propId] = -1;
@@ -1238,13 +1426,14 @@
 
         function endTurn() {
             if (!G || G.gameOver) return;
-            let next = (G.currentPlayer + 1) % 3;
+            const cnt = G.players.length;
+            let next = (G.currentPlayer + 1) % cnt;
             let attempts = 0;
-            while (G.players[next].bankrupt && attempts < 3) {
-                next = (next + 1) % 3;
+            while (G.players[next].bankrupt && attempts < cnt) {
+                next = (next + 1) % cnt;
                 attempts++;
             }
-            if (attempts >= 3 || G.players.filter(p => !p.bankrupt).length <= 1) {
+            if (attempts >= cnt || G.players.filter(p => !p.bankrupt).length <= 1) {
                 checkGameOver();
                 return;
             }
@@ -1253,6 +1442,8 @@
             G.currentPlayer = next;
             G.players[next].turn = true;
             G.phase = 'roll';
+            startIdleTurnTimer();
+            saveGameState();
             G.doublesCount = 0;
             G.turnCount++;
             addLog(`🔄 ${G.players[next].name}'s turn`);
@@ -1450,6 +1641,7 @@
                         space.appendChild(hl);
                     }
 
+                    space.onclick = () => inspectDeedCard(pos);
                     boardEl.appendChild(space);
                 }
             }
@@ -1525,6 +1717,7 @@
             renderPlayers();
             renderLog();
             updateDiceDisplay();
+            if (typeof updateLeaderboardHUD === 'function') updateLeaderboardHUD();
         }
 
         function updateDiceDisplay() {
@@ -1566,6 +1759,7 @@
             } else {
                 buyBtn.style.display = 'none';
             }
+            if (typeof syncMobileActionBar === 'function') syncMobileActionBar();
         }
 
         function updateStatus(state, msg) {
@@ -2343,6 +2537,328 @@
                 setTimeout(() => dot.remove(), 2600);
             }
         }
+
+        // ─── 8-PLAYER MEGA UPGRADES & ENHANCEMENTS HELPER FUNCTIONS ───
+
+        function triggerHaptic(type = 'default') {
+            if (!navigator || !navigator.vibrate) return;
+            try {
+                if (type === 'roll') navigator.vibrate([40, 30, 40]);
+                else if (type === 'buy') navigator.vibrate([30, 50, 80]);
+                else if (type === 'alert') navigator.vibrate([100, 50, 100]);
+                else navigator.vibrate(20);
+            } catch (e) {}
+        }
+
+        function saveGameState() {
+            try {
+                if (G && typeof localStorage !== 'undefined') {
+                    localStorage.setItem('1poly_recovery_state', JSON.stringify({
+                        G: G,
+                        activePlayerCount: activePlayerCount,
+                        PLAYER_NAMES: PLAYER_NAMES,
+                        PLAYER_COLORS: PLAYER_COLORS,
+                        TOKEN_SYMBOLS: TOKEN_SYMBOLS,
+                        timestamp: Date.now()
+                    }));
+                }
+            } catch(e) {}
+        }
+
+        function loadGameState() {
+            try {
+                const raw = localStorage.getItem('1poly_recovery_state');
+                if (!raw) return false;
+                const data = JSON.parse(raw);
+                if (data && data.G && Date.now() - data.timestamp < 3600000) {
+                    G = data.G;
+                    if (data.activePlayerCount) activePlayerCount = data.activePlayerCount;
+                    if (data.PLAYER_NAMES) PLAYER_NAMES = data.PLAYER_NAMES;
+                    if (data.PLAYER_COLORS) PLAYER_COLORS = data.PLAYER_COLORS;
+                    if (data.TOKEN_SYMBOLS) TOKEN_SYMBOLS = data.TOKEN_SYMBOLS;
+                    if (typeof document !== 'undefined') {
+                        const sel = document.getElementById('playerCountSelect');
+                        if (sel) sel.value = String(activePlayerCount);
+                    }
+                    renderAll();
+                    updateControls();
+                    addLog('⚡ Previous session automatically restored!');
+                    return true;
+                }
+            } catch(e) {}
+            return false;
+        }
+
+        function startIdleTurnTimer() {
+            clearIdleTurnTimer();
+            idleTurnTimer = setTimeout(() => {
+                if (G && !G.gameOver && G.currentPlayer >= 0) {
+                    const cards = document.querySelectorAll('.player-card');
+                    if (cards[G.currentPlayer]) {
+                        cards[G.currentPlayer].classList.add('turn-idle-pulse');
+                        playMegaSound(440, 0.1, 'triangle');
+                        addLog('⏳ Friendly Nudge: Waiting for active player to move!');
+                    }
+                }
+            }, 60000);
+        }
+
+        function clearIdleTurnTimer() {
+            if (idleTurnTimer) clearTimeout(idleTurnTimer);
+            const pulsed = document.querySelectorAll('.turn-idle-pulse');
+            pulsed.forEach(el => el.classList.remove('turn-idle-pulse'));
+        }
+
+        function updateLeaderboardHUD() {
+            const listEl = document.getElementById('leaderboardHUDList');
+            if (!listEl || !G || !G.players) return;
+            const sorted = [...G.players].sort((a,b) => {
+                const valA = a.money + a.properties.reduce((sum, id) => sum + (PROPERTIES[id] ? PROPERTIES[id].price : 0), 0);
+                const valB = b.money + b.properties.reduce((sum, id) => sum + (PROPERTIES[id] ? PROPERTIES[id].price : 0), 0);
+                return valB - valA;
+            });
+            listEl.innerHTML = sorted.map((p, rank) => {
+                const netWorth = p.money + p.properties.reduce((sum, id) => sum + (PROPERTIES[id] ? PROPERTIES[id].price : 0), 0);
+                return `<div style="display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px dashed rgba(255,255,255,0.05);">
+                    <span style="color:${p.color}; font-weight:700;">#${rank+1} ${p.token} ${p.name.split(' ')[0]}</span>
+                    <span style="color:#2ecc71; font-weight:600;">$${netWorth}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function syncMobileActionBar() {
+            const mobRoll = document.getElementById('mobRollBtn');
+            const mobBuy = document.getElementById('mobBuyBtn');
+            const mobBuild = document.getElementById('mobBuildBtn');
+            const mobEnd = document.getElementById('mobEndBtn');
+            if (mobRoll) mobRoll.style.opacity = typeof rollBtn !== 'undefined' && rollBtn.disabled ? '0.4' : '1';
+            if (mobBuy) mobBuy.style.display = typeof buyBtn !== 'undefined' && buyBtn.style.display !== 'none' ? 'flex' : 'none';
+            if (mobBuild) mobBuild.style.opacity = typeof buildBtn !== 'undefined' && buildBtn.disabled ? '0.4' : '1';
+            if (mobEnd) mobEnd.style.opacity = typeof endTurnBtn !== 'undefined' && endTurnBtn.disabled ? '0.4' : '1';
+        }
+
+        function inspectDeedCard(pos) {
+            const prop = PROPERTIES[pos];
+            if (!prop || !['property', 'railroad', 'utility'].includes(prop.type)) return;
+            const ownerIdx = G.propertyOwners[pos];
+            const header = document.getElementById('deedHeader');
+            const details = document.getElementById('deedDetails');
+            const mortBtn = document.getElementById('deedMortgageBtn');
+            const mortVal = document.getElementById('deedMortgageVal');
+
+            header.textContent = prop.name;
+            header.style.background = prop.color || '#344778';
+
+            let desc = `<b>Type:</b> ${prop.type.toUpperCase()}<br/>`;
+            desc += `<b>Price:</b> $${prop.price}<br/>`;
+            desc += `<b>Base Rent:</b> $${prop.rent || 0}<br/>`;
+            if (prop.houseCost) desc += `<b>House Cost:</b> $${prop.houseCost}<br/>`;
+            desc += `<b>Current Owner:</b> ${ownerIdx >= 0 ? `<span style="color:${G.players[ownerIdx].color};font-weight:bold;">${G.players[ownerIdx].name}</span>` : '<i>Unowned</i>'}`;
+
+            details.innerHTML = desc;
+
+            if (ownerIdx >= 0 && ownerIdx === G.currentPlayer && !G.players[ownerIdx].bankrupt) {
+                mortBtn.style.display = 'inline-block';
+                mortVal.textContent = Math.floor(prop.price * 0.5);
+                mortBtn.onclick = () => {
+                    if (confirm(`Mortgage ${prop.name} for $${Math.floor(prop.price * 0.5)}?`)) {
+                        G.players[ownerIdx].money += Math.floor(prop.price * 0.5);
+                        G.propertyOwners[pos] = -1;
+                        G.houseCounts[pos] = 0;
+                        addLog(`🏦 ${G.players[ownerIdx].name} mortgaged ${prop.name} for $${Math.floor(prop.price * 0.5)}!`);
+                        document.getElementById('deedInspectOverlay').style.display = 'none';
+                        renderAll();
+                        updateControls();
+                        saveGameState();
+                    }
+                };
+            } else {
+                mortBtn.style.display = 'none';
+            }
+            document.getElementById('deedInspectOverlay').style.display = 'flex';
+            triggerHaptic();
+        }
+
+        function openLiquidityDefenseModal(pIdx) {
+            activeDefensePlayer = pIdx;
+            const p = G.players[pIdx];
+            const list = document.getElementById('defenseList');
+            let html = `<div style="margin-bottom:8px;font-weight:bold;color:#f7d94e;">Current Deficit: $${Math.abs(p.money)}</div>`;
+            html += `<div style="font-size:0.85rem;color:#ccc;margin-bottom:10px;">Select properties to sell houses or mortgage back to the bank:</div>`;
+            
+            p.properties.forEach(pos => {
+                const prop = PROPERTIES[pos];
+                const houses = G.houseCounts[pos] || 0;
+                const mortValue = Math.floor(prop.price * 0.5);
+                html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <div>
+                        <b style="color:${prop.color||'#fff'}">${prop.name}</b>
+                        <div style="font-size:0.75rem;">Houses: ${houses} | Mortgage: $${mortValue}</div>
+                    </div>
+                    <div>
+                        ${houses > 0 ? `<button onclick="sellHouseInDefense(${pos})" style="background:#e67e22;color:#fff;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:0.75rem;margin-right:4px;">Sell House ($${Math.floor((prop.houseCost||50)*0.5)})</button>` : ''}
+                        <button onclick="mortgageInDefense(${pos})" style="background:#c0392b;color:#fff;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:0.75rem;">Mortgage ($${mortValue})</button>
+                    </div>
+                </div>`;
+            });
+            list.innerHTML = html;
+            document.getElementById('liquidityDefenseOverlay').style.display = 'flex';
+            triggerHaptic('alert');
+        }
+
+        function sellHouseInDefense(pos) {
+            if (activeDefensePlayer < 0) return;
+            const p = G.players[activeDefensePlayer];
+            const prop = PROPERTIES[pos];
+            if (G.houseCounts[pos] > 0) {
+                G.houseCounts[pos]--;
+                p.money += Math.floor((prop.houseCost || 50) * 0.5);
+                addLog(`🛡️ Liquidity Defense: ${p.name} sold 1 house on ${prop.name}.`);
+                openLiquidityDefenseModal(activeDefensePlayer);
+                renderAll();
+            }
+        }
+
+        function mortgageInDefense(pos) {
+            if (activeDefensePlayer < 0) return;
+            const p = G.players[activeDefensePlayer];
+            const prop = PROPERTIES[pos];
+            const mortVal = Math.floor(prop.price * 0.5);
+            p.money += mortVal;
+            G.propertyOwners[pos] = -1;
+            G.houseCounts[pos] = 0;
+            p.properties = p.properties.filter(id => id !== pos);
+            addLog(`🏦 Liquidity Defense: ${p.name} mortgaged ${prop.name} for $${mortVal}.`);
+            if (p.properties.length > 0 && p.money < 0) {
+                openLiquidityDefenseModal(activeDefensePlayer);
+            } else {
+                checkDefenseResolved();
+            }
+            renderAll();
+        }
+
+        function checkDefenseResolved() {
+            if (activeDefensePlayer < 0) return;
+            const p = G.players[activeDefensePlayer];
+            document.getElementById('liquidityDefenseOverlay').style.display = 'none';
+            if (p.money < 0) {
+                executeFinalBankruptcy(activeDefensePlayer);
+            } else {
+                addLog(`🛡️ ${p.name} successfully resolved their financial crisis! Turn continues.`);
+                G.phase = 'postroll';
+                endTurn();
+                checkGameOver();
+            }
+            activeDefensePlayer = -1;
+        }
+
+        function openPieceStudio() {
+            const cont = document.getElementById('studioPlayersContainer');
+            if (!cont || !G) return;
+            cont.innerHTML = G.players.map((p, idx) => `
+                <div style="background:#10192d; padding:16px; border-radius:16px; border:1px solid ${p.color}; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <span style="font-weight:800; color:${p.color}; font-size:1.1rem;">Player ${idx + 1} (${p.token})</span>
+                        <input type="color" value="${p.color}" onchange="updatePlayerColor(${idx}, this.value)" style="width:40px; height:32px; border:none; background:transparent; cursor:pointer;" title="Pick custom color" />
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:0.8rem; color:#aaa; display:block; margin-bottom:4px;">Player Name:</label>
+                        <input type="text" value="${p.name}" onchange="updatePlayerName(${idx}, this.value)" style="background:#1a2542; color:#fff; border:1px solid #344778; border-radius:8px; padding:6px 12px; width:100%; font-weight:600; outline:none;" />
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:#aaa; display:block; margin-bottom:6px;">Choose Custom Emoji Token:</label>
+                        <div class="custom-emoji-picker">
+                            ${AVAILABLE_EMOJIS.map(em => `<span class="emoji-opt ${p.token === em ? 'selected' : ''}" onclick="selectTokenSymbol(${idx}, '${em}')">${em}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('pieceStudioOverlay').style.display = 'flex';
+            triggerHaptic();
+        }
+
+        function closePieceStudio() {
+            document.getElementById('pieceStudioOverlay').style.display = 'none';
+            renderAll();
+            saveGameState();
+        }
+
+        function updatePlayerName(idx, newName) {
+            if (G && G.players[idx]) {
+                G.players[idx].name = newName || `Player ${idx+1}`;
+                PLAYER_NAMES[idx] = G.players[idx].name;
+                renderAll();
+                saveGameState();
+            }
+        }
+
+        function updatePlayerColor(idx, newCol) {
+            if (G && G.players[idx]) {
+                G.players[idx].color = newCol;
+                PLAYER_COLORS[idx] = newCol;
+                const el = document.querySelector(`.space .token.t${idx}`);
+                if (el) el.style.background = newCol;
+                openPieceStudio();
+                renderAll();
+                saveGameState();
+            }
+        }
+
+        function selectTokenSymbol(idx, symbol) {
+            if (G && G.players[idx]) {
+                G.players[idx].token = symbol;
+                TOKEN_SYMBOLS[idx] = symbol;
+                openPieceStudio();
+                renderAll();
+                saveGameState();
+            }
+        }
+
+        // Bind new event listeners
+        window.addEventListener('DOMContentLoaded', () => {
+            const sel = document.getElementById('playerCountSelect');
+            if (sel) {
+                sel.addEventListener('change', (e) => {
+                    activePlayerCount = parseInt(e.target.value, 10) || 3;
+                    initGame();
+                    addLog(`👥 Party match re-initialized for ${activePlayerCount} Players!`);
+                });
+            }
+            const studioBtn = document.getElementById('openStudioBtn');
+            if (studioBtn) studioBtn.addEventListener('click', openPieceStudio);
+            
+            const hudBtn = document.getElementById('toggleHudBtn');
+            if (hudBtn) {
+                hudBtn.addEventListener('click', () => {
+                    const hud = document.getElementById('leaderboardHUD');
+                    if (hud) hud.style.display = hud.style.display === 'none' ? 'block' : 'none';
+                });
+            }
+            
+            // Mobile action bar bindings
+            const mRoll = document.getElementById('mobRollBtn');
+            const mBuy = document.getElementById('mobBuyBtn');
+            const mBuild = document.getElementById('mobBuildBtn');
+            const mEnd = document.getElementById('mobEndBtn');
+            if (mRoll && typeof rollBtn !== 'undefined') mRoll.addEventListener('click', () => rollBtn.click());
+            if (mBuy && typeof buyBtn !== 'undefined') mBuy.addEventListener('click', () => buyBtn.click());
+            if (mBuild && typeof buildBtn !== 'undefined') mBuild.addEventListener('click', () => buildBtn.click());
+            if (mEnd && typeof endTurnBtn !== 'undefined') mEnd.addEventListener('click', () => endTurnBtn.click());
+
+            const concedeBtn = document.getElementById('concedeBankruptBtn');
+            if (concedeBtn) {
+                concedeBtn.addEventListener('click', () => {
+                    if (activeDefensePlayer >= 0) {
+                        document.getElementById('liquidityDefenseOverlay').style.display = 'none';
+                        executeFinalBankruptcy(activeDefensePlayer);
+                        activeDefensePlayer = -1;
+                    }
+                });
+            }
+
+            // Check for previous recovery state
+            setTimeout(() => { loadGameState(); }, 300);
+        });
 
         // Initialize all mega effects on boot
         applyMegaEffects();
