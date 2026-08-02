@@ -1295,7 +1295,7 @@
         const BOARD_SIZE = 40;
         let activePlayerCount = 3;
         let PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#e84393'];
-        let PLAYER_NAMES = ['You', 'Daughter 1', 'Daughter 2', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8'];
+        let PLAYER_NAMES = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8'];
         let TOKEN_SYMBOLS = ['⭐', '🌈', '🦄', '🚀', '👑', '🐱', '🎸', '🔥'];
         const AVAILABLE_EMOJIS = ['⭐', '🌈', '🦄', '🚀', '👑', '🐱', '🎸', '🔥', '🎩', '🏎️', '🚢', '🦖', '🧚', '🍕', '💎', '🐉', '🐼', '⚡', '🤖', '👻', '🧜‍♀️', '🍦', '🍒', '🎲', '🧩', '🏆', '🧸', '🛰️', '🚁', '🏝️', '🧿', '👑'];
         let idleTurnTimer = null;
@@ -3351,7 +3351,7 @@
             let html = '';
             for (let i = 0; i < activePlayerCount; i++) {
                 const charPreset = CHARACTERS[i % CHARACTERS.length];
-                const name = PLAYER_NAMES[i] || charPreset.name;
+                const name = PLAYER_NAMES[i] || `P${i+1}`;
                 const color = PLAYER_COLORS[i] || charPreset.color;
                 const token = TOKEN_SYMBOLS[i] || charPreset.token;
                 html += `
@@ -3382,7 +3382,7 @@
         }
 
         function updateLobbyName(i, val) {
-            PLAYER_NAMES[i] = val || `Player ${i+1}`;
+            PLAYER_NAMES[i] = val || `P${i+1}`;
         }
 
         function updateLobbyColor(i, val) {
