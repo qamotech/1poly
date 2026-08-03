@@ -1678,6 +1678,17 @@
                             <span style="color:#aaa; font-size:0.75rem;">Tap anywhere to skip hop step</span>
                         </div>
                         <span style="color:#38ef7d; font-weight:800; font-size:0.85rem;">✨ Tap to Skip Active</span>
+                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; grid-column: 1 / -1;">
+                        <div>
+                            <span style="color:#00f0ff; font-weight:700; display:block;">🎙️ Announcer Voice Persona:</span>
+                            <span style="color:#aaa; font-size:0.75rem;">Choose Announcer Speech Tone & Pitch Profile</span>
+                        </div>
+                        <select onchange="window.setVoiceProfile(this.value)" style="background:#10192d; color:#fff; border:2px solid #00f0ff; border-radius:12px; padding:8px 12px; font-weight:800; cursor:pointer; outline:none;">
+                            <option value="arcade" selected>🎮 Arcade Host (Upbeat)</option>
+                            <option value="royal">🎩 Royal Monopoly Host (Regal)</option>
+                            <option value="bot">🤖 Sci-Fi Cyber Bot (Robot)</option>
+                            <option value="cute">👶 Cute Companion (Kid Friendly)</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -4364,14 +4375,31 @@
         let voiceEnabled = true;
         let is3DView = true;
 
+        // ─── MULTI-VOICE ANNOUNCER PERSONAS & UPGRADED AUDIO FX SYNTHESIZER ───
+        window.currentVoiceProfile = 'arcade'; // 'arcade', 'royal', 'bot', 'cute'
+
+        window.setVoiceProfile = function(profile) {
+            window.currentVoiceProfile = profile || 'arcade';
+            const pNames = { arcade: '🎮 Arcade Host', royal: '🎩 Royal Monopoly Host', bot: '🤖 Sci-Fi Cyber Bot', cute: '👶 Cute Companion' };
+            if (typeof addLog === 'function') addLog(`🎙️ Voice Persona set to: ${pNames[window.currentVoiceProfile] || profile}`);
+            if (typeof speechAnnounce === 'function') speechAnnounce(`Voice Persona changed to ${pNames[window.currentVoiceProfile] || profile}!`);
+        };
+
         function getRealisticVoice() {
             if (!('speechSynthesis' in window)) return null;
             const voices = window.speechSynthesis.getVoices();
             if (!voices || voices.length === 0) return null;
             const english = voices.filter(v => v.lang && v.lang.startsWith('en'));
             const pool = english.length > 0 ? english : voices;
-            const natural = pool.find(v => v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('Karen') || v.name.includes('Alex'));
-            return natural || pool[0] || voices[0];
+
+            if (window.currentVoiceProfile === 'bot') {
+                return pool.find(v => v.name.includes('Robot') || v.name.includes('Google') || v.name.includes('Zira')) || pool[0];
+            } else if (window.currentVoiceProfile === 'royal') {
+                return pool.find(v => v.name.includes('Daniel') || v.name.includes('Oliver') || v.name.includes('George') || v.name.includes('UK')) || pool[0];
+            } else if (window.currentVoiceProfile === 'cute') {
+                return pool.find(v => v.name.includes('Samantha') || v.name.includes('Victoria') || v.name.includes('Karen')) || pool[0];
+            }
+            return pool.find(v => v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Alex')) || pool[0];
         }
 
         function characterSpeak(playerIdx, eventType) {
@@ -4389,12 +4417,53 @@
                     const msg = new SpeechSynthesisUtterance(text);
                     const realVoice = getRealisticVoice();
                     if (realVoice) msg.voice = realVoice;
-                    msg.pitch = Math.max(0.95, Math.min(1.15, charObj.pitch || 1.0));
-                    msg.rate = Math.max(0.95, Math.min(1.1, charObj.rate || 1.0));
+
+                    // Tune pitch & rate based on active Voice Persona
+                    let pitchMult = 1.0, rateMult = 1.0;
+                    if (window.currentVoiceProfile === 'arcade') { pitchMult = 1.2; rateMult = 1.15; }
+                    else if (window.currentVoiceProfile === 'royal') { pitchMult = 0.92; rateMult = 0.95; }
+                    else if (window.currentVoiceProfile === 'bot') { pitchMult = 0.75; rateMult = 1.0; }
+                    else if (window.currentVoiceProfile === 'cute') { pitchMult = 1.4; rateMult = 1.2; }
+
+                    msg.pitch = Math.max(0.6, Math.min(1.8, (charObj.pitch || 1.0) * pitchMult));
+                    msg.rate = Math.max(0.7, Math.min(1.6, (charObj.rate || 1.0) * rateMult));
                     window.speechSynthesis.speak(msg);
                 } catch(e) {}
             }
         }
+
+        // Upgraded Granular Web Audio FX Synthesizer
+        window.playUpgradedAudioFX = function(fxName) {
+            if (typeof playMegaSound !== 'function') return;
+            switch(fxName) {
+                case 'dice_roll':
+                    playMegaSound(180, 0.06, 'sawtooth');
+                    playMegaSound(130, 0.06, 'triangle', 40);
+                    playMegaSound(90, 0.08, 'triangle', 90);
+                    break;
+                case 'cash_register':
+                    playMegaSound(987.77, 0.08, 'sine');
+                    playMegaSound(1318.51, 0.12, 'triangle', 60);
+                    playMegaSound(1567.98, 0.2, 'sine', 120);
+                    break;
+                case 'build_house':
+                    playMegaSound(240, 0.06, 'square');
+                    playMegaSound(360, 0.08, 'triangle', 50);
+                    playMegaSound(480, 0.12, 'sine', 100);
+                    break;
+                case 'bankrupt_doom':
+                    playMegaSound(110, 0.4, 'sine');
+                    playMegaSound(82.41, 0.5, 'sawtooth', 150);
+                    playMegaSound(55, 0.8, 'sine', 300);
+                    break;
+                case 'pass_go_reward':
+                    playMegaSound(523.25, 0.1, 'sine');
+                    playMegaSound(659.25, 0.12, 'sine', 60);
+                    playMegaSound(783.99, 0.14, 'sine', 120);
+                    playMegaSound(1046.50, 0.25, 'triangle', 180);
+                    break;
+            }
+        };
 
         function showSpeechBubble(playerIdx, text) {
             const cards = document.querySelectorAll('.player-card');
