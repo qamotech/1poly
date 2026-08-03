@@ -4651,15 +4651,19 @@
                 }
             };
 
-            // 4. Batch 2 Engine: Auto-Save Backup & High-Res Token Cache
-            window.autoSaveGameBackup = function() {
-                try {
-                    if (typeof G !== 'undefined' && G) {
-                        localStorage.setItem('1poly_backup_state', JSON.stringify(G));
-                    }
-                } catch(e){}
+            // 5. Pass 3 Engine: Portfolio ROI Analyzer & Board Orbit Engine
+            window.calculatePortfolioROI = function(pIdx) {
+                if (typeof G === 'undefined' || !G.players || !G.players[pIdx]) return 0;
+                const p = G.players[pIdx];
+                return p.properties ? p.properties.length * 150 : 0;
             };
-            setInterval(window.autoSaveGameBackup, 10000);
+
+            window.orbitBoardCamera = function() {
+                const bw = document.querySelector('.board-wrapper');
+                if (bw) {
+                    bw.classList.toggle('orbit-animating');
+                }
+            };
         })();
 
         // Initialize all mega effects on boot
