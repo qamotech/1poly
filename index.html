@@ -4650,6 +4650,16 @@
                     playMegaSound(freq * 1.5, 0.12, type, 60);
                 }
             };
+
+            // 4. Batch 2 Engine: Auto-Save Backup & High-Res Token Cache
+            window.autoSaveGameBackup = function() {
+                try {
+                    if (typeof G !== 'undefined' && G) {
+                        localStorage.setItem('1poly_backup_state', JSON.stringify(G));
+                    }
+                } catch(e){}
+            };
+            setInterval(window.autoSaveGameBackup, 10000);
         })();
 
         // Initialize all mega effects on boot
