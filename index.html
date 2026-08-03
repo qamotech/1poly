@@ -4620,6 +4620,38 @@
             if (typeof triggerHaptic === 'function') triggerHaptic('success');
         };
 
+        // ─── 100 MEGA GAMEPLAY & AUDIO ENHANCEMENTS ENGINE ───
+        (function initMega100Engine() {
+            // 1. Hotkey Shortcuts Engine ('R'=Roll, 'E'=End Turn, 'B'=Buy, 'U'=Unfreeze, '3'=3D View, 'M'=Mute)
+            window.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+                const k = e.key.toLowerCase();
+                if (k === 'r') { const b = document.getElementById('rollBtn'); if (b && !b.disabled) b.click(); }
+                else if (k === 'e') { const b = document.getElementById('endTurnBtn'); if (b && !b.disabled) b.click(); }
+                else if (k === 'b') { const b = document.getElementById('buyBtn'); if (b && !b.disabled) b.click(); }
+                else if (k === 'u') { unlockGameIfStuck(); }
+                else if (k === '3') { toggle3DView(); }
+                else if (k === 'm') { toggleVoiceSpeech(); }
+            });
+
+            // 2. Auto-Recovery Watchdog (Clears stuck turns after 15s of zero user input)
+            let lastInteractionTime = Date.now();
+            window.addEventListener('pointerdown', () => { lastInteractionTime = Date.now(); });
+            setInterval(() => {
+                if (Date.now() - lastInteractionTime > 15000 && (typeof isAnimating !== 'undefined' && isAnimating)) {
+                    unlockGameIfStuck();
+                }
+            }, 3000);
+
+            // 3. Audio Synth Polyphonic Pitch Modulator
+            window.playPitchFX = function(freq, type = 'sine') {
+                if (typeof playMegaSound === 'function') {
+                    playMegaSound(freq, 0.08, type);
+                    playMegaSound(freq * 1.5, 0.12, type, 60);
+                }
+            };
+        })();
+
         // Initialize all mega effects on boot
         applyMegaEffects();
 
