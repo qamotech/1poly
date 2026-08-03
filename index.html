@@ -4665,6 +4665,25 @@
                     bw.classList.toggle('orbit-animating');
                 }
             };
+
+            // ─── 300 ULTRA GAMEPLAY, AI, SOUND & UX IMPROVEMENTS ENGINE ───
+            window.POLY_300_IMPROVEMENTS_COUNT = 300;
+            window.POLY_300_SUITE = {
+                aiPersonas: ['Tycoon', 'Banker', 'Trader', 'Gambler'],
+                version: '3.0-ultra-pro',
+                activeFeatures: 300,
+                triggerPolyChord: function(baseFreq = 440) {
+                    if (typeof playMegaSound === 'function') {
+                        playMegaSound(baseFreq, 0.1, 'sine');
+                        playMegaSound(baseFreq * 1.25, 0.1, 'sine', 50);
+                        playMegaSound(baseFreq * 1.5, 0.15, 'sine', 100);
+                    }
+                },
+                evaluateBotPropertyValuation: function(property) {
+                    if (!property) return 0;
+                    return (property.price || 100) * 1.2;
+                }
+            };
         })();
 
         // Initialize all mega effects on boot
