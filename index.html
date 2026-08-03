@@ -1339,6 +1339,46 @@
             width: 100%;
         }
 
+        /* ─── NEXT-LEVEL GRAPHICS & PARABOLIC HOP ANIMATION ENGINE ─── */
+        @keyframes parabolicHop {
+            0% { transform: translateY(0) scale(1) rotate(0deg); }
+            50% { transform: translateY(-28px) scale(1.3) rotate(8deg); filter: drop-shadow(0 15px 12px rgba(0, 240, 255, 0.8)); }
+            100% { transform: translateY(0) scale(1) rotate(0deg); }
+        }
+        .token.hopping {
+            animation: parabolicHop 0.28s cubic-bezier(0.25, 1, 0.5, 1) !important;
+            z-index: 100 !important;
+        }
+
+        @keyframes tileNeonGlow {
+            0% { box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2); }
+            50% { box-shadow: inset 0 0 25px rgba(255, 0, 122, 0.6), 0 0 20px rgba(0, 240, 255, 0.6); }
+            100% { box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2); }
+        }
+        .space.owned {
+            animation: tileNeonGlow 3s infinite alternate;
+        }
+
+        @keyframes floatingCashAnim {
+            0% { opacity: 1; transform: translateY(0) scale(0.9); }
+            50% { opacity: 1; transform: translateY(-35px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1); }
+        }
+        .floating-cash-popup {
+            position: absolute;
+            z-index: 20000;
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: #38ef7d;
+            text-shadow: 0 0 12px rgba(56, 239, 125, 0.8), 0 0 2px #000;
+            pointer-events: none;
+            animation: floatingCashAnim 1.4s ease-out forwards;
+        }
+        .floating-cash-popup.loss {
+            color: #ff4757;
+            text-shadow: 0 0 12px rgba(255, 71, 87, 0.8), 0 0 2px #000;
+        }
+
         .board-wrapper.iso-3d-view {
             transform: perspective(1100px) rotateX(24deg) rotateZ(-1deg) scale(0.96);
             transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.6s;
@@ -4724,6 +4764,39 @@
             const overlay = document.getElementById('fullscreenEventOverlay');
             if (overlay) overlay.style.display = 'none';
         }
+
+        // ─── FLOATING CASH POPUPS & GOLD CASH EXPLOSION ENGINE ───
+        window.triggerFloatingCashFX = function(playerIdx, amount) {
+            const cards = document.querySelectorAll('.player-card');
+            if (!cards[playerIdx]) return;
+            const targetCard = cards[playerIdx];
+            const rect = targetCard.getBoundingClientRect();
+
+            const pop = document.createElement('div');
+            pop.className = `floating-cash-popup ${amount < 0 ? 'loss' : ''}`;
+            pop.textContent = amount >= 0 ? `+$${amount} 💵` : `-$${Math.abs(amount)} 💸`;
+            pop.style.left = `${rect.left + rect.width / 2 - 30}px`;
+            pop.style.top = `${rect.top + 10}px`;
+            document.body.appendChild(pop);
+
+            if (typeof playUpgradedAudioFX === 'function') {
+                playUpgradedAudioFX(amount >= 0 ? 'cash_register' : 'bankrupt_doom');
+            }
+            setTimeout(() => pop.remove(), 1400);
+        };
+
+        window.triggerGoldCashExplosion = function() {
+            for (let i = 0; i < 24; i++) {
+                const coin = document.createElement('div');
+                coin.className = 'floating-cash-popup';
+                coin.textContent = i % 2 === 0 ? '🪙' : '💵';
+                coin.style.left = `${Math.random() * 85 + 5}vw`;
+                coin.style.top = `${Math.random() * 40 + 20}vh`;
+                document.body.appendChild(coin);
+                setTimeout(() => coin.remove(), 1400);
+            }
+            if (typeof playUpgradedAudioFX === 'function') playUpgradedAudioFX('pass_go_reward');
+        };
 
         function toggleFullscreen() {
             if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
