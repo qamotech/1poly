@@ -1283,7 +1283,62 @@
             background: #2a3b68;
         }
 
-        /* ─── REALISTIC 3D ISOMETRIC BOARD VIEW & FELT CENTER ─── */
+        /* ─── REALISTIC 3D ISOMETRIC BOARD VIEW & CENTER DASHBOARD ─── */
+        .board-center-dashboard {
+            grid-column: 2 / 11;
+            grid-row: 2 / 11;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px;
+            background: radial-gradient(circle at center, rgba(16, 25, 45, 0.94) 0%, rgba(5, 10, 25, 0.98) 100%);
+            border: 2px solid rgba(0, 240, 255, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 0 30px rgba(0, 240, 255, 0.15);
+            backdrop-filter: blur(10px);
+            margin: 6px;
+            overflow: hidden;
+            pointer-events: auto;
+        }
+        .center-dash-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+        .center-dash-events {
+            width: 100%;
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .center-event-card {
+            background: rgba(26, 37, 66, 0.8);
+            border-left: 4px solid #00f0ff;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: fadeIn 0.3s ease;
+        }
+        .center-dash-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
         .board-wrapper.iso-3d-view {
             transform: perspective(1100px) rotateX(24deg) rotateZ(-1deg) scale(0.96);
             transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.6s;
@@ -2550,6 +2605,40 @@
                     const pos = layout[r][c];
                     const space = document.createElement('div');
                     space.className = 'space';
+                    if (r === 1 && c === 1) {
+                        const dash = document.createElement('div');
+                        dash.className = 'board-center-dashboard';
+                        dash.id = 'boardCenterDashboard';
+
+                        // 1. Header
+                        const currP = G.players[G.currentPlayer];
+                        dash.innerHTML = `
+                            <div class="center-dash-header">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:1.4rem;">🏠</span>
+                                    <strong style="color:#00f0ff; font-size:1rem;">MONOPOLY EVENT CENTER</strong>
+                                </div>
+                                <div style="background:#10192d; border:1px solid #00f0ff; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:800; color:#fff;">
+                                    TURN: <span style="color:${currP ? currP.color : '#fff'};">${currP ? currP.name : 'P1'}</span>
+                                </div>
+                            </div>
+
+                            <!-- 2. Recent Events Ticker -->
+                            <div class="center-dash-events" id="centerDashEvents">
+                                ${(G.log.slice(-3).map(e => `<div class="center-event-card"><span>${e}</span><small style="color:#8a9abb;">NOW</small></div>`).join('') || '<div class="center-event-card"><span>🎲 Welcome to 1poly Party!</span></div>')}
+                            </div>
+
+                            <!-- 3. Quick Action Center -->
+                            <div class="center-dash-actions">
+                                <button onclick="const b=document.getElementById('rollBtn'); if(b&&!b.disabled) b.click();" style="background:linear-gradient(135deg, #00f0ff, #7000ff); color:#fff; font-weight:800; border:none; padding:8px 16px; border-radius:14px; cursor:pointer; font-size:0.85rem;">🎲 ROLL DICE</button>
+                                <button onclick="const b=document.getElementById('buyBtn'); if(b&&!b.disabled) b.click();" style="background:linear-gradient(135deg, #ff8c00, #ff007f); color:#fff; font-weight:800; border:none; padding:8px 16px; border-radius:14px; cursor:pointer; font-size:0.85rem;">💰 BUY PROP</button>
+                                <button onclick="const b=document.getElementById('buildBtn'); if(b&&!b.disabled) b.click();" style="background:linear-gradient(135deg, #11998e, #38ef7d); color:#fff; font-weight:800; border:none; padding:8px 16px; border-radius:14px; cursor:pointer; font-size:0.85rem;">🏠 BUILD</button>
+                                <button onclick="drawMonopolyDealCard();" style="background:linear-gradient(135deg, #e67e22, #f39c12); color:#fff; font-weight:800; border:none; padding:8px 16px; border-radius:14px; cursor:pointer; font-size:0.85rem;">🃏 DEAL CARD</button>
+                            </div>
+                        `;
+                        boardEl.appendChild(dash);
+                    }
+
                     if (pos === -1) {
                         space.style.background = 'transparent';
                         space.style.border = 'none';
