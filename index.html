@@ -1535,7 +1535,8 @@
                 </div>
             </div>
             <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
-                <button onclick="closeIntroVideo(); openStartLobby();" class="primary" style="background:linear-gradient(135deg, #ff8c00, #ff007f); color:#fff; font-size:1.1rem; font-weight:800; padding:14px 36px; border-radius:30px; border:none; cursor:pointer; box-shadow:0 0 20px rgba(255,0,127,0.5);">✨ ENTER GAME LOBBY ✨</button>
+                <button onclick="closeIntroVideo(); initGame(); addLog('🎮 Quick Match Started!');" class="primary" style="background:linear-gradient(135deg, #00b09b, #96c93d); color:#fff; font-size:1.15rem; font-weight:800; padding:14px 36px; border-radius:30px; border:none; cursor:pointer; box-shadow:0 0 25px rgba(150,201,61,0.6);">✨ 1-TAP QUICK START (vs BOTS) ✨</button>
+                <button onclick="closeIntroVideo(); openStartLobby();" class="primary" style="background:linear-gradient(135deg, #ff8c00, #ff007f); color:#fff; font-size:1.1rem; font-weight:800; padding:14px 36px; border-radius:30px; border:none; cursor:pointer; box-shadow:0 0 20px rgba(255,0,127,0.5);">🎮 MULTIPLAYER LOBBY 🎮</button>
             </div>
         </div>
     </div>
@@ -2996,7 +2997,19 @@
             });
         }
 
-        // ─── PEERJS NETWORKING ──────────────────────────────────────
+        // ─── PEERJS NETWORKING (CROSS-WIFI WEBRTC CONFIG) ────────────
+        const PEER_CONFIG = {
+            debug: 1,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:stun3.l.google.com:19302' },
+                    { urls: 'stun:stun4.l.google.com:19302' }
+                ]
+            }
+        };
 
         function hostGame() {
             const room = roomInput.value.trim() || 'monopoly';
@@ -3006,7 +3019,7 @@
                 peer.destroy();
                 peer = null;
             }
-            peer = new Peer(peerId, { debug: 2 });
+            peer = new Peer(peerId, PEER_CONFIG);
 
             peer.on('open', (id) => {
                 isHost = true;
@@ -3077,7 +3090,7 @@
                 peer.destroy();
                 peer = null;
             }
-            peer = new Peer({ debug: 2 });
+            peer = new Peer(PEER_CONFIG);
 
             peer.on('open', () => {
                 isHost = false;
