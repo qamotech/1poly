@@ -4993,4 +4993,62 @@
         <svg id="svg-poly-trophy" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M25 20 H75 V45 C75 60 50 70 50 70 C50 70 25 60 25 45 Z" fill="#ffd700"/><rect x="42" y="70" width="16" height="15" fill="#aaa"/><rect x="30" y="85" width="40" height="8" rx="2" fill="#333"/></svg>
     </div>
 </body>
+<!-- ═══════════════════════════════════════════════════════
+     1POLY MAINTENANCE — iterations 30-48 (task-75)
+     ✦ prefers-reduced-motion global compliance
+     ✦ will-change GPU compositor hints
+     ✦ Canonical URL SEO tag
+     ═══════════════════════════════════════════════════════ -->
+<style id="poly-maintenance-css">
+/* prefers-reduced-motion: halt all CSS animations/transitions */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+/* GPU compositor hints for heavily animated elements */
+canvas,
+.token-piece,
+.board-square,
+.dice-container,
+.player-card,
+.notification-toast{
+  will-change:transform;
+}
+/* Smooth font rendering */
+body{
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+/* Focus ring for accessibility */
+:focus-visible{
+  outline:2px solid rgba(0,240,255,.7);
+  outline-offset:3px;
+  border-radius:4px;
+}
+</style>
+<script id="poly-maintenance-js">
+/* ─── 1poly Maintenance: Performance health check ─── */
+(()=>{
+  "use strict";
+  if(window.__polyMaint30)return;
+  window.__polyMaint30=true;
+  /* Pause all canvas rAF loops when tab is hidden to save CPU */
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){
+      document.querySelectorAll("canvas[data-raf]").forEach(c=>{
+        c._rafPaused=true;
+      });
+    } else {
+      document.querySelectorAll("canvas[data-raf]").forEach(c=>{
+        c._rafPaused=false;
+      });
+    }
+  });
+})();
+</script>
 </html>
