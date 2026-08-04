@@ -22,7 +22,8 @@
         }
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #1a1a2e;
+            background: radial-gradient(circle at center, #1a2a4a 0%, #0b1224 100%);
+            background-attachment: fixed;
             color: #eee;
             min-height: 100vh;
             display: flex;
@@ -31,6 +32,7 @@
             padding: 12px;
             -webkit-user-select: none;
             user-select: none;
+            perspective: 2000px;
         }
         #app {
             max-width: 1100px;
@@ -71,34 +73,29 @@
             pointer-events: none;
             z-index: 999;
             overflow: hidden;
+            transition: background 2s ease;
         }
-        .cloud-fleet-item {
+        #weatherContainer.sunny { background: radial-gradient(circle at top right, rgba(255, 234, 0, 0.15), transparent 60%); }
+        #weatherContainer.rainbow { background: linear-gradient(135deg, rgba(255,0,0,0.08), rgba(255,165,0,0.08), rgba(255,255,0,0.08), rgba(0,128,0,0.08), rgba(0,0,255,0.08)); }
+        #weatherContainer.snowy { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(1px); }
+        #weatherContainer.cyber { background: radial-gradient(circle at center, rgba(0, 240, 255, 0.1), transparent 70%); }
+
+        /* Neon Token Trails */
+        .token-trail {
             position: absolute;
-            font-size: 2.5rem;
-            opacity: 0.75;
-            filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.4));
-            animation: cloudDriftFleet linear infinite;
-        }
-        @keyframes cloudDriftFleet {
-            0% { transform: translateX(-120px) scale(var(--c-scale, 1)); }
-            100% { transform: translateX(calc(100vw + 120px)) scale(var(--c-scale, 1)); }
-        }
-        .celestial-orb {
-            position: fixed;
-            top: 20px;
-            right: 25px;
-            font-size: 2.8rem;
-            filter: drop-shadow(0 0 20px #ffea00);
-            animation: orbPulse 6s ease-in-out infinite;
-            z-index: 1000;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
             pointer-events: none;
+            z-index: 99;
+            filter: blur(4px);
+            animation: trailFade 0.6s ease-out forwards;
         }
-        @keyframes orbPulse {
-            0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 20px #ffea00); }
-            50% { transform: scale(1.1) rotate(15deg); filter: drop-shadow(0 0 35px #ffb800); }
+        @keyframes trailFade {
+            0% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(0.2); opacity: 0; }
         }
 
-        /* 2. Grand Animated Centerpiece */
         .grand-centerpiece {
             display: flex;
             align-items: center;
@@ -143,14 +140,20 @@
         }
         .centerpiece-jackpot {
             margin-top: 8px;
-            font-size: 0.85rem;
-            font-weight: 800;
+            font-size: 1.1rem;
+            font-weight: 900;
             color: #39ff14;
-            background: rgba(0,0,0,0.5);
-            padding: 4px 12px;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 16px;
             border-radius: 20px;
-            border: 1px solid #39ff14;
+            border: 2px solid #39ff14;
             display: inline-block;
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+            animation: jackpotGlow 2s infinite alternate;
+        }
+        @keyframes jackpotGlow {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(57, 255, 20, 0.4); }
+            100% { transform: scale(1.05); box-shadow: 0 0 25px rgba(57, 255, 20, 0.8); }
         }
         @keyframes centerpieceFloat {
             0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 25px rgba(255,215,0,0.25); }
@@ -199,6 +202,28 @@
             background: linear-gradient(145deg, rgba(26, 37, 66, 0.9), rgba(15, 23, 42, 0.95));
             border: 1px solid rgba(0, 240, 255, 0.25);
             box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+        .space::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.5rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 100;
+            border: 1px solid #00f0ff;
+        }
+        .space:hover::after {
+            opacity: 1;
         }
         .space:hover {
             transform: scale(1.04) translateZ(10px);
@@ -269,7 +294,7 @@
             height: 100vh;
             pointer-events: none;
             z-index: -2;
-            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            background: transparent;
             overflow: hidden;
         }
         .galaxy-stars {
@@ -294,16 +319,46 @@
         }
 
         /* 7. 3D Glassmorphism Hover Cards */
-        .modal-deed-3d {
-            background: rgba(15, 23, 42, 0.88) !important;
+        .modal-deed-3d, .card, .modal, .mega-modal {
+            background: rgba(15, 23, 42, 0.75) !important;
             -webkit-backdrop-filter: blur(20px) !important;
             backdrop-filter: blur(20px) !important;
-            border: 2px solid rgba(255, 255, 255, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
             border-radius: 24px !important;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1) !important;
+        }
+        .modal-deed-3d {
+            transition: transform 0.15s ease-out;
             transform-style: preserve-3d;
             perspective: 1000px;
-            transition: transform 0.15s ease-out;
+        }
+
+        .mega-modal {
+            max-width: 900px !important;
+            width: 95vw !important;
+            max-height: 90vh !important;
+            border: 2px solid #ff007a !important;
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes modalPop {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .mega-tab-btn {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            margin: 4px;
+            border-radius: 12px !important;
+            color: #ccc !important;
+            transition: all 0.3s ease;
+        }
+        .mega-tab-btn:hover { background: rgba(255, 255, 255, 0.15) !important; color: #fff !important; }
+        .mega-tab-btn.active {
+            background: linear-gradient(135deg, #ff007a, #7928ca) !important;
+            color: #fff !important;
+            border-color: #ff007a !important;
+            box-shadow: 0 0 15px rgba(255, 0, 122, 0.4);
         }
 
         /* 8. Central Eruption Particle System */
@@ -390,28 +445,57 @@
         }
 
         /* ─── BOARD ─── */
+        /* ─── BOARD UPGRADES ─── */
         .board-wrapper {
             position: relative;
             aspect-ratio: 1/1;
             width: 100%;
             max-width: 700px;
             margin: 0 auto;
-            background: #1e2a4a;
-            border-radius: 18px;
-            padding: 8px;
-            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+            background: url('mp02.jpg') no-repeat center center;
+            background-size: cover;
+            border-radius: 28px;
+            padding: 16px;
+            box-shadow:
+                0 0 0 4px #1a2a4a,
+                0 0 0 8px #f7d94e,
+                0 0 40px rgba(247, 217, 78, 0.4),
+                0 30px 80px rgba(0, 0, 0, 0.9),
+                inset 0 0 100px rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.5s ease;
+        }
+        .board-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: -12px;
+            border-radius: 36px;
+            background: linear-gradient(45deg, #ff007a, transparent, #00f0ff, transparent, #ff007a);
+            background-size: 200% 200%;
+            z-index: -1;
+            opacity: 0.5;
+            filter: blur(10px);
+            animation: boardGlow 10s linear infinite;
+        }
+        @keyframes boardGlow {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
         }
         .board {
             display: grid;
             grid-template-columns: repeat(11, 1fr);
             grid-template-rows: repeat(11, 1fr);
-            gap: 3px;
+            gap: 4px; /* More defined gap */
             width: 100%;
             height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            border-radius: 12px;
         }
         .space {
-            background: #2a3a5e;
-            border-radius: 6px;
+            background: rgba(42, 58, 94, 0.88);
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -420,19 +504,26 @@
             text-align: center;
             padding: 2px 1px;
             position: relative;
-            transition: background 0.15s;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             min-height: 0;
-            overflow: hidden;
-            color: #ddd;
-            font-weight: 500;
-            border: 1px solid #3a4a6e;
+            overflow: visible; /* Allow tooltips and effects to overflow */
+            color: #eee;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background-size: cover;
+            background-position: center;
+            box-shadow:
+                inset 0 0 10px rgba(0,0,0,0.3),
+                0 2px 4px rgba(0,0,0,0.2);
         }
         .space .color-bar {
             width: 100%;
-            height: 4px;
-            border-radius: 2px;
+            height: 6px;
+            border-radius: 3px;
             flex-shrink: 0;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
+            box-shadow: 0 0 12px var(--bar-glow, transparent);
+            border: 1px solid rgba(255,255,255,0.2);
         }
         .space .name {
             font-size: 0.4rem;
@@ -460,18 +551,28 @@
             margin-top: 1px;
         }
         .space .token {
-            width: 12px;
-            height: 12px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            border: 1.5px solid #fff;
-            font-size: 6px;
+            border: 2px solid #fff;
+            font-size: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
+            font-weight: 800;
             color: #fff;
-            text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+        }
+        .space .token img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,0.3);
         }
         .space .token.t0 { background: #e74c3c; box-shadow: 0 0 6px #e74c3c; }
         .space .token.t1 { background: #3498db; box-shadow: 0 0 6px #3498db; }
@@ -1108,17 +1209,57 @@
             }
         }
 
-        ::-webkit-scrollbar {
-            width: 5px;
+        /* Smooth scrolling for log */
+        .log {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #2a3a5e #121c2e;
         }
-        ::-webkit-scrollbar-track {
-            background: #121c2e;
-            border-radius: 6px;
+        /* Modern Scrollbars */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b1224; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #2a3a5e, #3a4a7e); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f0a500; }
+
+        /* Interactive Buttons */
+        button {
+            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #2a3a5e;
-            border-radius: 6px;
+        button:active { transform: scale(0.95); filter: brightness(1.2); }
+
+        /* Dice Shake Animation */
+        @keyframes diceShake {
+            0% { transform: translate(0,0) rotate(0deg); }
+            20% { transform: translate(-2px, 2px) rotate(-5deg); }
+            40% { transform: translate(2px, -2px) rotate(5deg); }
+            60% { transform: translate(-2px, -2px) rotate(-5deg); }
+            80% { transform: translate(2px, 2px) rotate(5deg); }
+            100% { transform: translate(0,0) rotate(0deg); }
         }
+        .dice.shaking { animation: diceShake 0.3s infinite; }
+
+        /* Card Flip Animation */
+        .card-flip-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 200px;
+        }
+        .card-flip-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .card-flip-inner.flipped { transform: rotateY(180deg); }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px;
+        }
+        .card-back { transform: rotateY(180deg); background: #1e2a4a; border: 2px solid #f7d94e; }
 
         .hidden {
             display: none !important;
@@ -1292,15 +1433,21 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 18px;
-            background: radial-gradient(circle at center, rgba(16, 25, 45, 0.94) 0%, rgba(5, 10, 25, 0.98) 100%);
-            border: 2px solid rgba(0, 240, 255, 0.4);
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 0 30px rgba(0, 240, 255, 0.15);
-            backdrop-filter: blur(10px);
-            margin: 6px;
+            padding: 24px;
+            background: radial-gradient(circle at center, rgba(16, 25, 45, 0.85) 0%, rgba(5, 10, 25, 0.95) 100%), url('assets/intro_cover.png');
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+            border: 3px solid rgba(0, 240, 255, 0.5);
+            border-radius: 32px;
+            box-shadow:
+                0 20px 50px rgba(0,0,0,0.8),
+                inset 0 0 50px rgba(0, 240, 255, 0.2);
+            backdrop-filter: blur(12px);
+            margin: 10px;
             overflow: hidden;
             pointer-events: auto;
+            transform-style: preserve-3d;
         }
         .center-dash-header {
             display: flex;
@@ -1339,15 +1486,36 @@
             width: 100%;
         }
 
-        /* ─── NEXT-LEVEL GRAPHICS & PARABOLIC HOP ANIMATION ENGINE ─── */
         @keyframes parabolicHop {
-            0% { transform: translateY(0) scale(1) rotate(0deg); }
-            50% { transform: translateY(-28px) scale(1.3) rotate(8deg); filter: drop-shadow(0 15px 12px rgba(0, 240, 255, 0.8)); }
-            100% { transform: translateY(0) scale(1) rotate(0deg); }
+            0% { transform: translateY(0) translateZ(0) scale(1) rotate(0deg); }
+            50% { transform: translateY(-45px) translateZ(60px) scale(1.5) rotate(15deg); filter: drop-shadow(0 30px 20px rgba(0, 0, 0, 0.6)); }
+            100% { transform: translateY(0) translateZ(0) scale(1) rotate(0deg); }
         }
         .token.hopping {
-            animation: parabolicHop 0.28s cubic-bezier(0.25, 1, 0.5, 1) !important;
-            z-index: 100 !important;
+            animation: parabolicHop 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
+            z-index: 1000 !important;
+            will-change: transform;
+        }
+        .token-trail {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.6;
+            animation: trailFade 0.5s forwards;
+            z-index: 90;
+        }
+        @keyframes trailFade {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .orbit-animating {
+            animation: orbitRotation 10s linear infinite;
+        }
+        @keyframes orbitRotation {
+            from { transform: perspective(1100px) rotateX(24deg) rotateZ(0deg); }
+            to { transform: perspective(1100px) rotateX(24deg) rotateZ(360deg); }
         }
 
         @keyframes tileNeonGlow {
@@ -1380,11 +1548,28 @@
         }
 
         .board-wrapper.iso-3d-view {
-            transform: perspective(1100px) rotateX(24deg) rotateZ(-1deg) scale(0.96);
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.6s;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(0,0,0,0.8), 0 0 30px rgba(247, 217, 78, 0.3) !important;
+            transform: perspective(1500px) rotateX(42deg) rotateZ(-12deg) scale(0.92);
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.6s;
+            box-shadow:
+                0 0 0 4px #1a2a4a,
+                0 0 0 8px #f7d94e,
+                0 60px 150px rgba(0, 0, 0, 0.9),
+                0 0 60px rgba(247, 217, 78, 0.4) !important;
             border: 4px solid #f7d94e !important;
-            background: radial-gradient(circle at center, #1b4d2e 0%, #0e2e1b 80%, #07170d 100%) !important;
+            background: url('mp02.jpg') no-repeat center center !important;
+            background-size: cover !important;
+            margin: 45px auto;
+        }
+        .board-wrapper.iso-3d-view .token {
+            transform: translateZ(25px);
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+        }
+        .board-wrapper.iso-3d-view .house {
+            transform: translateZ(10px);
+        }
+        .board-wrapper.iso-3d-view .board-center-dashboard {
+            transform: translateZ(5px);
         }
         .board-wrapper {
             transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1425,15 +1610,34 @@
             z-index: 999;
             animation: floatBubble 2s infinite ease-in-out;
         }
-        .speech-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 6px 6px 0;
-            border-style: solid;
-            border-color: #fff transparent;
+        /* Production-Grade Animations & Polish */
+        .token {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 50;
+        }
+        .space:hover .name {
+            color: #fff;
+            text-shadow: 0 0 10px #00f0ff;
+        }
+        .header-controls button {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .header-controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+
+        /* Unified Modal Style */
+        .mega-modal-overlay {
+            background: rgba(0, 0, 0, 0.85) !important;
+            backdrop-filter: blur(12px) !important;
+        }
+
+        /* Clean Typography */
+        h1, h2, h3 {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            letter-spacing: -0.02em;
         }
     </style>
 </head>
@@ -1619,19 +1823,84 @@
         </div>
     </div>
 
-    <!-- CUTE ANIMATED INTRO VIDEO OVERLAY -->
-    <div class="mega-modal-overlay" id="introVideoOverlay" style="display:none; background:rgba(5, 10, 25, 0.95);">
-        <div class="mega-modal" style="max-width:680px; padding:30px; background:#0c182c; border-radius:28px; border:2px solid #ff8c00; box-shadow: 0 0 50px rgba(255,140,0,0.4); text-align:center; position:relative; overflow:hidden;">
-            <div style="position:relative; width:100%; border-radius:20px; overflow:hidden; border:2px solid #344778; box-shadow:0 10px 30px rgba(0,0,0,0.6); margin-bottom:20px;">
-                <img src="assets/intro_cover.png" alt="Intro Cartoon Scene" style="width:100%; max-height:340px; object-fit:cover; display:block; animation: pulse 4s infinite ease-in-out;" />
-                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(12,24,44,0.9), transparent 60%); display:flex; flex-direction:column; justify-content:flex-end; padding:20px;">
-                    <h2 style="font-size:2rem; font-weight:800; background:linear-gradient(135deg, #f7d94e, #ff8c00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:0;">🏠 MONOPOLY 8-PLAYER PARTY!</h2>
-                    <p style="color:#ddd; font-size:0.95rem; margin-top:6px;">Experience the ultimate 3D cartoon family monopoly game!</p>
+    <!-- CUTE ANIMATED INTRO VIDEO OVERLAY (Now streamlined into Setup Hub) -->
+    <div class="mega-modal-overlay" id="introVideoOverlay" style="display:none; background:rgba(5, 10, 25, 0.98);">
+        <div class="mega-modalSetup" style="max-width:850px; width:94vw; padding:0; background:#0c182c; border-radius:32px; border:2px solid #00f0ff; box-shadow: 0 0 60px rgba(0,240,255,0.3); text-align:center; position:relative; overflow:hidden; display:flex; flex-direction:column;">
+
+            <div style="position:relative; width:100%; height:220px; overflow:hidden;">
+                <img src="assets/intro_cover.png" alt="Intro" style="width:100%; height:100%; object-fit:cover; opacity:0.6;" />
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, #0c182c, transparent); display:flex; flex-direction:column; justify-content:center; padding:20px;">
+                    <h1 style="font-size:2.8rem; font-weight:900; background:linear-gradient(135deg, #f7d94e, #00f0ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:0; letter-spacing:2px; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">MONOPOLY MEGA HUB</h1>
+                    <p style="color:#00f0ff; font-size:1.1rem; font-weight:800; text-transform:uppercase; letter-spacing:4px; margin-top:8px;">8-Player Party Edition</p>
                 </div>
             </div>
-            <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
-                <button onclick="closeIntroVideo(); initGame(); addLog('🎮 Quick Match Started!');" class="primary" style="background:linear-gradient(135deg, #00b09b, #96c93d); color:#fff; font-size:1.15rem; font-weight:800; padding:14px 36px; border-radius:30px; border:none; cursor:pointer; box-shadow:0 0 25px rgba(150,201,61,0.6);">✨ 1-TAP QUICK START (vs BOTS) ✨</button>
-                <button onclick="closeIntroVideo(); openStartLobby();" class="primary" style="background:linear-gradient(135deg, #ff8c00, #ff007f); color:#fff; font-size:1.1rem; font-weight:800; padding:14px 36px; border-radius:30px; border:none; cursor:pointer; box-shadow:0 0 20px rgba(255,0,127,0.5);">🎮 MULTIPLAYER LOBBY 🎮</button>
+
+            <div style="display:flex; flex:1; min-height:400px;">
+                <!-- SIDEBAR: Mode Selection -->
+                <div style="width:240px; background:rgba(0,0,0,0.2); border-right:1px solid rgba(255,255,255,0.1); padding:24px; display:flex; flex-direction:column; gap:12px;">
+                    <button onclick="switchSetupMode('solo')" id="modeSoloBtn" style="padding:16px; border-radius:16px; background:#00f0ff; color:#000; border:none; font-weight:800; font-size:1rem; cursor:pointer; text-align:left; display:flex; align-items:center; gap:12px; transition:all 0.3s;">
+                        <span style="font-size:1.4rem;">🕹️</span> SOLO PLAY
+                    </button>
+                    <button onclick="switchSetupMode('multi')" id="modeMultiBtn" style="padding:16px; border-radius:16px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); font-weight:800; font-size:1rem; cursor:pointer; text-align:left; display:flex; align-items:center; gap:12px; transition:all 0.3s;">
+                        <span style="font-size:1.4rem;">🌐</span> MULTIPLAYER
+                    </button>
+                    <div style="margin-top:auto; padding:16px; background:rgba(255,255,255,0.03); border-radius:12px;">
+                        <div id="setupHelp" style="font-size:0.75rem; color:#8a9abb; line-height:1.4;">
+                            Choose <b>Solo</b> to play against AI Bots, or <b>Multiplayer</b> to host/join friends online!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAIN PANEL -->
+                <div style="flex:1; padding:24px; text-align:left; display:flex; flex-direction:column;">
+
+                    <!-- Solo Panel -->
+                    <div id="setupPanelSolo" style="display:block;">
+                        <h3 style="color:#fff; margin-bottom:16px; display:flex; align-items:center; gap:10px;"><span style="color:#00f0ff;">👥</span> Match Configuration</h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+                            <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
+                                <label style="font-size:0.8rem; color:#8a9abb; display:block; margin-bottom:8px;">Human Players:</label>
+                                <select id="soloPlayerCount" onchange="updateSetupRoster()" style="width:100%; background:#10192d; color:#fff; border:1px solid #344778; padding:10px; border-radius:10px; font-weight:700;">
+                                    <option value="1">1 Player (You)</option>
+                                    <option value="2">2 Players (Local)</option>
+                                    <option value="3">3 Players (Local)</option>
+                                    <option value="4">4 Players (Local)</option>
+                                </select>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
+                                <label style="font-size:0.8rem; color:#8a9abb; display:block; margin-bottom:8px;">AI Opponents:</label>
+                                <select id="soloBotCount" onchange="updateSetupRoster()" style="width:100%; background:#10192d; color:#fff; border:1px solid #344778; padding:10px; border-radius:10px; font-weight:700;">
+                                    <option value="1">1 Bot</option>
+                                    <option value="2" selected>2 Bots</option>
+                                    <option value="3">3 Bots</option>
+                                    <option value="7">Full Bot Party (7)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multi Panel -->
+                    <div id="setupPanelMulti" style="display:none;">
+                        <h3 style="color:#fff; margin-bottom:16px; display:flex; align-items:center; gap:10px;"><span style="color:#00f0ff;">📡</span> Room Signaling</h3>
+                        <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:20px; border:1px solid rgba(255,255,255,0.05); margin-bottom:20px;">
+                            <input type="text" id="setupRoomInput" placeholder="Enter Room Name..." style="width:100%; background:#10192d; color:#fff; border:2px solid #344778; padding:14px; border-radius:14px; font-size:1.1rem; font-weight:700; margin-bottom:16px; text-align:center;" value="familygame" />
+                            <div style="display:flex; gap:12px;">
+                                <button onclick="hostGame(); closeIntroVideo();" style="flex:1; padding:14px; border-radius:14px; background:#2ecc71; color:#fff; border:none; font-weight:800; cursor:pointer;">👑 Host Room</button>
+                                <button onclick="joinGame(); closeIntroVideo();" style="flex:1; padding:14px; border-radius:14px; background:#3498db; color:#fff; border:none; font-weight:800; cursor:pointer;">🔗 Join Room</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ROSTER PREVIEW (Shared) -->
+                    <h3 style="color:#fff; margin-bottom:12px; font-size:1rem; opacity:0.8;">🎮 Current Roster</h3>
+                    <div id="setupRosterContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:10px; max-height:160px; overflow-y:auto; padding-right:10px;">
+                        <!-- Injected via JS -->
+                    </div>
+
+                    <div style="margin-top:auto; display:flex; justify-content:center; padding-top:20px;">
+                        <button id="launchGameBtn" onclick="launchGameFromSetup()" style="background:linear-gradient(135deg, #00b09b, #96c93d); color:#fff; font-size:1.3rem; font-weight:900; padding:16px 60px; border-radius:40px; border:none; cursor:pointer; box-shadow:0 0 30px rgba(150,201,61,0.5); transform: scale(1.1); transition:all 0.2s;">🚀 START MATCH 🚀</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1706,107 +1975,110 @@
         </div>
     </div>
     <!-- CONSOLIDATED OPTIONS & MEGA-UPGRADES HUB MODAL -->
-    <div class="mega-modal-overlay" id="optionsMenuOverlay" style="display:none; background:rgba(5, 10, 25, 0.95);">
-        <div class="mega-modal" style="max-width:820px; width:92vw; max-height:85vh; overflow-y:auto; padding:28px; background:#16213e; border-radius:28px; border:2px solid #ff007a; box-shadow: 0 0 45px rgba(255,0,122,0.4);">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #344778; padding-bottom:12px; margin-bottom:18px;">
+    <div class="mega-modal-overlay" id="optionsMenuOverlay" style="display:none;">
+        <div class="mega-modal" style="padding:0; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 20px 28px; background: rgba(26, 37, 66, 0.9); border-bottom:1px solid rgba(255, 255, 255, 0.1);">
                 <div>
-                    <h2 style="color:#ff007a; margin:0; font-size:1.6rem; font-weight:800;">⚙️ OPTIONS & MEGA-UPGRADES HUB</h2>
-                    <p style="color:#aaa; font-size:0.85rem; margin:2px 0 0 0;">Toggle all game settings, audio controls, display modes, game tools & 72 Mega Upgrades in one place!</p>
+                    <h2 style="color:#ff007a; margin:0; font-size:1.6rem; font-weight:800; letter-spacing:1px;">⚙️ OPTIONS & UPGRADES</h2>
+                    <p style="color:#8a9abb; font-size:0.85rem; margin-top:4px;">Master Controller for 72 Mega Upgrades & Game Rules</p>
                 </div>
-                <button onclick="closeOptionsMenu()" style="background:#344778; color:#fff; border:none; padding:8px 16px; border-radius:16px; font-weight:700; cursor:pointer;">✖ Close</button>
+                <button onclick="closeOptionsMenu()" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); padding:10px 20px; border-radius:14px; font-weight:700; cursor:pointer; transition:all 0.2s;">✖ Close</button>
             </div>
 
             <!-- OPTIONS CATEGORY TABS -->
-            <div style="display:flex; gap:10px; overflow-x:auto; margin-bottom:20px; padding-bottom:4px;">
-                <button id="optTab-audio" onclick="switchOptionsTab('audio')" style="padding:8px 16px; border-radius:20px; background:#ff007a; color:#fff; border:none; font-weight:700; cursor:pointer;">🔊 Audio & Voice</button>
-                <button id="optTab-display" onclick="switchOptionsTab('display')" style="padding:8px 16px; border-radius:20px; background:#243256; color:#aaa; border:none; font-weight:700; cursor:pointer;">📐 Display & View</button>
-                <button id="optTab-tools" onclick="switchOptionsTab('tools')" style="padding:8px 16px; border-radius:20px; background:#243256; color:#aaa; border:none; font-weight:700; cursor:pointer;">🎮 Game Tools & Studio</button>
-                <button id="optTab-upgrades" onclick="switchOptionsTab('upgrades')" style="padding:8px 16px; border-radius:20px; background:#243256; color:#aaa; border:none; font-weight:700; cursor:pointer;">🌟 72 Mega Upgrades</button>
+            <div style="display:flex; gap:8px; padding: 12px 24px; background: rgba(16, 25, 45, 0.5); overflow-x:auto; scrollbar-width: none;">
+                <button id="optTab-audio" onclick="switchOptionsTab('audio')" class="mega-tab-btn active">🔊 Audio & Voice</button>
+                <button id="optTab-display" onclick="switchOptionsTab('display')" class="mega-tab-btn">📐 Display & View</button>
+                <button id="optTab-tools" onclick="switchOptionsTab('tools')" class="mega-tab-btn">🎮 Game Tools</button>
+                <button id="optTab-upgrades" onclick="switchOptionsTab('upgrades')" class="mega-tab-btn">🌟 72 Upgrades</button>
+                <button id="optTab-analytics" onclick="switchOptionsTab('analytics')" class="mega-tab-btn">📊 Analytics</button>
             </div>
 
-            <!-- TAB 1: AUDIO & VOICE -->
-            <div id="optPanel-audio" style="display:block; background:#10192d; padding:18px; border-radius:18px; border:1px solid #2a3b68;">
-                <h3 style="color:#00f0ff; margin-top:0; font-size:1.1rem;">🔊 Audio & Speech Controls</h3>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:14px;">
-                    <div style="background:#1a2542; padding:14px; border-radius:14px;">
-                        <label style="color:#fff; font-weight:700; display:block; margin-bottom:8px;">🔊 Master SFX Volume:</label>
-                        <input type="range" id="sfxVolSlider" title="Master SFX Volume Slider" aria-label="Master SFX Volume Slider" min="0" max="1" step="0.05" value="0.8" oninput="if(typeof SFXEngine!=='undefined') SFXEngine.setVolume(this.value)" style="width:100%; accent-color:#00f0ff; cursor:pointer;" />
-                    </div>
-                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <span style="color:#fff; font-weight:700; display:block;">🗣️ Voice Synthesis:</span>
-                            <span style="color:#aaa; font-size:0.75rem;">Character speech SFX</span>
+            <div id="optionsPanelsContainer" style="padding: 24px; max-height: 60vh; overflow-y:auto;">
+                <!-- TAB 1: AUDIO & VOICE -->
+                <div id="optPanel-audio" style="display:block;">
+                    <h3 style="color:#00f0ff; margin-bottom:16px; font-size:1.1rem; display:flex; align-items:center; gap:8px;">🔊 Audio Synthesis & FX Engine</h3>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;">
+                        <div style="background:rgba(255,255,255,0.03); padding:18px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
+                            <label style="color:#fff; font-weight:700; display:block; margin-bottom:12px;">🔊 Master SFX Volume:</label>
+                            <input type="range" id="sfxVolSlider" title="Master Volume" min="0" max="1" step="0.05" value="0.8" oninput="if(typeof SFXEngine!=='undefined') SFXEngine.setVolume(this.value)" style="width:100%; accent-color:#ff007a; cursor:pointer;" />
                         </div>
-                        <button id="voiceToggleBtn" onclick="toggleVoiceSetting()" style="background: linear-gradient(135deg, #e040fb, #00e5ff); color: #fff; font-weight: bold; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer;" title="Toggle Character Speech Voice Synthesis">🔊 Voice: ON</button>
-                    </div>
-                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <span style="color:#fff; font-weight:700; display:block;">🎵 Sound FX Engine:</span>
-                            <span style="color:#aaa; font-size:0.75rem;">Interactive audio feedback</span>
+                        <div style="background:rgba(255,255,255,0.03); padding:18px; border-radius:18px; border:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span style="color:#fff; font-weight:700; display:block;">🗣️ AI Voice Narrator:</span>
+                                <span style="color:#8a9abb; font-size:0.75rem;">Character reactive speech</span>
+                            </div>
+                            <button id="voiceToggleBtn" onclick="toggleVoiceSetting()" style="background: linear-gradient(135deg, #e040fb, #00e5ff); color: #fff; font-weight: 800; border: none; padding: 10px 20px; border-radius: 16px; cursor: pointer;">ON</button>
                         </div>
-                        <button id="quickSoundBtn" onclick="toggleSoundFxSetting()" style="background: #20b2aa; color: #fff; font-weight: bold; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer;">🎵 Sound: ON</button>
+                        <div style="background:rgba(255,255,255,0.03); padding:18px; border-radius:18px; border:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span style="color:#fff; font-weight:700; display:block;">🎵 Sound FX Engine:</span>
+                                <span style="color:#8a9abb; font-size:0.75rem;">High-fidelity synth audio</span>
+                            </div>
+                            <button id="soundToggleBtn" onclick="toggleSoundFxSetting()" style="background: #20b2aa; color: #fff; font-weight: 800; border: none; padding: 10px 20px; border-radius: 16px; cursor: pointer;">ON</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DISPLAY & VIEW -->
+                <div id="optPanel-display" style="display:none;">
+                    <h3 style="color:#ffd700; margin-bottom:16px; font-size:1.1rem;">📐 Perspective & Graphics Mode</h3>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;">
+                        <div style="background:rgba(255,255,255,0.03); padding:18px; border-radius:18px; border:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span style="color:#fff; font-weight:700; display:block;">📐 3D Isometric View:</span>
+                                <span style="color:#8a9abb; font-size:0.75rem;">Deep tilt board perspective</span>
+                            </div>
+                            <button id="view3dToggleBtn_modal" onclick="toggle3DView()" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1a2e; font-weight: 800; border: none; padding: 10px 20px; border-radius: 16px; cursor: pointer;">3D ON</button>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); padding:18px; border-radius:18px; border:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span style="color:#fff; font-weight:700; display:block;">⛶ Fullscreen Mode:</span>
+                                <span style="color:#8a9abb; font-size:0.75rem;">Immersive distraction-free</span>
+                            </div>
+                            <button onclick="toggleFullscreen()" style="background: #344778; color: #fff; border: none; padding: 10px 20px; border-radius: 16px; cursor: pointer; font-weight:800;">Toggle</button>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); padding:18px; border-radius:18px; border:1px solid rgba(255,255,255,0.05); grid-column: 1 / -1;">
+                            <label style="color:#fff; font-weight:700; display:block; margin-bottom:12px;">🌍 Game World Theme:</label>
+                            <select onchange="saveMegaState('c_theme', this.value); applyMegaEffects();" style="width:100%; background:#10192d; color:#fff; border:1px solid #344778; padding:12px; border-radius:12px; font-weight:700; cursor:pointer;">
+                                <option value="galaxy">🌌 Midnight Galaxy</option>
+                                <option value="sunset">🌅 Sunset Sherbet</option>
+                                <option value="emerald">🌲 Emerald Forest</option>
+                                <option value="cyber">⚡ Cyberpunk Neon</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: TOOLS -->
+                <div id="optPanel-tools" style="display:none;">
+                    <h3 style="color:#38ef7d; margin-bottom:16px; font-size:1.1rem;">🎮 Game Studios & Utility Tools</h3>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+                        <button onclick="openPieceStudio()" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; font-weight: bold; border: none; padding: 16px; border-radius: 18px; cursor: pointer;">🎨 Piece Studio</button>
+                        <button onclick="quickFortune()" style="background: #9b59b6; color:#fff; font-weight:bold; border:none; padding:16px; border-radius:18px; cursor:pointer;">🔮 Fortune Teller</button>
+                        <button onclick="quickCoinFlip()" style="background: #e67e22; color:#fff; font-weight:bold; border:none; padding:16px; border-radius:18px; cursor:pointer;">🪙 Flip Coin</button>
+                        <button onclick="unlockGameIfStuck()" style="background: #c0392b; color:#fff; font-weight:bold; border:none; padding:16px; border-radius:18px; cursor:pointer;">🛠️ Repair Logic</button>
+                    </div>
+                </div>
+
+                <!-- TAB 4: UPGRADES -->
+                <div id="optPanel-upgrades" style="display:none;">
+                    <h3 style="color:#ff007a; margin-bottom:12px; font-size:1.1rem;">🌟 Active Mega Upgrades (72 Total)</h3>
+                    <div id="megaUpgradesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:10px;">
+                        <!-- Populate via JS -->
+                    </div>
+                </div>
+
+                <!-- TAB 5: ANALYTICS -->
+                <div id="optPanel-analytics" style="display:none;">
+                    <div id="megaTabContent_analytics">
+                        <!-- Populate via switchMegaTab('analytics') -->
                     </div>
                 </div>
             </div>
-
-            <!-- TAB 2: DISPLAY & VIEW -->
-            <div id="optPanel-display" style="display:none; background:#10192d; padding:18px; border-radius:18px; border:1px solid #2a3b68;">
-                <h3 style="color:#ffd700; margin-top:0; font-size:1.1rem;">📐 Display, View & Graphics Mode</h3>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:14px;">
-                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <span style="color:#fff; font-weight:700; display:block;">📐 3D Isometric View:</span>
-                            <span style="color:#aaa; font-size:0.75rem;">3D realistic tilt perspective</span>
-                        </div>
-                        <button id="view3dToggleBtn" onclick="toggle3dSetting()" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1a2e; font-weight: bold; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer;">📐 3D View</button>
-                    </div>
-                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <span style="color:#fff; font-weight:700; display:block;">⛶ Fullscreen Display:</span>
-                            <span style="color:#aaa; font-size:0.75rem;">Expand board to fullscreen</span>
-                        </div>
-                        <button id="fullscreenToggleBtn" onclick="toggleFullscreenSetting()" style="background: #344778; color: #fff; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer; font-weight:700;">⛶ Fullscreen</button>
-                    </div>
-                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <span style="color:#fff; font-weight:700; display:block;">⚡ Fast Movement Animation:</span>
-                            <span style="color:#aaa; font-size:0.75rem;">Tap anywhere to skip hop step</span>
-                        </div>
-                        <span style="color:#38ef7d; font-weight:800; font-size:0.85rem;">✨ Tap to Skip Active</span>
-                    <div style="background:#1a2542; padding:14px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; grid-column: 1 / -1;">
-                        <div>
-                            <span style="color:#00f0ff; font-weight:700; display:block;">🎙️ Announcer Voice Persona:</span>
-                            <span style="color:#aaa; font-size:0.75rem;">Choose Announcer Speech Tone & Pitch Profile</span>
-                        </div>
-                        <select onchange="window.setVoiceProfile(this.value)" style="background:#10192d; color:#fff; border:2px solid #00f0ff; border-radius:12px; padding:8px 12px; font-weight:800; cursor:pointer; outline:none;">
-                            <option value="arcade" selected>🎮 Arcade Host (Upbeat)</option>
-                            <option value="royal">🎩 Royal Monopoly Host (Regal)</option>
-                            <option value="bot">🤖 Sci-Fi Cyber Bot (Robot)</option>
-                            <option value="cute">👶 Cute Companion (Kid Friendly)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 3: GAME TOOLS -->
-            <div id="optPanel-tools" style="display:none; background:#10192d; padding:18px; border-radius:18px; border:1px solid #2a3b68;">
-                <h3 style="color:#38ef7d; margin-top:0; font-size:1.1rem;">🎮 Game Tools, Lobby & Studios</h3>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-top:14px;">
-                    <button onclick="closeOptionsMenu(); openStartLobby();" style="background: linear-gradient(135deg, #00f0ff, #7000ff); color: #fff; font-weight: bold; border: none; padding: 12px; border-radius: 16px; cursor: pointer;">🎮 Start Lobby</button>
-                    <button onclick="closeOptionsMenu(); openPieceStudio();" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; font-weight: bold; border: none; padding: 12px; border-radius: 16px; cursor: pointer;">🎨 Piece Studio</button>
-                    <button onclick="closeOptionsMenu(); quickCoinFlip();" style="background: #e67e22; color:#fff; font-weight:bold; border:none; padding:12px; border-radius:16px; cursor:pointer;">🪙 Flip Coin</button>
-                    <button onclick="closeOptionsMenu(); quickFortune();" style="background: #9b59b6; color:#fff; font-weight:bold; border:none; padding:12px; border-radius:16px; cursor:pointer;">🔮 Fortune Teller</button>
-                    <button onclick="closeOptionsMenu(); toggleLeaderboardHud();" style="background: #344778; color: #fff; border: none; padding: 12px; border-radius: 16px; cursor: pointer; font-weight:bold;">📊 Leaderboard</button>
-                    <button onclick="closeOptionsMenu(); openIntroVideo();" style="background: linear-gradient(135deg, #ff8c00, #ff007f); color: #fff; font-weight: bold; border: none; padding: 12px; border-radius: 16px; cursor: pointer;">▶ Replay Intro</button>
-                </div>
-            </div>
-
-            <!-- TAB 4: 72 MEGA UPGRADES HUB -->
-            <div id="optPanel-upgrades" style="display:none; background:#10192d; padding:18px; border-radius:18px; border:1px solid #2a3b68;">
-                <h3 style="color:#ff007a; margin-top:0; font-size:1.1rem;">🌟 72 Mega Upgrades & Rules Engine</h3>
-                <div id="megaUpgradesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px; max-height:300px; overflow-y:auto; margin-top:12px; padding-right:6px;">
-                    <!-- Dynamically populated 72 Upgrades -->
-                </div>
+            <div style="padding: 16px 24px; background: rgba(16, 25, 45, 0.8); border-top:1px solid rgba(255, 255, 255, 0.1); text-align:right;">
+                <span style="font-size:0.75rem; color:#8a9abb; float:left; margin-top:8px;">1Poly Engine v3.0 Ultra Pro</span>
+                <button onclick="closeOptionsMenu()" style="background:#ff007a; color:#fff; border:none; padding:10px 30px; border-radius:16px; font-weight:800; cursor:pointer;">SAVE & EXIT</button>
             </div>
         </div>
     </div>
@@ -1891,22 +2163,27 @@
         ];
 
         const CHANCE_CARDS = [
-            { text: 'Advance to GO', action: p => { p.position = 0;
-                    p.money += 200;
-                    return 'Advance to GO – collect $200'; } },
-            { text: 'Go to Jail', action: p => { p.position = 10;
-                    p.jail = true; return 'Go to Jail!'; } },
+            { text: 'Advance to GO', action: p => { p.position = 0; p.money += 200; return 'Advance to GO – collect $200'; } },
+            { text: 'Go to Jail', action: p => { p.position = 10; p.jail = true; return 'Go to Jail!'; } },
             { text: 'Bank pays you $50', action: p => { p.money += 50; return 'Collect $50'; } },
             { text: 'Pay poor tax $15', action: p => { p.money -= 15; return 'Pay $15'; } },
             { text: 'Advance to Illinois Ave', action: p => { p.position = 24; return 'Advance to Illinois Ave'; } },
             { text: 'Advance to St. Charles Pl', action: p => { p.position = 11; return 'Advance to St. Charles Pl'; } },
             { text: 'Get out of Jail Free', action: p => { p.jailFree = true; return 'Get Out of Jail Free card'; } },
-            { text: 'Go back 3 spaces', action: p => { p.position = Math.max(0, p.position - 3); return 'Go back 3 spaces'; } },
-            { text: 'You have been elected Chairman – pay $50', action: p => { p.money -= 50; return 'Pay $50'; } },
+            { text: 'Go back 3 spaces', action: p => { p.position = (p.position - 3 + BOARD_SIZE) % BOARD_SIZE; return 'Go back 3 spaces'; } },
+            { text: 'Chairman – pay each player $50', action: p => {
+                let total = 0;
+                G.players.forEach((op, idx) => { if (idx !== G.currentPlayer && !op.bankrupt) { op.money += 50; total += 50; } });
+                p.money -= total; return `Paid each player $50 (Total: $${total})`;
+            } },
+            { text: 'Speeding Fine $15', action: p => { p.money -= 15; addToJackpot(15); return 'Paid $15 speeding fine to Free Parking Pot'; } },
+            { text: 'Advance to Boardwalk', action: p => { p.position = 39; return 'Advance to Boardwalk!'; } },
+            { text: 'Advance to Reading Railroad', action: p => { p.position = 5; return 'Advance to Reading Railroad'; } },
+            { text: 'Drunk in charge – pay $20', action: p => { p.money -= 20; addToJackpot(20); return 'Paid $20 fine to Free Parking Pot'; } },
+            { text: 'Holiday Fund Matures – receive $100', action: p => { p.money += 100; return 'Received $100'; } }
         ];
         const CHEST_CARDS = [
-            { text: 'Advance to GO', action: p => { p.position = 0;
-                    p.money += 200; return 'Advance to GO – collect $200'; } },
+            { text: 'Advance to GO', action: p => { p.position = 0; p.money += 200; return 'Advance to GO – collect $200'; } },
             { text: 'Bank error in your favor – collect $200', action: p => { p.money += 200; return 'Collect $200'; } },
             { text: 'Doctor fees – pay $50', action: p => { p.money -= 50; return 'Pay $50'; } },
             { text: 'You inherit $100', action: p => { p.money += 100; return 'Collect $100'; } },
@@ -1914,6 +2191,15 @@
             { text: 'Get Out of Jail Free', action: p => { p.jailFree = true; return 'Get Out of Jail Free card'; } },
             { text: 'It\'s your birthday – collect $10', action: p => { p.money += 10; return 'Collect $10'; } },
             { text: 'Pay school fees $50', action: p => { p.money -= 50; return 'Pay $50'; } },
+            { text: 'From sale of stock you get $50', action: p => { p.money += 50; return 'Received $50'; } },
+            { text: 'Grand Opera Night – collect $50 from every player', action: p => {
+                let total = 0;
+                G.players.forEach((op, idx) => { if (idx !== G.currentPlayer && !op.bankrupt) { op.money -= 50; total += 50; } });
+                p.money += total; return `Collected $50 from each player (Total: $${total})`;
+            } },
+            { text: 'Life insurance matures – collect $100', action: p => { p.money += 100; return 'Received $100'; } },
+            { text: 'Income tax refund – collect $20', action: p => { p.money += 20; return 'Received $20'; } },
+            { text: 'Consultancy fee – collect $25', action: p => { p.money += 25; return 'Received $25'; } }
         ];
 
         // ─── CHARACTERS ROSTER ────────────────────────────────────────
@@ -1954,50 +2240,73 @@
             const overlay = $('optionsMenuOverlay');
             if (overlay) {
                 overlay.style.display = 'flex';
+                switchOptionsTab('audio'); // Default tab
                 populateMegaUpgradesGrid();
             }
         }
 
-        function closeOptionsMenu() {
-            const overlay = $('optionsMenuOverlay');
-            if (overlay) overlay.style.display = 'none';
-        }
-
         function switchOptionsTab(tabName) {
             currentOptionsTab = tabName;
-            ['audio', 'display', 'tools', 'upgrades'].forEach(t => {
+            ['audio', 'display', 'tools', 'upgrades', 'analytics'].forEach(t => {
                 const btn = $(`optTab-${t}`);
                 const panel = $(`optPanel-${t}`);
                 if (btn && panel) {
                     if (t === tabName) {
-                        btn.style.background = '#ff007a';
-                        btn.style.color = '#fff';
+                        btn.classList.add('active');
                         panel.style.display = 'block';
+                        if (tabName === 'analytics') renderAnalyticsTab();
                     } else {
-                        btn.style.background = '#243256';
-                        btn.style.color = '#aaa';
+                        btn.classList.remove('active');
                         panel.style.display = 'none';
                     }
                 }
             });
         }
 
+        function renderAnalyticsTab() {
+            const container = document.getElementById('megaTabContent_analytics');
+            if (!container || !G) return;
+            let html = `<div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
+                <h3 style="color:#f0a500; margin-bottom:16px;">📊 Real-Time Empire Valuation</h3>
+                <div style="display:flex; flex-direction:column; gap:12px;">`;
+
+            G.players.forEach((p, i) => {
+                const netWorth = p.money + p.properties.reduce((sum, id) => sum + (PROPERTIES[id] ? PROPERTIES[id].price : 0), 0);
+                const pct = Math.min(100, (netWorth / 5000) * 100);
+                html += `
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="font-size:1.5rem;">${p.token}</div>
+                        <div style="flex:1;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
+                                <span style="color:${p.color}; font-weight:700;">${p.name}</span>
+                                <span style="color:#38ef7d;">$${netWorth.toLocaleString()}</span>
+                            </div>
+                            <div style="height:8px; background:rgba(0,0,0,0.3); border-radius:4px; overflow:hidden;">
+                                <div style="height:100%; width:${pct}%; background:${p.color}; transition:width 0.5s ease;"></div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
         function toggleVoiceSetting() {
             voiceSynthesisEnabled = !voiceSynthesisEnabled;
             const btn = $('voiceToggleBtn');
             if (btn) {
-                btn.textContent = voiceSynthesisEnabled ? '🔊 Voice: ON' : '🔇 Voice: OFF';
-                btn.style.background = voiceSynthesisEnabled ? 'linear-gradient(135deg, #e040fb, #00e5ff)' : '#444';
+                btn.textContent = voiceSynthesisEnabled ? 'ON' : 'OFF';
+                btn.style.opacity = voiceSynthesisEnabled ? '1' : '0.5';
             }
             if (typeof playMegaSound === 'function') playMegaSound(440, 0.1, 'sine');
         }
 
         function toggleSoundFxSetting() {
             soundFxEnabled = !soundFxEnabled;
-            const btn = $('quickSoundBtn');
+            const btn = $('soundToggleBtn');
             if (btn) {
-                btn.textContent = soundFxEnabled ? '🎵 Sound: ON' : '🔇 Sound: OFF';
-                btn.style.background = soundFxEnabled ? '#20b2aa' : '#555';
+                btn.textContent = soundFxEnabled ? 'ON' : 'OFF';
+                btn.style.opacity = soundFxEnabled ? '1' : '0.5';
             }
         }
 
@@ -2126,9 +2435,16 @@
                 houseCounts: new Array(BOARD_SIZE).fill(0),
                 chanceIndex: 0,
                 chestIndex: 0,
+                jackpot: 250, // Initial Jackpot Pot
                 gameOver: false,
                 winner: -1,
             };
+        }
+
+        function addToJackpot(amount) {
+            if (!G) return;
+            G.jackpot += amount;
+            addLog(`💰 $${amount} added to Free Parking Jackpot (Total: $${G.jackpot})`);
         }
 
         function initGame() {
@@ -2252,7 +2568,6 @@
             const p = G.players[playerIdx];
             if (p.bankrupt) return;
 
-            // If a previous movement was active, cancel it immediately
             if (activeMoveState && activeMoveState.active) {
                 skipPlayerMovement();
             }
@@ -2262,15 +2577,30 @@
             const passedGo = (oldPos + steps >= BOARD_SIZE);
             let currentStep = 0;
 
+            // Apply 'hopping' class to the current token element
+            function getPlayerTokenEl(idx) {
+                return document.querySelector(`.token.t${idx}`);
+            }
+
             const interval = setInterval(() => {
                 currentStep++;
-                p.position = (oldPos + currentStep) % BOARD_SIZE;
+                const nextPos = (oldPos + currentStep) % BOARD_SIZE;
+                p.position = nextPos;
                 
-                // Enhanced Audio SFX: Pitch-ascending harmonic tick
+                // Visual Hop Animation
+                const tokenEl = getPlayerTokenEl(playerIdx);
+                if (tokenEl) {
+                    tokenEl.classList.remove('hopping');
+                    void tokenEl.offsetWidth; // Trigger reflow
+                    tokenEl.classList.add('hopping');
+                }
+
+                // Neon Trail Effect
+                createTokenTrail(playerIdx, p.position);
+
                 const pitchFreq = 300 + (currentStep * 40);
                 playMegaSound(pitchFreq, 0.05, 'triangle');
                 
-                // Visual Enhancement: Tile pulse highlight on hop
                 triggerTilePulseEffect(p.position);
                 renderBoard();
 
@@ -2279,19 +2609,21 @@
                     if (activeMoveState) activeMoveState.active = false;
                     activeMoveState = null;
 
-                    if (passedGo) {
-                        p.money += 200;
-                        addLog(`💰 ${p.name} passed GO – collected $200`);
-                        playMegaSound(587, 0.25, 'triangle');
-                        triggerHaptic('buy');
-                    }
-                    triggerSpace(playerIdx);
-                    renderAll();
-                    updateControls();
-                    checkGameOver();
-                    saveGameState();
+                    setTimeout(() => {
+                        if (passedGo) {
+                            p.money += 200;
+                            addLog(`💰 ${p.name} passed GO – collected $200`);
+                            playMegaSound(587, 0.25, 'triangle');
+                            triggerHaptic('buy');
+                        }
+                        triggerSpace(playerIdx);
+                        renderAll();
+                        updateControls();
+                        checkGameOver();
+                        saveGameState();
+                    }, 400);
                 }
-            }, 110);
+            }, 450); // Slower interval to allow hop animation to shine
 
             activeMoveState = {
                 active: true,
@@ -2301,6 +2633,17 @@
                 passedGo: passedGo,
                 interval: interval
             };
+        }
+
+        function createTokenTrail(playerIdx, pos) {
+            if (!getSet('f_trails', true)) return;
+            const tile = document.querySelector(`[data-space-id="${pos}"]`);
+            if (!tile) return;
+            const trail = document.createElement('div');
+            trail.className = 'token-trail';
+            trail.style.background = PLAYER_COLORS[playerIdx];
+            tile.appendChild(trail);
+            setTimeout(() => trail.remove(), 500);
         }
 
         function triggerSpace(playerIdx) {
@@ -2324,12 +2667,22 @@
                     endTurn();
                     break;
                 case 'freeparking':
-                    addLog(`🅿️ ${p.name} is at Free Parking – nothing happens.`);
+                    if (G.jackpot > 0) {
+                        const win = G.jackpot;
+                        p.money += win;
+                        G.jackpot = 0;
+                        addLog(`🎰 JACKPOT! ${p.name} won the $${win} Free Parking Jackpot!`);
+                        triggerFullscreenPopup('pass_go', '🎰 JACKPOT WINNER!', `${p.name} won $${win} from Free Parking!`, 'assets/victory.png');
+                        triggerGoldCashExplosion();
+                    } else {
+                        addLog(`🅿️ ${p.name} is at Free Parking – nothing happens.`);
+                    }
                     break;
                 case 'tax':
                     const tax = Math.abs(prop.rent);
                     p.money -= tax;
-                    addLog(`💸 ${p.name} paid $${tax} in tax.`);
+                    addToJackpot(tax);
+                    addLog(`💸 ${p.name} paid $${tax} in tax to Jackpot.`);
                     if (p.money < 0) handleBankruptcy(playerIdx);
                     break;
                 case 'property':
@@ -2359,9 +2712,9 @@
                 if (p.money >= prop.price) {
                     G.phase = 'postroll';
 
-                    // Step 3: Bypass the Buy Modal for Bots in handleProperty()
                     const isLocal = !isHost && !isConnected;
                     if (isLocal && getSet('u_bots', false) && playerIdx !== 0) {
+                        // Bot logic handles buy/skip/auction
                         updateControls();
                         return;
                     }
@@ -2374,6 +2727,8 @@
                                     closeModal();
                                     renderAll();
                                     updateControls(); } },
+                            { text: '🔨 Auction', action: () => { closeModal();
+                                    startAuction(pos); } },
                             { text: '❌ Skip', action: () => { closeModal();
                                     G.phase = 'postroll';
                                     endTurn();
@@ -2382,9 +2737,8 @@
                         ]
                     );
                 } else {
-                    addLog(`💔 ${p.name} can't afford ${prop.name} ($${prop.price})`);
-                    G.phase = 'postroll';
-                    endTurn();
+                    addLog(`💔 ${p.name} can't afford ${prop.name} ($${prop.price}) - Starting Auction!`);
+                    startAuction(pos);
                 }
             } else if (owner !== playerIdx) {
                 payRent(playerIdx, owner, pos);
@@ -2392,6 +2746,62 @@
                 G.phase = 'postroll';
                 endTurn();
             }
+        }
+
+        function startAuction(pos) {
+            const prop = PROPERTIES[pos];
+            let currentBid = 10;
+            let highestBidder = -1;
+            let bidders = G.players.map((p, i) => p.bankrupt ? -1 : i).filter(i => i !== -1);
+
+            function nextBid() {
+                if (bidders.length === 0) {
+                    addLog(`🔨 Auction for ${prop.name} ended with no bidders.`);
+                    G.phase = 'postroll';
+                    endTurn();
+                    return;
+                }
+                if (bidders.length === 1 && highestBidder !== -1) {
+                    const winner = G.players[highestBidder];
+                    winner.money -= currentBid;
+                    G.propertyOwners[pos] = highestBidder;
+                    winner.properties.push(pos);
+                    addLog(`🔨 AUCTION WON! ${winner.name} bought ${prop.name} for $${currentBid}!`);
+                    G.phase = 'postroll';
+                    endTurn();
+                    renderAll();
+                    return;
+                }
+
+                const bidderIdx = bidders[0];
+                const bidder = G.players[bidderIdx];
+
+                showModal(
+                    `🔨 Auction: ${prop.name}`,
+                    `Current Bid: $${currentBid} (High Bidder: ${highestBidder === -1 ? 'None' : G.players[highestBidder].name})\n${bidder.name}, your bid?`,
+                    [
+                        { text: `Bid $${currentBid + 10}`, action: () => {
+                            if (bidder.money >= currentBid + 10) {
+                                currentBid += 10;
+                                highestBidder = bidderIdx;
+                                // Move bidder to end of list
+                                bidders.shift();
+                                bidders.push(bidderIdx);
+                                nextBid();
+                            } else {
+                                alert("Not enough money!");
+                                bidders.shift();
+                                nextBid();
+                            }
+                        }},
+                        { text: 'Fold', action: () => {
+                            bidders.shift();
+                            nextBid();
+                        }}
+                    ]
+                );
+            }
+            nextBid();
         }
 
         function buyProperty(playerIdx) {
@@ -2405,6 +2815,11 @@
             G.propertyOwners[pos] = playerIdx;
             p.properties.push(pos);
             addLog(`🏠 ${p.name} bought ${prop.name} for $${prop.price}`);
+
+            // Buy Pop Animation
+            triggerTilePulseEffect(pos);
+            triggerFloatingCashFX(playerIdx, -prop.price);
+
             triggerFullscreenPopup('property_buy', '🏠 PROPERTY ACQUIRED!', `${p.name} purchased ${prop.name} for $${prop.price}!`, 'assets/property_buy.png');
             G.phase = 'postroll';
             endTurn();
@@ -2415,6 +2830,10 @@
             const owner = G.players[ownerIdx];
             const prop = PROPERTIES[pos];
             let rent = prop.rent;
+
+            // Dynamic Rent (Inflation Logic)
+            const inflationFactor = 1 + (G.turnCount / 200);
+            rent = Math.round(rent * inflationFactor);
 
             if (prop.type === 'railroad') {
                 const owned = owner.properties.filter(id => PROPERTIES[id].type === 'railroad').length;
@@ -2429,13 +2848,20 @@
             if (houseCount > 0 && prop.type === 'property') {
                 const baseRent = prop.rent;
                 const houseRent = [baseRent, baseRent * 2, baseRent * 3, baseRent * 4, baseRent * 5, baseRent * 7];
-                rent = houseRent[Math.min(houseCount, 5)] || baseRent;
+                rent = Math.round((houseRent[Math.min(houseCount, 5)] || baseRent) * inflationFactor);
             }
 
             if (p.money >= rent) {
                 p.money -= rent;
                 owner.money += rent;
                 addLog(`💵 ${p.name} paid $${rent} rent to ${owner.name} for ${prop.name}`);
+                triggerFloatingCashFX(playerIdx, -rent);
+                triggerFloatingCashFX(ownerIdx, rent);
+
+                // Rivalry Callout
+                if (Math.random() > 0.7) {
+                    addLog(`💬 ${p.name}: "Watch your back, ${owner.name}! I'll get that $${rent} back!"`);
+                }
             } else {
                 const paid = p.money;
                 owner.money += paid;
@@ -2455,18 +2881,35 @@
             if (type === 'chance') G.chanceIndex = (G.chanceIndex + 1) % deck.length;
             else G.chestIndex = (G.chestIndex + 1) % deck.length;
 
-            const result = card.action(p);
-            addLog(`📄 ${type.toUpperCase()}: ${result}`);
-            triggerFullscreenPopup(type, type === 'chance' ? '🔮 CHANCE CARD DRAWN!' : '🎁 COMMUNITY CHEST CARD!', `${p.name} drew: ${card.text}`, 'assets/chance.png');
-            if (p.money < 0) handleBankruptcy(playerIdx);
-            if (p.position === 10 && p.jail) {
-                G.phase = 'postroll';
-                endTurn();
-            } else {
-                G.phase = 'postroll';
-                endTurn();
-            }
-            checkGameOver();
+            // Card Flip Presentation
+            showModal(
+                type === 'chance' ? '🔮 CHANCE' : '🎁 COMMUNITY CHEST',
+                `<div class="card-flip-container">
+                    <div class="card-flip-inner" id="cardFlipInner">
+                        <div class="card-front" style="background:#2a3a5e; border:2px dashed #f7d94e;">
+                            <span style="font-size:3rem;">${type === 'chance' ? '❓' : '📦'}</span>
+                        </div>
+                        <div class="card-back">
+                            <div style="padding:20px; text-align:center;">
+                                <p style="font-weight:bold; font-size:1.1rem; color:#fff;">${card.text}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`,
+                [{ text: 'Reveal & Action', action: () => {
+                    const inner = document.getElementById('cardFlipInner');
+                    if (inner) inner.classList.add('flipped');
+                    setTimeout(() => {
+                        const result = card.action(p);
+                        addLog(`📄 ${type.toUpperCase()}: ${result}`);
+                        if (p.money < 0) handleBankruptcy(playerIdx);
+                        G.phase = 'postroll';
+                        endTurn();
+                        checkGameOver();
+                        closeModal();
+                    }, 1500);
+                }}]
+            );
         }
 
         function handleBankruptcy(playerIdx) {
@@ -2556,6 +2999,11 @@
             p.money -= cost;
             const current = G.houseCounts[id] || 0;
             G.houseCounts[id] = current + 1;
+
+            // Build Animation & Sound
+            triggerTilePulseEffect(id);
+            if (typeof playUpgradedAudioFX === 'function') playUpgradedAudioFX('build_house');
+
             if (current + 1 === 5) {
                 addLog(`🏨 ${p.name} built a HOTEL on ${prop.name}!`);
             } else {
@@ -2572,13 +3020,21 @@
                 G.gameOver = true;
                 G.winner = active[0] ? active[0].id : -1;
                 const winnerName = G.winner >= 0 ? G.players[G.winner].name : 'Nobody';
+                const char = CHARACTERS.find(c => c.name === winnerName);
+                const quote = char && char.quotes ? char.quotes.win : "I won!";
+
                 addLog(`🏆 GAME OVER! ${winnerName} wins! 🎉`);
                 showModal(
                     '🏆 Game Over!',
-                    `${winnerName} wins the game! 🎉\nTotal turns: ${G.turnCount}`,
+                    `<img src="assets/victory.png" style="width:100%; border-radius:12px; margin-bottom:12px;"><br><b>${winnerName}</b>: "${quote}"<br><br>The empire is yours! 🎉\nTotal turns: ${G.turnCount}`,
                     [{ text: '🔄 New Game', action: () => { closeModal();
                             resetGame(); } }]
                 );
+
+                // Winner's Circle Animation
+                const board = document.querySelector('.board-wrapper');
+                if (board) board.classList.add('orbit-animating');
+
                 renderAll();
                 updateControls();
                 return true;
@@ -2602,24 +3058,30 @@
         }
 
         function animateDice(v1, v2) {
-            die1El.textContent = v1;
-            die2El.textContent = v2;
-            die1El.classList.add('rolling');
-            die2El.classList.add('rolling');
-            setTimeout(() => {
-                die1El.classList.remove('rolling');
-                die2El.classList.remove('rolling');
-            }, 400);
+            const diceArea = document.querySelector('.dice');
+            diceArea.classList.add('shaking');
 
-            // Feature 3: Cinematic 3D Dice Toss onto Board Center
-            const tossWrapper = document.createElement('div');
-            tossWrapper.className = 'toss-dice-3d-wrapper';
-            tossWrapper.innerHTML = `
-                <div class="toss-die-face">${v1}</div>
-                <div class="toss-die-face">${v2}</div>
-            `;
-            document.body.appendChild(tossWrapper);
-            setTimeout(() => tossWrapper.remove(), 2100);
+            setTimeout(() => {
+                diceArea.classList.remove('shaking');
+                die1El.textContent = v1;
+                die2El.textContent = v2;
+                die1El.classList.add('rolling');
+                die2El.classList.add('rolling');
+                setTimeout(() => {
+                    die1El.classList.remove('rolling');
+                    die2El.classList.remove('rolling');
+                }, 400);
+
+                // Feature 3: Cinematic 3D Dice Toss onto Board Center
+                const tossWrapper = document.createElement('div');
+                tossWrapper.className = 'toss-dice-3d-wrapper';
+                tossWrapper.innerHTML = `
+                    <div class="toss-die-face">${v1}</div>
+                    <div class="toss-die-face">${v2}</div>
+                `;
+                document.body.appendChild(tossWrapper);
+                setTimeout(() => tossWrapper.remove(), 2100);
+            }, 500);
         }
 
         // ─── RENDER ──────────────────────────────────────────────────
@@ -2645,6 +3107,13 @@
                     const pos = layout[r][c];
                     const space = document.createElement('div');
                     space.className = 'space';
+                    space.setAttribute('data-space-id', pos);
+
+                    // Hover Tooltip logic via title or custom overlay
+                    const propForTooltip = PROPERTIES[pos];
+                    if (propForTooltip && pos !== -1) {
+                        space.title = `${propForTooltip.name}\n${propForTooltip.type.toUpperCase()}\nPrice: $${propForTooltip.price || 0}`;
+                    }
                     if (r === 1 && c === 1) {
                         const dash = document.createElement('div');
                         dash.className = 'board-center-dashboard';
@@ -2655,25 +3124,30 @@
                         dash.innerHTML = `
                             <div class="center-dash-header">
                                 <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="font-size:1.4rem;">🏠</span>
-                                    <strong style="color:#00f0ff; font-size:1rem;">MONOPOLY EVENT CENTER</strong>
+                                    <span style="font-size:1.4rem;">🏛️</span>
+                                    <strong style="color:#00f0ff; font-size:1rem;">MEGA EMPIRE CENTER</strong>
                                 </div>
-                                <div style="background:#10192d; border:1px solid #00f0ff; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:800; color:#fff;">
+                                <div style="background:#10192d; border:1px solid #00f0ff; padding:6px 14px; border-radius:12px; font-size:0.85rem; font-weight:800; color:#fff;">
                                     TURN: <span style="color:${currP ? currP.color : '#fff'};">${currP ? currP.name : 'P1'}</span>
                                 </div>
                             </div>
 
+                            <!-- JACKPOT INDICATOR -->
+                            <div style="text-align:center; margin: 15px 0;">
+                                <div style="font-size:0.7rem; color:#aaa; text-transform:uppercase; letter-spacing:2px; font-weight:700;">FREE PARKING JACKPOT</div>
+                                <div class="centerpiece-jackpot" id="centerJackpotVal">$${G.jackpot}</div>
+                            </div>
+
                             <!-- 2. Recent Events Ticker -->
-                            <div class="center-dash-events" id="centerDashEvents">
-                                ${(G.log.slice(-3).map(e => `<div class="center-event-card"><span>${e}</span><small style="color:#8a9abb;">NOW</small></div>`).join('') || '<div class="center-event-card"><span>🎲 Welcome to 1poly Party!</span></div>')}
+                            <div class="center-dash-events" id="centerDashEvents" style="background:rgba(0,0,0,0.2); border-radius:16px; padding:10px;">
+                                ${(G.log.slice(-3).map(e => `<div class="center-event-card"><span>${e}</span></div>`).join('') || '<div class="center-event-card"><span>🎲 Welcome to 1poly Party!</span></div>')}
                             </div>
 
                             <!-- 3. Quick Action Center -->
                             <div class="center-dash-actions">
-                                <button onclick="const b=document.getElementById('rollBtn'); if(b&&!b.disabled) b.click();" style="background:linear-gradient(135deg, #00f0ff, #7000ff); color:#fff; font-weight:800; border:none; padding:8px 16px; border-radius:14px; cursor:pointer; font-size:0.85rem;">🎲 ROLL DICE</button>
-                                <button onclick="const b=document.getElementById('buyBtn'); if(b&&!b.disabled) b.click();" style="background:linear-gradient(135deg, #ff8c00, #ff007f); color:#fff; font-weight:800; border:none; padding:8px 16px; border-radius:14px; cursor:pointer; font-size:0.85rem;">💰 BUY PROP</button>
-                                <button onclick="const b=document.getElementById('buildBtn'); if(b&&!b.disabled) b.click();" style="background:linear-gradient(135deg, #11998e, #38ef7d); color:#fff; font-weight:800; border:none; padding:8px 16px; border-radius:14px; cursor:pointer; font-size:0.85rem;">🏠 BUILD</button>
-                                <button onclick="drawMonopolyDealCard();" style="background:linear-gradient(135deg, #e67e22, #f39c12); color:#fff; font-weight:800; border:none; padding:8px 16px; border-radius:14px; cursor:pointer; font-size:0.85rem;">🃏 DEAL CARD</button>
+                                <button onclick="rollBtn.click()" style="background:linear-gradient(135deg, #00f0ff, #7000ff); color:#fff; font-weight:800; border:none; padding:12px 24px; border-radius:18px; cursor:pointer; font-size:0.9rem; box-shadow:0 4px 15px rgba(0,240,255,0.3);">🎲 ROLL</button>
+                                <button onclick="buyBtn.click()" style="background:linear-gradient(135deg, #ff8c00, #ff007f); color:#fff; font-weight:800; border:none; padding:12px 24px; border-radius:18px; cursor:pointer; font-size:0.9rem; box-shadow:0 4px 15px rgba(255,140,0,0.3);">💰 BUY</button>
+                                <button onclick="buildBtn.click()" style="background:linear-gradient(135deg, #11998e, #38ef7d); color:#fff; font-weight:800; border:none; padding:12px 24px; border-radius:18px; cursor:pointer; font-size:0.9rem; box-shadow:0 4px 15px rgba(56,239,125,0.3);">🏠 BUILD</button>
                             </div>
                         `;
                         boardEl.appendChild(dash);
@@ -2693,6 +3167,7 @@
                         const bar = document.createElement('div');
                         bar.className = 'color-bar';
                         bar.style.background = prop.color;
+                        bar.style.setProperty('--bar-glow', prop.color);
                         space.appendChild(bar);
                     }
 
@@ -2702,6 +3177,12 @@
                     if (shortName.length > 14) shortName = shortName.slice(0, 12) + '…';
                     nameEl.textContent = shortName;
                     space.appendChild(nameEl);
+
+                    // Add Tooltip
+                    let tooltip = `${prop.name}`;
+                    if (prop.price > 0) tooltip += ` | $${prop.price}`;
+                    if (owner >= 0) tooltip += ` | Owned by ${G.players[owner].name}`;
+                    space.setAttribute('data-tooltip', tooltip);
 
                     if (prop.price > 0 && prop.type !== 'railroad' && prop.type !== 'utility') {
                         const priceEl = document.createElement('div');
@@ -2729,7 +3210,14 @@
                         if (!p.bankrupt && p.position === pos) {
                             const tok = document.createElement('div');
                             tok.className = `token t${i}`;
-                            tok.textContent = TOKEN_SYMBOLS[i];
+                            tok.style.background = p.color; // Base color
+                            tok.style.boxShadow = `0 0 15px ${p.color}88, 0 4px 10px rgba(0,0,0,0.5)`;
+                            const charObj = (typeof CHARACTERS !== 'undefined') ? (CHARACTERS.find(c => c.name === p.name || c.token === p.token) || CHARACTERS[i % CHARACTERS.length]) : null;
+                            if (charObj && charObj.portrait) {
+                                tok.innerHTML = `<img src="${charObj.portrait}" alt="Token">`;
+                            } else {
+                                tok.textContent = TOKEN_SYMBOLS[i];
+                            }
                             tokens.appendChild(tok);
                         }
                     }
@@ -2742,11 +3230,14 @@
 
                     if (['go', 'jail', 'freeparking', 'gotojail'].includes(prop.type)) {
                         space.classList.add('corner');
+                        space.classList.add('space-' + prop.type);
                         if (prop.type === 'go') nameEl.textContent = '🏁 GO';
                         else if (prop.type === 'jail') nameEl.textContent = '⛓️ Jail';
                         else if (prop.type === 'freeparking') nameEl.textContent = '🅿️ Free';
                         else if (prop.type === 'gotojail') nameEl.textContent = '🚔 Go to Jail';
                     }
+                    if (prop.type === 'chance') space.classList.add('space-chance');
+                    if (prop.type === 'chest') space.classList.add('space-chest');
 
                     if (G.currentPlayer >= 0 && G.players[G.currentPlayer].position === pos) {
                         const hl = document.createElement('div');
@@ -2770,6 +3261,13 @@
                 if (i === G.currentPlayer && !p.bankrupt) div.classList.add('active');
                 if (p.bankrupt) div.style.opacity = '0.4';
 
+                // Title Progression
+                const netWorth = p.money + p.properties.reduce((sum, id) => sum + (PROPERTIES[id] ? PROPERTIES[id].price : 0), 0);
+                let title = "Rookie";
+                if (netWorth > 1000) title = "Investor";
+                if (netWorth > 2500) title = "Tycoon";
+                if (netWorth > 5000) title = "Monopolist";
+
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'pname';
 
@@ -2779,6 +3277,12 @@
                     avatarImg.className = 'char-avatar-img';
                     avatarImg.src = charObj.portrait;
                     avatarImg.style.borderColor = p.color;
+
+                    // Reactive Avatar Filters
+                    if (p.jail) avatarImg.style.filter = "grayscale(100%)";
+                    if (p.bankrupt) avatarImg.style.filter = "sepia(100%)";
+                    if (netWorth > 3000) avatarImg.style.filter += " drop-shadow(0 0 5px gold)";
+
                     nameDiv.appendChild(avatarImg);
                 }
 
@@ -2786,9 +3290,22 @@
                 dot.className = 'dot';
                 dot.style.background = p.color;
                 nameDiv.appendChild(dot);
+
+                const nameTextContainer = document.createElement('div');
+                nameTextContainer.style.display = 'flex';
+                nameTextContainer.style.flexDirection = 'column';
+
                 const nameSpan = document.createElement('span');
                 nameSpan.textContent = p.bankrupt ? `${p.name} 💀` : p.name;
-                nameDiv.appendChild(nameSpan);
+                nameTextContainer.appendChild(nameSpan);
+
+                const titleSpan = document.createElement('span');
+                titleSpan.style.cssText = 'font-size:0.5rem; color:#00f0ff; font-weight:700; text-transform:uppercase;';
+                titleSpan.textContent = title;
+                nameTextContainer.appendChild(titleSpan);
+
+                nameDiv.appendChild(nameTextContainer);
+
                 if (p.turn && !p.bankrupt) {
                     const turnBadge = document.createElement('span');
                     turnBadge.textContent = '🎯';
@@ -2958,8 +3475,8 @@
 
             if (G.phase === 'roll') {
                 if (p.jail) {
-                    if (p.jailCards && p.jailCards > 0) {
-                        p.jailCards--;
+                    if (p.jailFree) {
+                        p.jailFree = false;
                         p.jail = false;
                         addLog(`🤖 ${p.name} (${trait}) used a 'Get Out of Jail Free' card to exit Jail!`);
                     } else if (p.money > 500) {
@@ -2969,50 +3486,64 @@
                     } else {
                         addLog(`🤖 ${p.name} (${trait}) rolls for doubles to attempt Jail escape...`);
                     }
-                } else {
-                    addLog(`🤖 ${p.name} (${trait}) is taking a moment before rolling...`);
                 }
-                await new Promise(res => setTimeout(res, 1500));
+                await new Promise(res => setTimeout(res, 1200));
                 if (!G || G.currentPlayer !== idx) return;
                 rollDice();
-            } else if (G.phase === 'postroll') {
+             if (G.phase === 'postroll') {
                 const pos = p.position;
                 const owner = G.propertyOwners[pos];
                 const prop = PROPERTIES[pos];
 
-                addLog(`🤖 ${p.name} (${trait}) is evaluating property options...`);
-                await new Promise(res => setTimeout(res, 1500));
+                await new Promise(res => setTimeout(res, 1000));
                 if (!G || G.currentPlayer !== idx) return;
 
-                if (owner === -1 && prop && prop.price > 0 && p.money >= prop.price + bufferNeeded) {
-                    addLog(`🤖 ${p.name} (${trait}) decides to BUY ${prop.name} for $${prop.price}!`);
-                    buyProperty(idx);
-                } else {
-                    if (owner === -1 && prop && prop.price > 0) {
-                        addLog(`🤖 ${p.name} (${trait}) passes on ${prop.name} (Requires $${bufferNeeded} cash buffer).`);
+                // Decision to Buy
+                if (owner === -1 && prop && prop.price > 0) {
+                    if (p.money >= prop.price + bufferNeeded) {
+                        addLog(`🤖 ${p.name} (${trait}) decides to BUY ${prop.name} for $${prop.price}!`);
+                        buyProperty(idx);
+                        return;
+                    } else if (getSet('u_auctions', true)) {
+                         addLog(`🤖 ${p.name} (${trait}) can't afford ${prop.name}, starting AUCTION!`);
+                         startAuction(pos);
+                         return;
                     }
-
-                    // Automatic House Building check before calling endTurn()
-                    const buildable = p.properties.filter(id => {
-                        const pr = PROPERTIES[id];
-                        if (!pr || pr.type !== 'property') return false;
-                        const groupProps = PROPERTIES.filter((_, i) => PROPERTIES[i].group === pr.group && i < BOARD_SIZE);
-                        const ownedGroup = groupProps.filter(pp => G.propertyOwners[pp.id] === idx);
-                        if (ownedGroup.length !== groupProps.length) return false;
-                        const houses = G.houseCounts[id] || 0;
-                        if (houses >= 5) return false;
-                        const minHouses = Math.min(...groupProps.map(pp => G.houseCounts[pp.id] || 0));
-                        if (houses > minHouses) return false;
-                        return p.money >= pr.houseCost + 200;
-                    });
-
-                    if (buildable.length > 0) {
-                        addLog(`🤖 ${p.name} (${trait}) owns a full color set and has $200+ buffer! Building house...`);
-                        buildHouses();
-                    }
-
-                    endTurn();
                 }
+
+                // Decision to Mortgage (if in debt)
+                if (p.money < 0 && p.properties.length > 0) {
+                    const toMortgage = p.properties[0];
+                    const val = Math.floor(PROPERTIES[toMortgage].price * 0.5);
+                    p.money += val;
+                    G.propertyOwners[toMortgage] = -1;
+                    p.properties.shift();
+                    addLog(`🤖 ${p.name} (${trait}) mortgaged ${PROPERTIES[toMortgage].name} to recover!`);
+                    if (p.money >= 0) {
+                        renderAll();
+                        updateControls();
+                    }
+                }
+
+                // Strategic Housing
+                const buildable = p.properties.filter(id => {
+                    const pr = PROPERTIES[id];
+                    if (!pr || pr.type !== 'property') return false;
+                    const groupProps = PROPERTIES.filter((_, i) => PROPERTIES[i].group === pr.group && i < BOARD_SIZE);
+                    const ownedGroup = groupProps.filter(pp => G.propertyOwners[pp.id] === idx);
+                    if (ownedGroup.length !== groupProps.length) return false;
+                    const houses = G.houseCounts[id] || 0;
+                    if (houses >= 5) return false;
+                    return p.money >= pr.houseCost + bufferNeeded + 100;
+                });
+
+                if (buildable.length > 0) {
+                    const best = buildable.sort((a,b) => PROPERTIES[b].rent - PROPERTIES[a].rent)[0];
+                    addLog(`🤖 ${p.name} (${trait}) is building on ${PROPERTIES[best].name}!`);
+                    buildHouses();
+                }
+
+                endTurn();
             }
         }
         window.executeBotAction = executeBotAction;
@@ -3086,18 +3617,15 @@
             </div>`);
         }
 
-        function updateStatus(state, msg) {
-            const badges = {
-                'ready': { text: '✅ Ready', cls: 'online' },
-                'connecting': { text: '⏳ Connecting…', cls: 'connecting' },
-                'host': { text: '👑 Hosting', cls: 'online' },
-                'joined': { text: '🔗 Connected', cls: 'online' },
-                'error': { text: '❌ Error', cls: '' },
-                'offline': { text: '💻 Offline', cls: '' },
-            };
-            const s = badges[state] || badges['offline'];
-            statusBadge.textContent = s.text + (msg ? ' ' + msg : '');
-            statusBadge.className = 'status-badge' + (s.cls ? ' ' + s.cls : '');
+        function updatePlayerTitles() {
+            if (!G) return;
+            G.players.forEach(p => {
+                const netWorth = p.money + p.properties.reduce((sum, id) => sum + (PROPERTIES[id] ? PROPERTIES[id].price : 0), 0);
+                if (netWorth > 5000) p.title = '💎 Galactic Tycoon';
+                else if (netWorth > 3000) p.title = '👑 Real Estate Mogul';
+                else if (netWorth > 1500) p.title = '💼 Rising Entrepreneur';
+                else p.title = '🚶 Novice Stroller';
+            });
         }
 
         // ─── MODAL ────────────────────────────────────────────────────
@@ -3257,12 +3785,17 @@
                         renderAll();
                         updateControls();
                     } else if (data.type === 'state') {
+                        // Latency check / consistency
+                        if (G && data.timestamp && data.timestamp < G.lastUpdate) return;
                         G = data.game;
+                        G.lastUpdate = data.timestamp;
                         if (data.tokenSymbols) TOKEN_SYMBOLS = data.tokenSymbols;
                         if (data.playerNames) PLAYER_NAMES = data.playerNames;
                         if (data.playerColors) PLAYER_COLORS = data.playerColors;
                         renderAll();
                         updateControls();
+                    } else if (data.type === 'heartbeat') {
+                        // Stay alive
                     } else if (data.type === 'roster_sync') {
                         if (data.tokenSymbols) TOKEN_SYMBOLS = data.tokenSymbols;
                         if (data.playerNames) PLAYER_NAMES = data.playerNames;
@@ -3362,13 +3895,29 @@
 
         function broadcastState() {
             if (!isHost) return;
-            const stateMsg = { type: 'state', game: G };
+            const stateMsg = {
+                type: 'state',
+                game: G,
+                tokenSymbols: TOKEN_SYMBOLS,
+                playerNames: PLAYER_NAMES,
+                playerColors: PLAYER_COLORS,
+                timestamp: Date.now()
+            };
             for (const conn of connections) {
                 if (conn.open) {
                     conn.send(stateMsg);
                 }
             }
         }
+
+        // P2P Heartbeat
+        setInterval(() => {
+            if (isHost && isConnected) {
+                for (const conn of connections) {
+                    if (conn.open) conn.send({ type: 'heartbeat' });
+                }
+            }
+        }, 5000);
 
         function sendAction(action) {
             if (isHost) {
@@ -3874,9 +4423,13 @@
                 document.body.appendChild(container);
             }
             container.innerHTML = '';
+            container.className = ''; // Reset weather classes
 
             const cloudsEnabled = getSet('f_clouds', true);
             if (!cloudsEnabled) return;
+
+            const weatherType = getSet('u_weather', 'sunny');
+            container.classList.add(weatherType);
 
             const cloudIcons = ['☁️', '⛅', '🌨️', '☁️', '⛅', '☁️'];
             for (let i = 0; i < 6; i++) {
@@ -3904,6 +4457,12 @@
             }
             const theme = getSet('c_theme', 'galaxy');
             orb.textContent = (theme === 'galaxy' || theme === 'cyber') ? '🌙' : '☀️';
+
+            // Dynamic Background Skybox
+            if (weatherType === 'snowy') document.body.style.background = "#accbee";
+            else if (weatherType === 'rainbow') document.body.style.background = "linear-gradient(to bottom, #74ebd5, #acb6e5)";
+            else document.body.style.background = "radial-gradient(circle at center, #1a2a4a 0%, #0b1224 100%)";
+            document.body.style.backgroundSize = "cover";
         }
 
         function applyMegaEffects() {
@@ -4060,6 +4619,14 @@
                         cards[G.currentPlayer].classList.add('turn-idle-pulse');
                         playMegaSound(440, 0.1, 'triangle');
                         addLog('⏳ Friendly Nudge: Waiting for active player to move!');
+                    }
+
+                    // Wealth Milestone Celebration check
+                    const p = G.players[G.currentPlayer];
+                    if (p.money >= 3000 && !p.reachedRichMilestone) {
+                        p.reachedRichMilestone = true;
+                        addLog(`💎 WEALTH MILESTONE: ${p.name} has crossed $3000!`);
+                        triggerGoldCashExplosion();
                     }
                 }
             }, 60000);
@@ -4638,10 +5205,86 @@
 
         // ─── INTRO VIDEO, START LOBBY, FULLSCREEN POPUPS & FULLSCREEN TOGGLE ───
 
+        // ─── STREAMLINED SETUP HUB LOGIC ──────────────────────────────
+        let currentSetupMode = 'solo';
+
+        function switchSetupMode(mode) {
+            currentSetupMode = mode;
+            const soloBtn = $('modeSoloBtn');
+            const multiBtn = $('modeMultiBtn');
+            const soloPanel = $('setupPanelSolo');
+            const multiPanel = $('setupPanelMulti');
+            const helpText = $('setupHelp');
+
+            if (mode === 'solo') {
+                soloBtn.style.background = '#00f0ff';
+                soloBtn.style.color = '#000';
+                multiBtn.style.background = 'rgba(255,255,255,0.05)';
+                multiBtn.style.color = '#fff';
+                soloPanel.style.display = 'block';
+                multiPanel.style.display = 'none';
+                helpText.innerHTML = "Choose <b>Solo</b> to play against AI Bots, or invite family for local pass-and-play!";
+                saveMegaState('u_bots', true);
+            } else {
+                multiBtn.style.background = '#2ecc71';
+                multiBtn.style.color = '#fff';
+                soloBtn.style.background = 'rgba(255,255,255,0.05)';
+                soloBtn.style.color = '#fff';
+                multiPanel.style.display = 'block';
+                soloPanel.style.display = 'none';
+                helpText.innerHTML = "Host a <b>Multiplayer</b> room to play with friends across different devices!";
+                saveMegaState('u_bots', false);
+            }
+            updateSetupRoster();
+        }
+
+        function updateSetupRoster() {
+            const container = $('setupRosterContainer');
+            if (!container) return;
+
+            const humans = parseInt($('soloPlayerCount').value);
+            const bots = currentSetupMode === 'solo' ? parseInt($('soloBotCount').value) : 0;
+            const total = humans + bots;
+            activePlayerCount = total;
+
+            let html = '';
+            for (let i = 0; i < total; i++) {
+                const isBot = i >= humans;
+                const char = CHARACTERS[i % CHARACTERS.length];
+                html += `
+                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; border:1px solid ${isBot ? '#555' : char.color}; text-align:center;">
+                        <img src="${char.portrait}" style="width:40px; height:40px; border-radius:50%; margin-bottom:4px; border:2px solid ${isBot ? '#444' : char.color}; opacity:${isBot ? '0.7' : '1'};">
+                        <div style="font-size:0.7rem; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${isBot ? '🤖 Bot '+(i-humans+1) : '👤 Player '+(i+1)}</div>
+                        <div style="font-size:0.5rem; color:#aaa;">${isBot ? 'Medium AI' : 'Human'}</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function launchGameFromSetup() {
+            if (currentSetupMode === 'multi') {
+                const room = $('setupRoomInput').value.trim();
+                if (!room) { alert("Please enter a room name!"); return; }
+                roomInput.value = room;
+                hostGame();
+            } else {
+                const humans = parseInt($('soloPlayerCount').value);
+                const bots = parseInt($('soloBotCount').value);
+                activePlayerCount = humans + bots;
+                saveMegaState('u_bots', bots > 0);
+                initGame();
+                addLog(`🎮 Solo Match Started with ${humans} Humans & ${bots} Bots!`);
+            }
+            closeIntroVideo();
+            triggerFullscreenPopup('pass_go', '🚀 READY TO ROLL!', `Welcome to the board! Let's build an empire!`, 'assets/intro_cover.png');
+        }
+
         function playIntroVideo() {
             const overlay = document.getElementById('introVideoOverlay');
             if (overlay) {
                 overlay.style.display = 'flex';
+                switchSetupMode('solo'); // Default
                 playMegaSound(523.25, 0.1, 'sine');
                 playMegaSound(659.25, 0.15, 'sine', 100);
                 playMegaSound(783.99, 0.25, 'sine', 200);
@@ -4717,7 +5360,9 @@
         }
 
         function updateLobbyName(i, val) {
-            PLAYER_NAMES[i] = val || `P${i+1}`;
+            // Input Sanitization
+            const clean = val.replace(/[<>]/g, "").substring(0, 16);
+            PLAYER_NAMES[i] = clean || `P${i+1}`;
         }
 
         function updateLobbyColor(i, val) {
@@ -4851,18 +5496,41 @@
 
         // Emergency Unfreeze & Game Repair Routine
         window.unlockGameIfStuck = function() {
-            if (typeof isAnimating !== 'undefined') isAnimating = false;
-            if (typeof isMoving !== 'undefined') isMoving = false;
+            // 1. Clear movement state
+            if (typeof activeMoveState !== 'undefined' && activeMoveState) {
+                clearInterval(activeMoveState.interval);
+                activeMoveState.active = false;
+                activeMoveState = null;
+            }
+
+            // 2. Hide all overlays
             document.querySelectorAll('.mega-modal-overlay, .modal-overlay').forEach(el => {
-                if (el.id !== 'optionsMenuOverlay') el.style.display = 'none';
+                el.style.display = 'none';
             });
+
+            // 3. Reset UI classes
+            const board = document.querySelector('.board-wrapper');
+            if (board) board.classList.remove('orbit-animating');
+
+            // 4. Force enable controls
             const rBtn = document.getElementById('rollBtn');
-            if (rBtn) rBtn.disabled = false;
             const eBtn = document.getElementById('endTurnBtn');
+            if (rBtn) rBtn.disabled = false;
             if (eBtn) eBtn.disabled = false;
-            if (typeof updateControls === 'function') updateControls();
-            if (typeof addLog === 'function') addLog('🛠️ Emergency Unfreeze: Board & Modals Repaired!');
-            if (typeof triggerHaptic === 'function') triggerHaptic('success');
+
+            // 5. State recovery
+            if (G) {
+                G.gameOver = false;
+                G.phase = 'roll';
+                addLog('🛠️ System Repair: Game unfrozen and state restored.');
+            }
+
+            // 6. Audio notification
+            if (typeof playUpgradedAudioFX === 'function') playUpgradedAudioFX('pass_go_reward');
+
+            updateControls();
+            renderAll();
+            triggerHaptic('success');
         };
 
         // ─── 100 MEGA GAMEPLAY & AUDIO ENHANCEMENTS ENGINE ───
@@ -4933,28 +5601,32 @@
         // Initialize all mega effects on boot
         applyMegaEffects();
 
-        // Hook into dice roll and property purchases for sound and speech rewards
-        const originalRollDice = typeof rollDice === 'function' ? rollDice : null;
-        const originalBuyProperty = typeof buyProperty === 'function' ? buyProperty : null;
-        
-        // Listeners for audio immersion
-        if (typeof rollBtn !== 'undefined' && rollBtn) {
-            rollBtn.addEventListener('click', () => playMegaSound(300, 0.08, 'triangle'));
+        // ─── PRODUCTION READY REFINEMENTS ────────────────────────────
+        window.addEventListener('error', (e) => {
+            console.error("Monopoly Engine Exception:", e.message);
+            // Auto-recovery attempt
+            if (e.message.includes("PeerJS")) {
+                updateStatus('error', "Connection issue. Try Repair Game.");
+            }
+        });
+
+        // Smart Local Player Rotation
+        function rotateBoardToCurrentPlayer() {
+            if (currentSetupMode === 'solo' && activePlayerCount > 1) {
+                const board = $('.board-wrapper');
+                // Optional: logic to rotate board if needed for local play
+            }
         }
-        if (typeof buyBtn !== 'undefined' && buyBtn) {
-            buyBtn.addEventListener('click', () => {
-                playMegaSound(523.25, 0.1, 'sine'); playMegaSound(783.99, 0.25, 'sine', 100);
-                triggerConfettiShower();
-                speechAnnounce('Congratulations! Property acquired for your family empire!');
-            });
-        }
-        if (typeof buildBtn !== 'undefined' && buildBtn) {
-            buildBtn.addEventListener('click', () => {
-                playMegaSound(659.25, 0.1, 'sine'); playMegaSound(987.77, 0.3, 'sine', 100);
-                triggerConfettiShower();
-                speechAnnounce('Housing development built!');
-            });
-        }
+
+        // Final Boot sequence
+        window.addEventListener('load', () => {
+            const params = new URLSearchParams(window.location.search);
+            const autoRoom = params.get('room');
+            if (autoRoom) {
+                $('setupRoomInput').value = autoRoom;
+                setTimeout(() => { switchSetupMode('multi'); }, 500);
+            }
+        });
     </script>
 
     <!-- 16 INTEGRATED HIGH-FIDELITY VECTOR SVG MONOPOLY ASSETS -->

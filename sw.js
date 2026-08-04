@@ -1,8 +1,15 @@
-const CACHE_NAME = '1poly-v1';
+const CACHE_NAME = '1poly-ultra-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './mp02.jpg',
+  './assets/pass_go.png',
+  './assets/jail.png',
+  './assets/chance.png',
+  './assets/intro_cover.png',
+  './assets/victory.png',
+  './assets/property_buy.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -32,7 +39,7 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
       return fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+        if (!networkResponse || networkResponse.status !== 200) {
           return networkResponse;
         }
         const responseToCache = networkResponse.clone();
@@ -41,7 +48,9 @@ self.addEventListener('fetch', (event) => {
         });
         return networkResponse;
       }).catch(() => {
-        return caches.match('./index.html');
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
       });
     })
   );
