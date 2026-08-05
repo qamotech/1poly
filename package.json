@@ -1,0 +1,16 @@
+{
+  "name": "1poly",
+  "version": "1.0.0",
+  "description": "8-Player Family Monopoly Party Game",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo 'No build step required'",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "jsdom": "^30.0.1",
+    "playwright": "^1.62.1"
+  }
+}

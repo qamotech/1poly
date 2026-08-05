@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdom/20.0.3/jsdom.min.js"></script>
+</head>
+<body>
+<script>
+  const jsdom = require("jsdom");
+  const { JSDOM } = jsdom;
+  const fs = require("fs");
+  const html = fs.readFileSync("index.html", "utf-8");
+  const dom = new JSDOM(html, { runScripts: "dangerously" });
+</script>
+</body>
+</html>
