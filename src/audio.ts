@@ -6,6 +6,9 @@ class SoundEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private compressor: DynamicsCompressorNode | null = null;
+  private eq: BiquadFilterNode | null = null;
+  private reverb: ConvolverNode | null = null;
+  private reverbGain: GainNode | null = null;
   private buffers: Record<string, AudioBuffer> = {};
   private soundUrls: Record<string, string>;
   private isInitialized = false;
@@ -14,18 +17,49 @@ class SoundEngine {
     this.soundUrls = soundUrls;
   }
 
+  // Create a synthetic impulse response for the reverb
+  private createImpulseResponse(ctx: AudioContext, duration: number, decay: number) {
+    const length = ctx.sampleRate * duration;
+    const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
+    const left = impulse.getChannelData(0);
+    const right = impulse.getChannelData(1);
+    for (let i = 0; i < length; i++) {
+      const n = Math.random() * 2 - 1;
+      left[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+      right[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+    }
+    return impulse;
+  }
+
   async init() {
     if (this.isInitialized) return;
     this.isInitialized = true;
-
     try {
       this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       
       this.masterGain = this.ctx.createGain();
       this.compressor = this.ctx.createDynamicsCompressor();
       
+      // High-Def EQ (slight mid-scoop, high sparkle)
+      this.eq = this.ctx.createBiquadFilter();
+      this.eq.type = 'peaking';
+      this.eq.frequency.value = 2500;
+      this.eq.Q.value = 1.5;
+      this.eq.gain.value = 4; // Add sparkle
+
+      const lowShelf = this.ctx.createBiquadFilter();
+      lowShelf.type = 'lowshelf';
+      lowShelf.frequency.value = 200;
+      lowShelf.gain.value = 3; // Add bass punch
+      
+      // Reverb (Ultra High Def FX)
+      this.reverb = this.ctx.createConvolver();
+      this.reverb.buffer = this.createImpulseResponse(this.ctx, 1.5, 3.0);
+      this.reverbGain = this.ctx.createGain();
+      this.reverbGain.gain.value = 0.15; // Wet level
+
       // Master volume and compression for punchy, non-clipping sound
-      this.masterGain.gain.value = 0.5;
+      this.masterGain.gain.value = 0.6;
       
       this.compressor.threshold.value = -24;
       this.compressor.knee.value = 30;
@@ -33,8 +67,20 @@ class SoundEngine {
       this.compressor.attack.value = 0.003;
       this.compressor.release.value = 0.25;
 
+      // Routing:
+      // Dry: Source -> lowShelf -> EQ -> masterGain -> compressor -> dest
+      // Wet: Source -> reverb -> reverbGain -> masterGain -> compressor -> dest
+      lowShelf.connect(this.eq);
+      this.eq.connect(this.masterGain);
+      
+      this.reverb.connect(this.reverbGain);
+      this.reverbGain.connect(this.masterGain);
+
       this.masterGain.connect(this.compressor);
       this.compressor.connect(this.ctx.destination);
+      
+      // Save entry point for dry signals
+      (this as any).entryNode = lowShelf;
 
       await this.preloadAssets();
     } catch (e) {
@@ -106,7 +152,14 @@ class SoundEngine {
         panner.connect(gainNode);
       }
       
-      gainNode.connect(this.masterGain);
+      const targetNode = (this as any).entryNode || this.masterGain;
+      gainNode.connect(targetNode);
+      
+      // Also send to Reverb for that Ultra High Def space
+      if (this.reverb) {
+        gainNode.connect(this.reverb);
+      }
+
       source.start(0);
     } catch (e) {
       console.warn(`Failed to play sound: ${soundId}`, e);

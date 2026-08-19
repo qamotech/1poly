@@ -19,6 +19,7 @@ export interface Player {
   getOutOfJailFreeCards: number;
   inJail: boolean;
   jailTurns: number;
+  hasPassedGo?: boolean;
   isBankrupt: boolean;
   stats: {
     totalRolls: number;
@@ -120,6 +121,7 @@ export interface HouseRules {
   wealthTax: boolean;
   mercyRule: boolean;
   rentControl: boolean;
+  forcedJailBail: boolean;
 }
 
 export interface GameState {

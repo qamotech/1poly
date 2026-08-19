@@ -5,17 +5,27 @@ import { User, Bot, Play, Users, PlusCircle, Zap } from 'lucide-react';
 import { audio } from '../audio';
 
 const TOKENS = [
-  '🚗', '🎩', '🐕', '👞', '🚢', '🚂', '🚜', '🏎️', '✈️', '🚀', '👽', '🤖', '🦄', '🦖', '🍕', '🍔',
-  '🥷🏾', '😇', '🧐', '😎', '🤠', '👻', '💩', '👾', '🤡', '🦊', '🦁', '🐼', '🐸', '🐙', '🦋', '🎸',
+  '🥷🏾', '🚗', '🎩', '🐕', '👞', '🚢', '🚂', '🚜', '🏎️', '✈️', '🚀', '👽', '🤖', '🦄', '🦖', '🍕', '🍔',
+  '😇', '🧐', '😎', '🤠', '👻', '💩', '👾', '🤡', '🦊', '🦁', '🐼', '🐸', '🐙', '🦋', '🎸',
   '🛹', '🏀', '⚽', '🎱', '💎', '👑', '🔥', '🧊'
 ];
 
 const PRESET_NAMES = [
-  "Rich Uncle Pennybags", "The Tycoon", "High Roller", "Boardwalk Boss",
+  "N8", "Rich Uncle Pennybags", "The Tycoon", "High Roller", "Boardwalk Boss",
   "Thimble Tommy", "Racecar Ricky", "Top Hat Terry", "Scottie Dog",
   "Battleship Betty", "Iron Irene", "Wheelbarrow Will", "Boot Bert",
   "Banker Bob", "Mogul Mary", "Landlord Larry", "Capitalist Cathy",
-  "Baron Von Rent", "Duke of Dice"
+  "Baron Von Rent", "Duke of Dice", "Jeeves", "Cortana", "Siri", 
+  "Alexa", "Hal 9000", "GLaDOS", "C-3PO", "R2-D2", "Data", "JARVIS", 
+  "Mr. Monopoly", "Jake the Jailbird", "Officer Edgar Mallory", "Marvin Gardens", 
+  "B. & O. Railroad", "Short Line", "Water Works", "Electric Company", 
+  "Luxury Tax", "Chance", "Community Chest", "Free Parking", "Go To Jail", 
+  "Just Visiting", "Boardwalk", "Park Place", "Pennsylvania Ave", 
+  "North Carolina Ave", "Pacific Ave", "Ventnor Ave", "Atlantic Ave", 
+  "Illinois Ave", "Indiana Ave", "Kentucky Ave", "New York Ave", 
+  "Tennessee Ave", "St. James Place", "Virginia Ave", "States Ave", 
+  "St. Charles Place", "Connecticut Ave", "Vermont Ave", "Oriental Ave", 
+  "Baltic Ave", "Mediterranean Ave", "Reading Railroad", "Pennsylvania Railroad"
 ];
 
 const RULE_DESCRIPTIONS: Record<keyof HouseRules, string> = {
@@ -30,7 +40,8 @@ const RULE_DESCRIPTIONS: Record<keyof HouseRules, string> = {
   firstLapLockdown: "No properties can be bought until passing GO once.",
   wealthTax: "Income Tax charges 10% of total wealth instead of $200 flat.",
   mercyRule: "Game instantly ends if a player reaches $5000 cash.",
-  rentControl: "Maximum rent is capped at $1000 globally."
+  rentControl: "Maximum rent is capped at $1000 globally.",
+  forcedJailBail: "Players must pay $50 to exit Jail immediately on their first turn."
 };
 
 const RULE_LABELS: Record<keyof HouseRules, string> = {
@@ -45,7 +56,8 @@ const RULE_LABELS: Record<keyof HouseRules, string> = {
   firstLapLockdown: "First Lap Lockdown",
   wealthTax: "True Wealth Tax",
   mercyRule: "Mercy Rule ($5000 Win)",
-  rentControl: "Rent Control ($1000 Cap)"
+  rentControl: "Rent Control ($1000 Cap)",
+  forcedJailBail: "Forced Jail Bail ($50)"
 };
 
 // Helper to get random unused name
@@ -64,7 +76,7 @@ interface LobbyProps {
 }
 
 export const Lobby: React.FC<LobbyProps> = ({ gameState, onAddPlayer, onStartGame, onUpdateRules }) => {
-  const [name, setName] = useState('');
+  const [name, setName] = useState('N8');
   const [type, setType] = useState<PlayerType>(PlayerType.USER);
   const [token, setToken] = useState(TOKENS[0]);
 
@@ -77,7 +89,7 @@ export const Lobby: React.FC<LobbyProps> = ({ gameState, onAddPlayer, onStartGam
   }, [gameState.players.length]);
 
   const handleAdd = () => {
-    audio.init();
+    audio.playUiClick();
     if (!name.trim()) return;
     onAddPlayer(name, type, token);
     const usedNames = [...gameState.players.map(p => p.name), name];
@@ -89,7 +101,7 @@ export const Lobby: React.FC<LobbyProps> = ({ gameState, onAddPlayer, onStartGam
   };
 
   const handleQuickStart = (cpuCount: number) => {
-    audio.init();
+    audio.playUiClick();
     
     const usedNames = [...gameState.players.map(p => p.name)];
     const usedTokens = [...gameState.players.map(p => p.token)];
@@ -274,7 +286,7 @@ export const Lobby: React.FC<LobbyProps> = ({ gameState, onAddPlayer, onStartGam
         <div className="flex flex-col gap-4 mt-6">
           <button 
             onClick={() => {
-              audio.init();
+              audio.playUiClick();
               onStartGame();
             }}
             disabled={gameState.players.length < 2}

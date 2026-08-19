@@ -68,7 +68,7 @@ async function startServer() {
           gameState = resolveTrade(gameState, false);
           io.emit('game_state_update', gameState);
           checkAITurn();
-        }, 1500); // 1.5s delay so human can read the log
+        }, 5000); // 5s delay so human can read the log
       }
     });
 

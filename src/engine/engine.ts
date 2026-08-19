@@ -15,6 +15,7 @@ export const DEFAULT_RULES: HouseRules = {
   wealthTax: false,
   mercyRule: false,
   rentControl: false,
+  forcedJailBail: false,
 };
 
 export const createInitialGameState = (): GameState => ({
@@ -51,6 +52,7 @@ export const addPlayer = (state: GameState, name: string, type: PlayerType, toke
     getOutOfJailFreeCards: 0,
     inJail: false,
     jailTurns: 0,
+    hasPassedGo: false,
     isBankrupt: false,
     stats: {
       totalRolls: 0,
@@ -120,30 +122,44 @@ export const rollDice = (state: GameState): GameState => {
 
   // Jail Roll Logic
   if (currentPlayer.inJail) {
-    let logs = [...state.logs, `${currentPlayer.name} rolled ${d1} and ${d2} from Jail.`];
     const players = [...state.players];
     const pIndex = players.findIndex(p => p.id === currentPlayer.id);
     const p = { ...players[pIndex] };
+    let logs = [...state.logs];
+    let pot = state.pot;
+
+    if (state.houseRules.forcedJailBail && p.jailTurns === 0) {
+      logs.push(`${p.name} paid $50 forced bail to exit Jail on their first turn.`);
+      p.money -= 50;
+      if (state.houseRules.freeParkingJackpot) pot += 50;
+      p.inJail = false;
+      p.jailTurns = 0;
+      players[pIndex] = p;
+      return movePlayerBy({ ...state, players, logs, pot, lastDiceRoll: [d1, d2], doublesRolledCount: isDouble ? 1 : 0 }, p.id, d1 + d2, isDouble);
+    }
+
+    logs.push(`${p.name} rolled ${d1} and ${d2} from Jail.`);
     
     if (isDouble) {
       logs.push(`${p.name} rolled doubles and got out of Jail!`);
       p.inJail = false;
       p.jailTurns = 0;
       players[pIndex] = p;
-      return movePlayerBy({ ...state, players, logs, lastDiceRoll: [d1, d2], doublesRolledCount: 0 }, p.id, d1 + d2, false); // Pass isDouble false so they don't roll again
+      return movePlayerBy({ ...state, players, logs, pot, lastDiceRoll: [d1, d2], doublesRolledCount: 0 }, p.id, d1 + d2, false); // Pass isDouble false so they don't roll again
     } else {
       p.jailTurns += 1;
       if (p.jailTurns >= 3) {
         logs.push(`${p.name} served 3 turns, paid $50 to get out of Jail.`);
         p.money -= 50;
+        if (state.houseRules.freeParkingJackpot) pot += 50;
         p.inJail = false;
         p.jailTurns = 0;
         players[pIndex] = p;
-        return movePlayerBy({ ...state, players, logs, lastDiceRoll: [d1, d2], doublesRolledCount: 0 }, p.id, d1 + d2, false);
+        return movePlayerBy({ ...state, players, logs, pot, lastDiceRoll: [d1, d2], doublesRolledCount: 0 }, p.id, d1 + d2, false);
       } else {
         logs.push(`${p.name} did not roll doubles and stays in Jail.`);
         players[pIndex] = p;
-        return { ...state, players, logs, lastDiceRoll: [d1, d2], phase: GamePhase.POST_ROLL, doublesRolledCount: 0 };
+        return { ...state, players, logs, pot, lastDiceRoll: [d1, d2], phase: GamePhase.POST_ROLL, doublesRolledCount: 0 };
       }
     }
   }
@@ -162,6 +178,12 @@ export const rollDice = (state: GameState): GameState => {
   };
   
   const logs = [...state.logs, `${currentPlayer.name} rolled ${d1} and ${d2}.`];
+  
+  if (d1 === 1 && d2 === 1 && state.houseRules.snakeEyesBonus) {
+    updatedPlayers[state.currentPlayerIndex].money += 500;
+    logs.push(`${currentPlayer.name} got a $500 bonus for rolling Snake Eyes!`);
+  }
+
   let newState: GameState = { 
     ...state, 
     players: updatedPlayers,
@@ -189,8 +211,14 @@ const movePlayerBy = (state: GameState, playerId: string, amount: number, isDoub
 
   if (newPos >= 40) {
     newPos -= 40;
-    p.money += 200;
-    logs.push(`${p.name} passed GO and collected $200.`);
+    p.hasPassedGo = true;
+    if (newPos === 0 && state.houseRules.doubleGo) {
+      p.money += 400;
+      logs.push(`${p.name} landed EXACTLY on GO and collected $400!`);
+    } else {
+      p.money += 200;
+      logs.push(`${p.name} passed GO and collected $200.`);
+    }
   }
 
   p.position = newPos;
@@ -220,10 +248,28 @@ const handleSpaceLanding = (state: GameState, playerId: string, diceTotal: numbe
   }
 
   if (space.type === SpaceType.TAX) {
-    const amount = space.price || 0;
+    let amount = space.price || 0;
+    
+    if (space.name === "Income Tax" && state.houseRules.wealthTax) {
+      let wealth = p.money;
+      p.properties.forEach(propId => {
+        const s = SPACES.find(x => x.id === propId);
+        if (s && s.price) wealth += s.price;
+        const ps = state.propertyStates[propId];
+        if (ps && ps.houses > 0 && s && s.houseCost) wealth += ps.houses * s.houseCost;
+      });
+      amount = Math.floor(wealth * 0.1);
+      logs.push(`${p.name} paid a 10% Wealth Tax of $${amount} based on total wealth of $${wealth}.`);
+    } else {
+      logs.push(`${p.name} landed on ${space.name} and paid $${amount}.`);
+    }
+
     p.money -= amount;
-    pot += amount;
-    logs.push(`${p.name} landed on ${space.name} and paid $${amount} (added to Free Parking Pot).`);
+    
+    if (state.houseRules.freeParkingJackpot) {
+      pot += amount;
+      logs[logs.length - 1] += ` (added to Free Parking Pot).`;
+    }
   }
 
   if (space.type === SpaceType.FREE_PARKING) {
@@ -243,21 +289,31 @@ const handleSpaceLanding = (state: GameState, playerId: string, diceTotal: numbe
       const owner = players[ownerIndex];
       
       let rent = 0;
-      if (space.type === SpaceType.PROPERTY && space.rent) {
-        const groupProps = SPACES.filter(s => s.groupColor === space.groupColor);
-        const ownsAll = groupProps.every(s => state.propertyStates[s.id]?.ownerId === owner.id);
-        
-        if (propState.houses === 0 && ownsAll) {
-          rent = space.rent[0] * 2;
-        } else {
-          rent = space.rent[propState.houses];
+      
+      if (state.houseRules.noRentInJail && owner.inJail) {
+        logs.push(`${owner.name} is in Jail and cannot collect rent for ${space.name}.`);
+      } else {
+        if (space.type === SpaceType.PROPERTY && space.rent) {
+          const groupProps = SPACES.filter(s => s.groupColor === space.groupColor);
+          const ownsAll = groupProps.every(s => state.propertyStates[s.id]?.ownerId === owner.id);
+          
+          if (propState.houses === 0 && ownsAll) {
+            rent = space.rent[0] * 2;
+          } else {
+            rent = space.rent[propState.houses];
+          }
+        } else if (space.type === SpaceType.RAILROAD) {
+          const rrCount = owner.properties.filter(propId => SPACES.find(s => s.id === propId)?.type === SpaceType.RAILROAD).length;
+          rent = 25 * Math.pow(2, rrCount - 1);
+        } else if (space.type === SpaceType.UTILITY) {
+          const utilCount = owner.properties.filter(propId => SPACES.find(s => s.id === propId)?.type === SpaceType.UTILITY).length;
+          rent = (utilCount === 2 ? 10 : 4) * diceTotal;
         }
-      } else if (space.type === SpaceType.RAILROAD) {
-        const rrCount = owner.properties.filter(propId => SPACES.find(s => s.id === propId)?.type === SpaceType.RAILROAD).length;
-        rent = 25 * Math.pow(2, rrCount - 1);
-      } else if (space.type === SpaceType.UTILITY) {
-        const utilCount = owner.properties.filter(propId => SPACES.find(s => s.id === propId)?.type === SpaceType.UTILITY).length;
-        rent = (utilCount === 2 ? 10 : 4) * diceTotal;
+
+        if (state.houseRules.rentControl && rent > 1000) {
+          rent = 1000;
+          logs.push(`Rent Control capped the rent at $1000!`);
+        }
       }
 
       if (rent > 0) {
@@ -431,6 +487,7 @@ export const buyProperty = (state: GameState): GameState => {
   
   if (![SpaceType.PROPERTY, SpaceType.RAILROAD, SpaceType.UTILITY].includes(space.type)) return state;
   if (!space.price || currentPlayer.money < space.price) return state;
+  if (state.houseRules.firstLapLockdown && !currentPlayer.hasPassedGo) return state;
   
   const propState = state.propertyStates[space.id];
   if (propState.ownerId) return state; // Already owned
@@ -458,26 +515,92 @@ export const endTurn = (state: GameState): GameState => {
   const isDouble = state.lastDiceRoll ? state.lastDiceRoll[0] === state.lastDiceRoll[1] : false;
   
   let players = [...state.players];
+  let logs = [...state.logs];
+
   // Auto-bankrupt players with negative money at the end of their turn
   players = players.map(p => {
     if (p.money < 0 && !p.isBankrupt) {
-      return { ...p, isBankrupt: true };
+      if (p.type === PlayerType.CPU) {
+        // CPU tries to take a loan to survive
+        while (p.money < 0 && p.loan < 2000) { // arbitrary cap to stop infinite loans
+          p.money += 500;
+          p.loan += 550;
+          logs.push(`${p.name} automatically took a $500 Bank Loan to avoid bankruptcy!`);
+        }
+      }
+      
+      if (p.money < 0) {
+        logs.push(`${p.name} could not pay their debts and went BANKRUPT!`);
+        // Free properties
+        p.properties.forEach(propId => {
+          if (updatedPropertyStates[propId]) {
+            updatedPropertyStates[propId] = { ownerId: null, houses: 0, hasHotel: false };
+          }
+        });
+        p.properties = [];
+        return { ...p, isBankrupt: true };
+      }
     }
     return p;
   });
 
   const activePlayers = players.filter(p => !p.isBankrupt);
 
+  let updatedPropertyStates = { ...state.propertyStates };
+
+  // Property Auction Rule
+  if (state.houseRules.propertyAuctions) {
+    const currentPlayer = players[state.currentPlayerIndex];
+    const space = SPACES[currentPlayer.position];
+    
+    // Only auction if it's a property, nobody owns it, and we aren't restricted by lap lockdown
+    if ([SpaceType.PROPERTY, SpaceType.RAILROAD, SpaceType.UTILITY].includes(space.type) && space.price) {
+      if (!updatedPropertyStates[space.id].ownerId && (!state.houseRules.firstLapLockdown || currentPlayer.hasPassedGo)) {
+        // Find other players who can afford a discounted price
+        const auctionPrice = Math.floor(space.price * 0.7);
+        const bidders = activePlayers.filter(p => p.id !== currentPlayer.id && p.money >= auctionPrice);
+        
+        if (bidders.length > 0) {
+          const winner = bidders[Math.floor(Math.random() * bidders.length)];
+          const wIndex = players.findIndex(p => p.id === winner.id);
+          
+          players[wIndex].money -= auctionPrice;
+          players[wIndex].properties.push(space.id);
+          updatedPropertyStates[space.id] = { ...updatedPropertyStates[space.id], ownerId: winner.id };
+          logs.push(`The Bank auto-auctioned ${space.name}! ${winner.name} won it for $${auctionPrice}.`);
+        } else {
+          logs.push(`The Bank attempted to auction ${space.name}, but nobody could afford it.`);
+        }
+      }
+    }
+  }
+
   if (activePlayers.length <= 1 && players.length > 1) {
     const winner = activePlayers[0];
     return {
       ...state,
       players,
+      propertyStates: updatedPropertyStates,
       phase: GamePhase.GAME_OVER,
-      logs: [...state.logs, `GAME OVER! ${winner ? winner.name : 'Nobody'} wins!`],
+      logs: [...logs, `GAME OVER! ${winner ? winner.name : 'Nobody'} wins!`],
       lastDiceRoll: null,
       lastCardDrawn: null,
     };
+  }
+
+  if (state.houseRules.mercyRule) {
+    const winnerByMercy = activePlayers.find(p => p.money >= 5000);
+    if (winnerByMercy) {
+      return {
+        ...state,
+        players,
+        propertyStates: updatedPropertyStates,
+        phase: GamePhase.GAME_OVER,
+        logs: [...logs, `MERCY RULE INVOKED! ${winnerByMercy.name} reached $5000 and wins!`],
+        lastDiceRoll: null,
+        lastCardDrawn: null,
+      };
+    }
   }
 
   let nextIndex = state.currentPlayerIndex;
@@ -495,12 +618,13 @@ export const endTurn = (state: GameState): GameState => {
   return {
     ...state,
     players,
+    propertyStates: updatedPropertyStates,
     currentPlayerIndex: nextIndex,
     phase: GamePhase.TURN_START,
     lastDiceRoll: null,
     doublesRolledCount: nextDoublesCount,
     turnCount: state.turnCount + 1,
-    logs: [...state.logs, `Turn ended. It is now ${players[nextIndex].name}'s turn.`],
+    logs: [...logs, `Turn ended. It is now ${players[nextIndex].name}'s turn.`],
     lastCardDrawn: null,
   };
 };
@@ -526,7 +650,7 @@ export const buildHouse = (state: GameState, playerId: string, propertyId: strin
   // Check monopoly
   const groupSpaces = SPACES.filter(s => s.groupColor === property.groupColor);
   const hasMonopoly = groupSpaces.every(s => state.propertyStates[s.id]?.ownerId === playerId);
-  if (!hasMonopoly) return state;
+  if (!hasMonopoly && !state.houseRules.buildWithoutMonopoly) return state;
 
   // Check even build rule
   const currentHouses = propState.houses;
@@ -535,7 +659,7 @@ export const buildHouse = (state: GameState, playerId: string, propertyId: strin
   const minHousesInGroup = Math.min(...groupSpaces.map(s => state.propertyStates[s.id].hasHotel ? 5 : state.propertyStates[s.id].houses));
 
   const targetLevel = propState.hasHotel ? 5 : currentHouses;
-  if (targetLevel > minHousesInGroup) return state; // Must build evenly
+  if (targetLevel > minHousesInGroup && !state.houseRules.ignoreEvenBuild) return state; // Must build evenly
 
   const pIndex = state.players.findIndex(p => p.id === playerId);
   const p = state.players[pIndex];

@@ -13,7 +13,7 @@ interface PropertyManagerModalProps {
 }
 
 export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({ gameState, currentPlayer, onBuildHouse, onTakeLoan, onRepayLoan, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'properties' | 'loans' | 'stats'>('properties');
+  const [activeTab, setActiveTab] = useState<'properties' | 'loans' | 'stats'>(currentPlayer.money < 0 ? 'loans' : 'properties');
 
   // Group player properties by color
   const groups: Record<string, typeof SPACES> = {};

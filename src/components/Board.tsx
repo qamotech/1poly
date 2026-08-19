@@ -4,6 +4,19 @@ import { GameState, GamePhase, SpaceType } from '../types';
 import { SPACES } from '../engine/board';
 import { audio } from '../audio';
 
+const getSpaceIcon = (space: any) => {
+  if (space.type === SpaceType.RAILROAD) return '🚂';
+  if (space.type === SpaceType.UTILITY) return space.name.includes('Water') ? '🚰' : '💡';
+  if (space.type === SpaceType.CHANCE) return '❓';
+  if (space.type === SpaceType.COMMUNITY_CHEST) return '💰';
+  if (space.type === SpaceType.TAX) return space.name.includes('Luxury') ? '💍' : '🧾';
+  if (space.name === 'Jail') return '🚓';
+  if (space.name === 'Go To Jail') return '👮';
+  if (space.name === 'Free Parking') return '🚗';
+  if (space.name === 'GO') return '🏁';
+  return null;
+};
+
 interface BoardProps {
   gameState: GameState;
   onRoll: () => void;
@@ -167,7 +180,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                   {/* Property Color Bar */}
                   {space.groupColor && (
                     <div 
-                      className="w-full h-1/4 border-b-2 border-slate-800 shadow-[inset_0_2px_5px_rgba(255,255,255,0.7)] flex items-center justify-center gap-[2px]"
+                      className="w-full h-1/4 shrink-0 border-b-2 border-slate-800 shadow-[inset_0_2px_5px_rgba(255,255,255,0.7)] flex items-center justify-center gap-[2px]"
                       style={{ backgroundColor: space.groupColor }}
                     >
                       {propState?.hasHotel ? (
@@ -180,24 +193,14 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                     </div>
                   )}
                   
-                  {/* Space Details (Fixed fonts, safe from mobile min-font rules) */}
-                  {isGo ? (
-                    <div className="flex-1 flex items-center justify-center gap-1 transform rotate-45">
-                      <span className="text-red-700 text-5xl animate-pulse font-black drop-shadow-[0_2px_2px_rgba(255,255,255,1)]">←</span>
-                      <span className="font-black text-red-700 text-4xl tracking-widest drop-shadow-[0_2px_2px_rgba(255,255,255,1)]">GO</span>
-                    </div>
-                  ) : (
-                    <div className={`flex-1 flex flex-col items-center justify-center p-1 text-center ${isCorner ? 'transform rotate-45' : ''}`}>
-                      <span className={`font-bold leading-tight uppercase ${isCorner ? 'text-lg' : 'text-[10px]'} text-slate-800`}>
-                        {space.name}
+                  {/* Space Details */}
+                  <div className={`flex-1 flex flex-col items-center justify-center p-1 text-center ${isCorner ? 'transform rotate-45' : ''}`}>
+                    {getSpaceIcon(space) && (
+                      <span className={`${isCorner ? 'text-4xl' : 'text-3xl'} filter drop-shadow-md`}>
+                        {getSpaceIcon(space)}
                       </span>
-                      {space.price && (
-                        <span className="text-[10px] text-slate-800 font-extrabold mt-1">
-                          ${space.price}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Ownership Indicator */}
@@ -234,7 +237,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                  {/* Main Phase Action */}
                  <button 
                     onClick={() => {
-                      audio.init();
+                      audio.playUiClick();
                       if (gameState.phase === GamePhase.TURN_START) onRoll();
                       else if (gameState.phase === GamePhase.POST_ROLL) onEndTurn();
                     }}
@@ -243,12 +246,12 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       ${!isCpuTurn && gameState.phase === GamePhase.TURN_START 
                         ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-400 cursor-pointer animate-pulse' 
                         : !isCpuTurn && gameState.phase === GamePhase.POST_ROLL
-                        ? 'bg-red-600 hover:bg-red-500 text-white border-red-400 cursor-pointer animate-pulse'
+                        ? (gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'bg-red-900 hover:bg-red-800 text-red-100 border-red-700 cursor-pointer animate-pulse' : 'bg-red-600 hover:bg-red-500 text-white border-red-400 cursor-pointer animate-pulse')
                         : 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed opacity-80'
                       }
                     `}
                   >
-                    {gameState.phase === GamePhase.TURN_START ? 'ROLL DICE' : 'END TURN'}
+                    {gameState.phase === GamePhase.TURN_START ? 'ROLL DICE' : (gameState.players[gameState.currentPlayerIndex]?.money < 0 && !isCpuTurn ? 'BANKRUPT 💀' : 'END TURN')}
                   </button>
 
                   {/* Dice visual */}
@@ -291,7 +294,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                   <div className="flex gap-2 w-full">
                     <button 
                       onClick={() => {
-                        audio.init();
+                        audio.playUiClick();
                         onOpenTradeModal();
                       }}
                       disabled={isCpuTurn || (gameState.phase !== GamePhase.TURN_START && gameState.phase !== GamePhase.POST_ROLL)}
@@ -307,18 +310,18 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
 
                     <button 
                       onClick={() => {
-                        audio.init();
+                        audio.playUiClick();
                         onOpenPropertyModal();
                       }}
                       disabled={isCpuTurn || (gameState.phase !== GamePhase.TURN_START && gameState.phase !== GamePhase.POST_ROLL)}
                       className={`flex-1 font-bold py-2 px-4 rounded-xl transition-all shadow flex items-center justify-center gap-2 text-sm
                         ${!isCpuTurn && (gameState.phase === GamePhase.TURN_START || gameState.phase === GamePhase.POST_ROLL)
-                          ? 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer'
+                          ? (gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'bg-yellow-600 hover:bg-yellow-500 text-white cursor-pointer animate-pulse border border-yellow-400' : 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer')
                           : 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-60'
                         }
                       `}
                     >
-                      <span>🏘️</span> Build
+                      <span>{gameState.players[gameState.currentPlayerIndex]?.money < 0 ? '💰' : '🏘️'}</span> {gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'Take Loan' : 'Manage'}
                     </button>
                   </div>
 
@@ -330,7 +333,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         onClick={() => {
-                          audio.init();
+                          audio.playUiClick();
                           onBuyProperty();
                         }}
                         className="w-full bg-emerald-600 hover:bg-emerald-500 border-4 border-emerald-400 text-white font-black py-3 px-6 rounded-xl transition-colors shadow-2xl flex flex-col items-center justify-center pointer-events-auto mt-2"
