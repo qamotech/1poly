@@ -1,15 +1,25 @@
 import { GameState, GamePhase, PlayerType, SpaceType } from '../types';
-import { rollDice, endTurn, buyProperty } from './engine';
+import { rollDice, endTurn, buyProperty, resolveTrade } from './engine';
 import { SPACES } from './board';
 
 // A simple hook or function to run the AI if it's a CPU's turn
 export const processAITurn = (state: GameState): GameState => {
-  const currentPlayer = state.players[state.currentPlayerIndex];
+  let nextState = { ...state };
+  
+  // If there's a pending trade and the target is a CPU, the CPU evaluates it.
+  if (nextState.phase === GamePhase.TRADING && nextState.pendingTrade) {
+    const targetPlayer = nextState.players.find(p => p.id === nextState.pendingTrade!.toPlayerId);
+    if (targetPlayer && targetPlayer.type === PlayerType.CPU) {
+      // For now, CPUs always reject trades to prevent human players from stealing all their money/properties.
+      // In the future, we could add valuation logic.
+      return resolveTrade(nextState, false); 
+    }
+  }
+
+  const currentPlayer = nextState.players[nextState.currentPlayerIndex];
   
   // Safety check
-  if (currentPlayer.type !== PlayerType.CPU) return state;
-
-  let nextState = { ...state };
+  if (!currentPlayer || currentPlayer.type !== PlayerType.CPU) return nextState;
 
   if (nextState.phase === GamePhase.TURN_START) {
     // CPU always rolls

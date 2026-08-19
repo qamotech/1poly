@@ -14,11 +14,16 @@ export interface Player {
   token: string; // ID of the chosen token (out of 16)
   position: number; // Index on the board (0-39)
   money: number;
+  loan: number;
   properties: PropertyId[];
   getOutOfJailFreeCards: number;
   inJail: boolean;
   jailTurns: number;
   isBankrupt: boolean;
+  stats: {
+    totalRolls: number;
+    rentCollected: number;
+  };
 }
 
 export enum SpaceType {
@@ -93,6 +98,30 @@ export enum GamePhase {
   GAME_OVER = 'GAME_OVER',
 }
 
+export interface TradeOffer {
+  fromPlayerId: PlayerId;
+  toPlayerId: PlayerId;
+  offerMoney: number;
+  offerProperties: PropertyId[];
+  requestMoney: number;
+  requestProperties: PropertyId[];
+}
+
+export interface HouseRules {
+  freeParkingJackpot: boolean;
+  doubleGo: boolean;
+  noRentInJail: boolean;
+  propertyAuctions: boolean;
+  highRollerStart: boolean;
+  snakeEyesBonus: boolean;
+  buildWithoutMonopoly: boolean;
+  ignoreEvenBuild: boolean;
+  firstLapLockdown: boolean;
+  wealthTax: boolean;
+  mercyRule: boolean;
+  rentControl: boolean;
+}
+
 export interface GameState {
   players: Player[];
   currentPlayerIndex: number;
@@ -102,7 +131,10 @@ export interface GameState {
   communityChestDeck: ActionCard[];
   turnCount: number;
   pot: number; // For Free Parking house rules, if any
+  houseRules: HouseRules; // 12 custom game rules
   lastDiceRoll: [number, number] | null;
   doublesRolledCount: number;
   logs: string[];
+  pendingTrade?: TradeOffer | null;
+  lastCardDrawn?: { card: ActionCard; playerId: PlayerId; deck: CardDeck } | null;
 }
