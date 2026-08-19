@@ -1,0 +1,6 @@
+{
+  "name": "6-Step Pipeline App",
+  "description": "Building an application using a structured 6-step pipeline.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
