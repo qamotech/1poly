@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { GameState, GamePhase, SpaceType } from '../types';
 import { SPACES } from '../engine/board';
 import { audio } from '../audio';
+import { Dice3D } from './Dice3D';
 
 const getSpaceIcon = (space: any) => {
   if (space.type === SpaceType.RAILROAD) return '🚂';
@@ -25,13 +26,30 @@ interface BoardProps {
   onOpenTradeModal: () => void;
   onOpenPropertyModal: () => void;
   isCpuTurn: boolean;
+  onPayBail?: () => void;
 }
 
-export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBuyProperty, onOpenTradeModal, onOpenPropertyModal, isCpuTurn }) => {
+export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBuyProperty, onOpenTradeModal, onOpenPropertyModal, isCpuTurn, onPayBail }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [visualPositions, setVisualPositions] = useState<Record<string, number>>({});
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
+
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const xPct = (x / rect.width - 0.5) * 2; // -1 to 1
+    const yPct = (y / rect.height - 0.5) * 2; // -1 to 1
+    setTilt({ x: -yPct * 5, y: xPct * 5 }); // 5 degree max tilt
+  };
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 });
+  };
+
+  const [isRolling, setIsRolling] = useState(false);
 
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const currentSpace = currentPlayer ? SPACES[currentPlayer.position] : null;
@@ -118,7 +136,10 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
     // Outer responsive container
     <div 
       ref={containerRef} 
-      className="w-full aspect-square max-w-[800px] mx-auto relative rounded-xl shadow-2xl bg-[#cde6d0] overflow-hidden"
+      className="w-full aspect-square max-w-[800px] mx-auto relative rounded-xl shadow-2xl bg-[#cde6d0] overflow-hidden transition-transform duration-200 ease-out"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
     >
       {/* Inner fixed-size scaling board. This guarantees no text wrapping/jumbling on mobile. */}
       <div 
@@ -130,7 +151,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
         }}
         className="absolute top-0 left-0 bg-[#b3d4b8] border-[12px] border-slate-300 border-t-slate-200 border-l-slate-200 border-b-slate-500 border-r-slate-500 shadow-[inset_0_0_30px_rgba(0,0,0,0.3)] p-[8px]"
       >
-        <div className="w-full h-full grid grid-cols-11 grid-rows-11 gap-[2px] relative">
+        <div style={{ gridTemplateColumns: '1.5fr repeat(9, 1fr) 1.5fr', gridTemplateRows: '1.5fr repeat(9, 1fr) 1.5fr' }} className="w-full h-full grid gap-[2px] relative">
           {SPACES.map((space) => {
             const { gridRow, gridColumn } = getGridPosition(space.position);
             const isCorner = [0, 10, 20, 30].includes(space.position);
@@ -234,59 +255,38 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
 
                {/* Action Center overlay */}
                <div className="pointer-events-auto flex flex-col items-center gap-4 w-72">
-                 {/* Main Phase Action */}
-                 <button 
+                       <button 
                     onClick={() => {
-                      audio.playUiClick();
-                      if (gameState.phase === GamePhase.TURN_START) onRoll();
-                      else if (gameState.phase === GamePhase.POST_ROLL) onEndTurn();
+                      if (gameState.phase === GamePhase.TURN_START) {
+                        setIsRolling(true);
+                        audio.playDice(0);
+                        setTimeout(() => {
+                          onRoll();
+                          setIsRolling(false);
+                        }, 1200);
+                      } else if (gameState.phase === GamePhase.POST_ROLL) {
+                        audio.playUiClick();
+                        onEndTurn();
+                      }
                     }}
-                    disabled={isCpuTurn || (gameState.phase !== GamePhase.TURN_START && gameState.phase !== GamePhase.POST_ROLL)}
-                    className={`w-full font-bold py-4 px-6 rounded-xl transition-all text-2xl shadow-xl border-4
-                      ${!isCpuTurn && gameState.phase === GamePhase.TURN_START 
+                    disabled={isCpuTurn || isRolling || (gameState.phase !== GamePhase.TURN_START && gameState.phase !== GamePhase.POST_ROLL)}
+                    className={`w-full font-bold py-5 px-6 rounded-xl transition-all text-3xl shadow-xl border-4
+                      ${!isCpuTurn && !isRolling && gameState.phase === GamePhase.TURN_START 
                         ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-400 cursor-pointer animate-pulse' 
-                        : !isCpuTurn && gameState.phase === GamePhase.POST_ROLL
+                        : !isCpuTurn && !isRolling && gameState.phase === GamePhase.POST_ROLL
                         ? (gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'bg-red-900 hover:bg-red-800 text-red-100 border-red-700 cursor-pointer animate-pulse' : 'bg-red-600 hover:bg-red-500 text-white border-red-400 cursor-pointer animate-pulse')
                         : 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed opacity-80'
                       }
                     `}
                   >
-                    {gameState.phase === GamePhase.TURN_START ? 'ROLL DICE' : (gameState.players[gameState.currentPlayerIndex]?.money < 0 && !isCpuTurn ? 'BANKRUPT 💀' : 'END TURN')}
+                    {isRolling ? 'ROLLING...' : gameState.phase === GamePhase.TURN_START ? 'ROLL DICE' : (gameState.players[gameState.currentPlayerIndex]?.money < 0 && !isCpuTurn ? 'BANKRUPT 💀' : 'END TURN')}
                   </button>
 
                   {/* Dice visual */}
-                  {gameState.lastDiceRoll && (
-                    <div className="flex justify-center gap-4 py-2" style={{ perspective: "1000px" }}>
-                      <motion.div 
-                        key={`${rollAnimationKey}-die0`}
-                        initial={{ rotateX: 360, rotateY: 360, y: -50, scale: 0.5, opacity: 0 }}
-                        animate={{ rotateX: 0, rotateY: 0, y: 0, scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.6, type: "spring", bounce: 0.5 }}
-                        className="w-16 h-16 bg-gradient-to-b from-white to-slate-200 rounded-xl shadow-[inset_0_-4px_8px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.3)] border border-slate-300 flex items-center justify-center text-4xl font-bold text-slate-800"
-                      >
-                        <motion.span
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.3, duration: 0.2 }}
-                        >
-                          {gameState.lastDiceRoll[0]}
-                        </motion.span>
-                      </motion.div>
-                      <motion.div 
-                        key={`${rollAnimationKey}-die1`}
-                        initial={{ rotateX: -360, rotateY: 360, y: -50, scale: 0.5, opacity: 0 }}
-                        animate={{ rotateX: 0, rotateY: 0, y: 0, scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 0.1, type: "spring", bounce: 0.5 }}
-                        className="w-16 h-16 bg-gradient-to-b from-white to-slate-200 rounded-xl shadow-[inset_0_-4px_8px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.3)] border border-slate-300 flex items-center justify-center text-4xl font-bold text-slate-800"
-                      >
-                        <motion.span
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.4, duration: 0.2 }}
-                        >
-                          {gameState.lastDiceRoll[1]}
-                        </motion.span>
-                      </motion.div>
+                  {(gameState.lastDiceRoll || isRolling) && (
+                    <div className="flex justify-center gap-6 py-2 pb-6">
+                      <Dice3D rolling={isRolling} face={gameState.lastDiceRoll ? gameState.lastDiceRoll[0] : 1} />
+                      <Dice3D rolling={isRolling} face={gameState.lastDiceRoll ? gameState.lastDiceRoll[1] : 1} />
                     </div>
                   )}
 
@@ -298,7 +298,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                         onOpenTradeModal();
                       }}
                       disabled={isCpuTurn || (gameState.phase !== GamePhase.TURN_START && gameState.phase !== GamePhase.POST_ROLL)}
-                      className={`flex-1 font-bold py-2 px-4 rounded-xl transition-all shadow flex items-center justify-center gap-2 text-sm
+                      className={`flex-1 font-bold py-3 px-4 rounded-xl transition-all shadow flex items-center justify-center gap-2 text-base md:text-lg
                         ${!isCpuTurn && (gameState.phase === GamePhase.TURN_START || gameState.phase === GamePhase.POST_ROLL)
                           ? 'bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer'
                           : 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-60'
@@ -363,8 +363,15 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                      key={player.id}
                      layout
                      initial={{ scale: 0 }}
-                     animate={{ scale: 1, x: offset, y: offset }}
-                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                     animate={
+                       player.id === currentPlayer?.id && isRolling
+                         ? { scale: 1.2, x: offset, y: [offset, offset - 15, offset], rotate: [0, -10, 10, 0] }
+                         : { scale: 1, x: offset, y: offset, rotate: 0 }
+                     }
+                     transition={{ 
+                       layout: { type: "spring", stiffness: 300, damping: 25 },
+                       y: { duration: 0.3, repeat: (player.id === currentPlayer?.id && isRolling) ? Infinity : 0 }
+                     }}
                      style={{ gridRow, gridColumn }}
                      className="flex items-center justify-center w-full h-full pointer-events-none"
                    >

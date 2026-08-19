@@ -31,7 +31,9 @@ class SoundEngine {
     return impulse;
   }
 
-  async init() {
+  private preloadPromise: Promise<void> | null = null;
+
+  initSync() {
     if (this.isInitialized) return;
     this.isInitialized = true;
     try {
@@ -82,17 +84,22 @@ class SoundEngine {
       // Save entry point for dry signals
       (this as any).entryNode = lowShelf;
 
-      await this.preloadAssets();
+      this.preloadPromise = this.preloadAssets();
     } catch (e) {
       console.warn("AudioContext initialization failed", e);
     }
+  }
+
+  async init() {
+    this.initSync();
+    if (this.preloadPromise) await this.preloadPromise;
   }
 
   resume() {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume();
     } else if (!this.isInitialized) {
-      this.init();
+      this.initSync();
     }
   }
 
@@ -119,13 +126,16 @@ class SoundEngine {
    * @param panX The 2D spatial panning value relative to center (-1.0 to 1.0).
    * @param volume The volume level (0.0 to 1.0).
    */
-  play(soundId: string, panX: number = 0, volume: number = 1.0) {
+  async play(soundId: string, panX: number = 0, volume: number = 1.0) {
     if (!this.ctx || !this.masterGain) {
-      this.init();
-      return;
+      this.initSync();
     }
     
     this.resume();
+
+    if (this.preloadPromise) {
+      await this.preloadPromise;
+    }
 
     const buffer = this.buffers[soundId];
     if (!buffer) return; // Asset not loaded or failed to load

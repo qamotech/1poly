@@ -10,22 +10,31 @@ interface PropertyManagerModalProps {
   onTakeLoan: (playerId: string, amount: number) => void;
   onRepayLoan: (playerId: string, amount: number) => void;
   onClose: () => void;
+  onMortgage?: (playerId: string, propertyId: string) => void;
+  onUnmortgage?: (playerId: string, propertyId: string) => void;
 }
 
-export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({ gameState, currentPlayer, onBuildHouse, onTakeLoan, onRepayLoan, onClose }) => {
+export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({ gameState, currentPlayer, onBuildHouse, onTakeLoan, onRepayLoan, onClose, onMortgage, onUnmortgage }) => {
   const [activeTab, setActiveTab] = useState<'properties' | 'loans' | 'stats'>(currentPlayer.money < 0 ? 'loans' : 'properties');
 
-  // Group player properties by color
+  // Group player properties by color/type
   const groups: Record<string, typeof SPACES> = {};
   
-  // First, map out all standard colored properties they own
   currentPlayer.properties.forEach(propId => {
     const space = SPACES.find(s => s.id === propId);
-    if (space && space.groupColor) {
-      if (!groups[space.groupColor]) groups[space.groupColor] = [];
-      groups[space.groupColor].push(space);
+    if (space) {
+      const groupKey = space.groupColor || (space.type === 'RAILROAD' ? '#444' : '#888');
+      if (!groups[groupKey]) groups[groupKey] = [];
+      groups[groupKey].push(space);
     }
   });
+  
+  const getSpaceArt = (space: any) => {
+    if (space.type === 'RAILROAD') return '🚂';
+    if (space.type === 'UTILITY') return space.name.includes('Water') ? '🚰' : '💡';
+    return '🏙️';
+  };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -96,7 +105,7 @@ export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({ game
                       <div className="p-4">
                         <div className="flex justify-between items-center mb-3">
                           <h3 className="text-white font-bold text-lg uppercase tracking-wider flex items-center gap-2">
-                            Color Group {hasMonopoly && <span className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full">Monopoly</span>}
+                            {color === '#444' ? 'Railroads' : color === '#888' ? 'Utilities' : 'Color Group'} {hasMonopoly && <span className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full">Monopoly</span>}
                           </h3>
                         </div>
                         
@@ -111,7 +120,7 @@ export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({ game
                             const canBuild = hasMonopoly && canAfford && !isMaxed && obeysEvenBuild;
                             
                             return (
-                              <div key={space.id} className="bg-slate-900 border border-slate-700 rounded-lg p-3 flex flex-col gap-2">
+                              <div key={space.id} className="bg-slate-900 border border-slate-700 rounded-lg p-3 flex flex-col gap-2 relative overflow-hidden h-28">
                                 <div className="flex justify-between font-bold text-slate-200">
                                   <span>{space.name}</span>
                                   <span className="text-blue-400 font-mono">

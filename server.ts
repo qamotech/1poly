@@ -78,7 +78,23 @@ async function startServer() {
       checkAITurn();
     });
 
-    socket.on('build_house', ({ playerId, propertyId }) => {
+    
+    socket.on('mortgage_property', ({ playerId, propertyId }) => {
+      gameState = mortgageProperty(gameState, playerId, propertyId);
+      io.emit('game_state_update', gameState);
+    });
+
+    socket.on('unmortgage_property', ({ playerId, propertyId }) => {
+      gameState = unmortgageProperty(gameState, playerId, propertyId);
+      io.emit('game_state_update', gameState);
+    });
+
+    socket.on('pay_bail', ({ playerId }) => {
+      gameState = payBail(gameState, playerId);
+      io.emit('game_state_update', gameState);
+      checkAITurn();
+    });
+socket.on('build_house', ({ playerId, propertyId }) => {
       gameState = buildHouse(gameState, playerId, propertyId);
       io.emit('game_state_update', gameState);
     });

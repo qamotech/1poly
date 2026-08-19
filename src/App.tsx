@@ -79,6 +79,17 @@ export default function App() {
     socket.emit('resolve_trade', { accepted });
   };
 
+  
+  const handleMortgage = (playerId: string, propertyId: string) => {
+    socket.emit('mortgage_property', { playerId, propertyId });
+  };
+  const handleUnmortgage = (playerId: string, propertyId: string) => {
+    socket.emit('unmortgage_property', { playerId, propertyId });
+  };
+  const handlePayBail = (playerId: string) => {
+    socket.emit('pay_bail', { playerId });
+  };
+
   const handleBuildHouse = (playerId: string, propertyId: string) => {
     socket.emit('build_house', { playerId, propertyId });
   };
@@ -137,13 +148,14 @@ export default function App() {
           onUpdateRules={handleUpdateRules}
         />
       ) : (
-        <div className="flex flex-col lg:flex-row min-h-screen lg:h-screen p-2 sm:p-4 gap-4 max-w-[1600px] mx-auto overflow-y-auto lg:overflow-hidden">
+        <div className="flex flex-col lg:flex-row min-h-screen lg:h-screen p-0 sm:p-4 gap-0 sm:gap-4 max-w-[1600px] mx-auto overflow-y-auto lg:overflow-hidden">
           {/* Main Board Area (Left/Top) */}
-          <div className="w-full lg:flex-1 flex items-center justify-center p-2 sm:p-4 bg-slate-900 rounded-3xl border border-slate-800 shadow-2xl relative">
+          <div className="w-full lg:flex-1 flex items-center justify-center p-0 sm:p-4 bg-slate-900 sm:rounded-3xl border-0 sm:border border-slate-800 sm:shadow-2xl relative">
             <Board 
               gameState={gameState} 
               onRoll={handleRoll}
               onEndTurn={handleEndTurn}
+              onPayBail={() => currentPlayer && handlePayBail(currentPlayer.id)}
               onBuyProperty={handleBuyProperty}
               onOpenTradeModal={() => setIsTradeModalOpen(true)}
               onOpenPropertyModal={() => setIsPropertyModalOpen(true)}
@@ -180,6 +192,8 @@ export default function App() {
           gameState={gameState}
           currentPlayer={currentPlayer}
           onBuildHouse={handleBuildHouse}
+          onMortgage={handleMortgage}
+          onUnmortgage={handleUnmortgage}
           onTakeLoan={handleTakeLoan}
           onRepayLoan={handleRepayLoan}
           onClose={() => setIsPropertyModalOpen(false)}

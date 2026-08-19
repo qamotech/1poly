@@ -758,3 +758,74 @@ export const resolveTrade = (state: GameState, accepted: boolean): GameState => 
     logs
   };
 };
+
+export const mortgageProperty = (state: GameState, playerId: string, propertyId: string): GameState => {
+  const property = SPACES.find(s => s.id === propertyId);
+  const propState = state.propertyStates[propertyId];
+  if (!property || !property.price || propState?.ownerId !== playerId || propState.isMortgaged) return state;
+  if (propState.houses > 0 || propState.hasHotel) return state; // Must sell houses first
+
+  const pIndex = state.players.findIndex(p => p.id === playerId);
+  const p = state.players[pIndex];
+  
+  const mortgageValue = Math.floor(property.price / 2);
+  let newPlayers = [...state.players];
+  newPlayers[pIndex] = { ...p, money: p.money + mortgageValue };
+
+  return {
+    ...state,
+    players: newPlayers,
+    propertyStates: {
+      ...state.propertyStates,
+      [propertyId]: { ...propState, isMortgaged: true }
+    },
+    logs: [...state.logs, `${p.name} mortgaged ${property.name} for $${mortgageValue}.`]
+  };
+};
+
+export const unmortgageProperty = (state: GameState, playerId: string, propertyId: string): GameState => {
+  const property = SPACES.find(s => s.id === propertyId);
+  const propState = state.propertyStates[propertyId];
+  if (!property || !property.price || propState?.ownerId !== playerId || !propState.isMortgaged) return state;
+
+  const unmortgageCost = Math.floor((property.price / 2) * 1.1); // 10% interest
+  const pIndex = state.players.findIndex(p => p.id === playerId);
+  const p = state.players[pIndex];
+  
+  if (p.money < unmortgageCost) return state;
+
+  let newPlayers = [...state.players];
+  newPlayers[pIndex] = { ...p, money: p.money - unmortgageCost };
+
+  return {
+    ...state,
+    players: newPlayers,
+    propertyStates: {
+      ...state.propertyStates,
+      [propertyId]: { ...propState, isMortgaged: false }
+    },
+    logs: [...state.logs, `${p.name} unmortgaged ${property.name} for $${unmortgageCost}.`]
+  };
+};
+
+export const payBail = (state: GameState, playerId: string): GameState => {
+  if (state.phase !== GamePhase.TURN_START) return state;
+  if (state.players[state.currentPlayerIndex].id !== playerId) return state;
+
+  const pIndex = state.players.findIndex(p => p.id === playerId);
+  const p = state.players[pIndex];
+  if (!p.inJail || p.money < 50) return state;
+
+  let newPlayers = [...state.players];
+  newPlayers[pIndex] = { ...p, money: p.money - 50, inJail: false, jailTurns: 0 };
+  
+  let newPot = state.pot;
+  if (state.houseRules.freeParkingJackpot) newPot += 50;
+
+  return {
+    ...state,
+    players: newPlayers,
+    pot: newPot,
+    logs: [...state.logs, `${p.name} paid $50 bail to exit Jail.`]
+  };
+};
