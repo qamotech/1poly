@@ -15,7 +15,8 @@ import { AuctionModal } from './components/AuctionModal';
 import { OpeningSequence } from './components/OpeningSequence';
 import { RulesModal } from './components/RulesModal';
 import { DealGame } from './components/deal/DealGame';
-import { ViewNavigationTabs, usePersistentActiveView } from './components/ViewNavigationTabs';
+import { ViewNavigationTabs } from './components/ViewNavigationTabs';
+import { useGameView } from './context/GameViewContext';
 import { audio, useGameAudio } from './audio';
 import { Building2, Handshake, RotateCcw, Clapperboard, BookOpen, Sparkles } from 'lucide-react';
 
@@ -37,7 +38,7 @@ export default function App() {
   const [showCardModal, setShowCardModal] = useState(false);
   const [showOpeningSequence, setShowOpeningSequence] = useState(false);
   const [activeBankruptcyRecord, setActiveBankruptcyRecord] = useState<BankruptcyRecord | null>(null);
-  const [activeView, setActiveView] = usePersistentActiveView('board');
+  const { activeView, setActiveView } = useGameView();
   const previousPhase = useRef<GamePhase | null>(null);
 
   // Hook up audio triggers based on gameState

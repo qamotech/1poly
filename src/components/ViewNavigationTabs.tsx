@@ -1,99 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
-import { LayoutGrid, BarChart3, Dice5, ScrollText } from 'lucide-react';
+import { LayoutGrid, BarChart3 } from 'lucide-react';
 import { audio } from '../audio';
 import { GameState } from '../types';
+import { ActiveGameView, useGameView, usePersistentActiveView } from '../context/GameViewContext';
 
-export type ActiveGameView = 'board' | 'hud';
-
-const STORAGE_KEY = '1poly_active_game_view';
-
-/**
- * Hook to persist active view across orientation changes, reloads, and game mode switches
- */
-export function usePersistentActiveView(defaultView: ActiveGameView = 'board') {
-  const [activeView, setActiveViewState] = useState<ActiveGameView>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved === 'board' || saved === 'hud') {
-          return saved;
-        }
-      } catch {
-        // Fallback if localStorage access is restricted
-      }
-    }
-    return defaultView;
-  });
-
-  const setActiveView = (view: ActiveGameView) => {
-    setActiveViewState(view);
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(STORAGE_KEY, view);
-      } catch {
-        // ignore
-      }
-    }
-  };
-
-  // Orientation and resize change preservation
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleOrientationOrResize = () => {
-      // Re-affirm state from storage or current state on orientation switch
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY) as ActiveGameView | null;
-        if (saved === 'board' || saved === 'hud') {
-          setActiveViewState(saved);
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    // Modern screen orientation API
-    if (window.screen?.orientation) {
-      window.screen.orientation.addEventListener('change', handleOrientationOrResize);
-    }
-    // Legacy orientationchange
-    window.addEventListener('orientationchange', handleOrientationOrResize);
-    // Media query orientation listeners
-    const portraitMql = window.matchMedia('(orientation: portrait)');
-    const landscapeMql = window.matchMedia('(orientation: landscape)');
-
-    portraitMql.addEventListener?.('change', handleOrientationOrResize);
-    landscapeMql.addEventListener?.('change', handleOrientationOrResize);
-
-    return () => {
-      if (window.screen?.orientation) {
-        window.screen.orientation.removeEventListener('change', handleOrientationOrResize);
-      }
-      window.removeEventListener('orientationchange', handleOrientationOrResize);
-      portraitMql.removeEventListener?.('change', handleOrientationOrResize);
-      landscapeMql.removeEventListener?.('change', handleOrientationOrResize);
-    };
-  }, []);
-
-  return [activeView, setActiveView] as const;
-}
+export { usePersistentActiveView, useGameView };
+export type { ActiveGameView };
 
 interface ViewNavigationTabsProps {
-  activeView: ActiveGameView;
-  onViewChange: (view: ActiveGameView) => void;
+  activeView?: ActiveGameView;
+  onViewChange?: (view: ActiveGameView) => void;
   gameState?: GameState | null;
   variant?: 'header' | 'floating-bottom' | 'embedded';
   className?: string;
 }
 
 export const ViewNavigationTabs: React.FC<ViewNavigationTabsProps> = ({
-  activeView,
-  onViewChange,
+  activeView: propActiveView,
+  onViewChange: propOnViewChange,
   gameState,
   variant = 'header',
   className = '',
 }) => {
+  const context = useGameView();
+
+  // Prefer props if explicitly passed, otherwise use context
+  const activeView = propActiveView ?? context.activeView;
+  const onViewChange = propOnViewChange ?? context.setActiveView;
+
   const activePlayersCount = gameState?.players.filter((p) => !p.isBankrupt).length ?? 0;
   const currentPlayer = gameState ? gameState.players[gameState.currentPlayerIndex] : null;
 
