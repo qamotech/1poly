@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GameState, PlayerType, HouseRules } from '../types';
+import { GAME_TOKENS } from '../engine/board';
 import { User, Bot, Play, Users, PlusCircle, Zap, Trash2, Edit2, Check, X, Sparkles, BookOpen, Layers } from 'lucide-react';
 import { audio } from '../audio';
 
-const TOKENS = [
-  '🥷🏾', '🚗', '🎩', '🐕', '👞', '🚢', '🚂', '🚜', '🏎️', '✈️', '🚀', '👽', '🤖', '🦄', '🦖', '🍕', '🍔',
-  '😇', '🧐', '😎', '🤠', '👻', '💩', '👾', '🤡', '🦊', '🦁', '🐼', '🐸', '🐙', '🦋', '🎸',
-  '🛹', '🏀', '⚽', '🎱', '💎', '👑', '🔥', '🧊'
-];
+const TOKENS = GAME_TOKENS;
 
 const PRESET_NAMES = [
   "N8", "Pennybags", "The Tycoon", "High Roller", "Boardwalk Boss",

@@ -65,10 +65,8 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
   };
 
   useEffect(() => {
-    // Sound fanfare
-    audio.playGo(0);
-    setTimeout(() => audio.playBuy(0), 300);
-    setTimeout(() => audio.playRailroad(0), 800);
+    // Grand celebratory victory fanfare
+    audio.playVictory();
 
     // Launch celebratory particle confetti
     triggerCelebrationConfetti();

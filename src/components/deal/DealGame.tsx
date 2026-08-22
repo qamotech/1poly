@@ -68,6 +68,7 @@ export const DealGame: React.FC<DealGameProps> = ({
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showLogsDrawer, setShowLogsDrawer] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [screenFlash, setScreenFlash] = useState(false);
 
   // Wildcard reassignment modal state
   const [wildcardToMove, setWildcardToMove] = useState<{ card: DealCard; fromColor: DealColor } | null>(null);
@@ -75,6 +76,18 @@ export const DealGame: React.FC<DealGameProps> = ({
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const localPlayer = gameState.players.find((p) => p.type === 'USER') || gameState.players[0];
   const isMyTurn = currentPlayer?.id === localPlayer?.id && gameState.phase === DealGamePhase.PLAYING;
+  const turnsAreUp = isMyTurn && gameState.playsRemaining === 0;
+
+  // Flash screen effect when turn plays reach 0
+  useEffect(() => {
+    if (turnsAreUp) {
+      setScreenFlash(true);
+      const timer = setTimeout(() => {
+        setScreenFlash(false);
+      }, 900);
+      return () => clearTimeout(timer);
+    }
+  }, [turnsAreUp]);
 
   // AI Turn automation loop
   useEffect(() => {
@@ -200,7 +213,20 @@ export const DealGame: React.FC<DealGameProps> = ({
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 select-none overflow-x-hidden font-sans">
+    <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 select-none overflow-x-hidden font-sans relative">
+      {/* Screen Flash Indicator when plays are up */}
+      <AnimatePresence>
+        {screenFlash && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 pointer-events-none z-50 bg-red-600/25 ring-8 ring-inset ring-red-500 shadow-[inset_0_0_100px_rgba(239,68,68,0.5)]"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Top Header Bar */}
       <header className="sticky top-0 z-40 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md px-4 py-2.5 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
@@ -215,22 +241,39 @@ export const DealGame: React.FC<DealGameProps> = ({
                   Fast Cards
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">
-                Turn {gameState.turnNumber} • Active: <strong className="text-white">{currentPlayer.token} {currentPlayer.name}</strong>
-              </p>
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                <span>Turn {gameState.turnNumber}</span>
+                <span>•</span>
+                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-emerald-950/40 border border-emerald-500/60 ring-1 ring-emerald-400/70 shadow-[0_0_6px_rgba(52,211,153,0.3)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-xs">{currentPlayer.token}</span>
+                  <strong className="text-emerald-200 font-bold">{currentPlayer.name}</strong>
+                  <span className="text-[10px] font-mono text-emerald-400 font-bold">${currentPlayer.bankValue}M</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Plays Indicator and Center Turn Status */}
-        <div className="hidden md:flex items-center gap-2 bg-slate-950/80 px-4 py-1.5 rounded-full border border-slate-800">
-          <span className="text-xs font-bold text-slate-400">Plays Left:</span>
+        <div
+          className={`hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full border transition-all ${
+            turnsAreUp
+              ? 'bg-red-950/90 border-red-500/80 text-red-300 ring-2 ring-red-500/50 shadow-[0_0_12px_rgba(239,68,68,0.3)] animate-pulse'
+              : 'bg-slate-950/80 border-slate-800 text-slate-400'
+          }`}
+        >
+          <span className={`text-xs font-bold ${turnsAreUp ? 'text-red-400 font-black' : 'text-slate-400'}`}>
+            {turnsAreUp ? 'Turns Up!' : 'Plays Left:'}
+          </span>
           <div className="flex gap-1.5">
             {[1, 2, 3].map((num) => (
               <div
                 key={num}
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
-                  num <= gameState.playsRemaining
+                  turnsAreUp
+                    ? 'bg-red-900/80 border border-red-500 text-red-300'
+                    : num <= gameState.playsRemaining
                     ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30'
                     : 'bg-slate-800 text-slate-600'
                 }`}
@@ -427,10 +470,14 @@ export const DealGame: React.FC<DealGameProps> = ({
             {isMyTurn ? (
               <button
                 onClick={handleEndTurn}
-                className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-amber-500/20 transition-transform hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer"
+                className={`px-6 py-3 font-black text-sm rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer ${
+                  turnsAreUp
+                    ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/50 ring-4 ring-red-500/70 animate-pulse'
+                    : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
+                }`}
               >
-                <span>End Turn</span>
-                <ArrowRight size={16} />
+                <span>{turnsAreUp ? 'Turns Up • End Turn' : 'End Turn'}</span>
+                <ArrowRight size={16} className={turnsAreUp ? 'animate-bounce' : ''} />
               </button>
             ) : (
               <div className="px-4 py-2 bg-slate-800/80 rounded-xl border border-slate-700 text-xs font-bold text-slate-400 flex items-center gap-2">
@@ -543,13 +590,65 @@ export const DealGame: React.FC<DealGameProps> = ({
 
           {/* Interactive Hand Area */}
           <div className="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                 <span>Your Hand ({localPlayer.hand.length} cards)</span>
-                {isMyTurn && (
+                {isMyTurn && !turnsAreUp && (
                   <span className="text-amber-400 font-bold">• Pick a card to play!</span>
                 )}
               </span>
+
+              {/* Hand-Zone Turn & Plays Counter (Prominently visible when scrolled down) */}
+              {isMyTurn && (
+                <div
+                  id="hand-turn-counter-banner"
+                  className={`flex items-center gap-2 px-3 py-1 rounded-xl border text-xs font-bold transition-all shadow-md ${
+                    turnsAreUp
+                      ? 'bg-red-950/80 border-red-500/80 text-red-300 ring-2 ring-red-400/60 shadow-[0_0_12px_rgba(239,68,68,0.3)] animate-pulse'
+                      : 'bg-slate-950/80 border-slate-700/80 text-slate-300'
+                  }`}
+                >
+                  <span className="text-[11px] uppercase tracking-wider font-extrabold flex items-center gap-1">
+                    {turnsAreUp ? (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
+                        <span className="text-red-400">Plays Left: 0 (Turns Up!)</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-amber-400" />
+                        <span>Plays Left: {gameState.playsRemaining}/3</span>
+                      </>
+                    )}
+                  </span>
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map((num) => (
+                      <div
+                        key={num}
+                        className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black ${
+                          turnsAreUp
+                            ? 'bg-red-900/60 border border-red-500 text-red-400'
+                            : num <= gameState.playsRemaining
+                            ? 'bg-amber-400 text-slate-950'
+                            : 'bg-slate-800 text-slate-600'
+                        }`}
+                      >
+                        {num}
+                      </div>
+                    ))}
+                  </div>
+
+                  {turnsAreUp && (
+                    <button
+                      onClick={handleEndTurn}
+                      className="ml-1 px-2.5 py-0.5 bg-red-600 hover:bg-red-500 text-white font-black rounded-lg text-[11px] uppercase transition-all shadow cursor-pointer active:scale-95 flex items-center gap-1"
+                    >
+                      <span>End Turn</span>
+                      <ArrowRight size={12} />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {localPlayer.hand.length > 0 ? (

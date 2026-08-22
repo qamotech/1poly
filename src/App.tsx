@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { motion, AnimatePresence } from 'motion/react';
 import { GamePhase, PlayerType, GameState, TradeOffer, BankruptcyRecord, GameSpeed } from './types';
 import { Lobby } from './components/Lobby';
 import { Board } from './components/Board';
@@ -16,6 +17,7 @@ import { OpeningSequence } from './components/OpeningSequence';
 import { RulesModal } from './components/RulesModal';
 import { DealGame } from './components/deal/DealGame';
 import { ViewNavigationTabs } from './components/ViewNavigationTabs';
+import { HeaderPlayerStatus } from './components/HeaderPlayerStatus';
 import { useGameView } from './context/GameViewContext';
 import { audio, useGameAudio } from './audio';
 import { Building2, Handshake, RotateCcw, Clapperboard, BookOpen, Sparkles } from 'lucide-react';
@@ -260,7 +262,7 @@ export default function App() {
         <div className="flex flex-col min-h-screen lg:h-screen max-w-[1600px] mx-auto overflow-hidden">
           {/* Main Top Header Bar with Mobile View Switcher */}
           <header className="shrink-0 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2 z-20">
-            {/* Brand & Active Player Quick Info */}
+            {/* Brand & Player Status Info Display */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <div className="flex items-center gap-1.5 shrink-0">
                 <span className="text-xl sm:text-2xl animate-bounce">🏃🏾‍♂️</span>
@@ -269,22 +271,13 @@ export default function App() {
                 </span>
               </div>
 
-              {currentPlayer && (
-                <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 bg-slate-800/90 rounded-xl border border-slate-700/70 min-w-0 shadow-inner">
-                  <span className="text-sm sm:text-base shrink-0">{currentPlayer.token}</span>
-                  <span className="text-xs sm:text-sm font-bold text-slate-200 truncate max-w-[85px] sm:max-w-[140px]">
-                    {currentPlayer.name}
-                  </span>
-                  <span className="text-xs font-mono font-bold text-emerald-400">
-                    ${currentPlayer.money}
-                  </span>
-                  {currentPlayer.type === PlayerType.CPU && (
-                    <span className="text-[9px] bg-blue-600/80 text-white font-bold px-1 rounded uppercase">CPU</span>
-                  )}
-                  {currentPlayer.inJail && (
-                    <span className="text-[9px] bg-orange-700 text-white font-bold px-1 rounded uppercase">Jail</span>
-                  )}
-                </div>
+              {/* Enhanced Player Info Display with Subtle Color-Coded Status Rings */}
+              {gameState && (
+                <HeaderPlayerStatus
+                  players={gameState.players}
+                  currentPlayerIndex={gameState.currentPlayerIndex}
+                  onOpenPortfolio={() => setIsPropertyModalOpen(true)}
+                />
               )}
             </div>
 
@@ -386,10 +379,15 @@ export default function App() {
           {/* Main Layout Area */}
           <div className="flex-1 flex flex-col lg:flex-row p-1 sm:p-4 gap-2 sm:gap-4 overflow-y-auto lg:overflow-hidden relative pb-16 lg:pb-0">
             {/* Main Board Area (Visible on desktop OR when activeView === 'board') */}
-            <div 
+            <motion.div 
               id="view-panel-board"
               role="tabpanel"
               aria-labelledby="header-nav-tab-board"
+              key={`view-board-${activeView}`}
+              initial={{ opacity: 0, y: 8, scale: 0.995 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.995 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               className={`w-full lg:flex-1 items-center justify-center p-0 sm:p-4 bg-slate-900 sm:rounded-3xl border-0 sm:border border-slate-800 sm:shadow-2xl relative ${
                 activeView === 'board' ? 'flex' : 'hidden lg:flex'
               }`}
@@ -406,13 +404,18 @@ export default function App() {
                 onOpenPropertyModal={() => setIsPropertyModalOpen(true)}
                 isCpuTurn={isCpuTurn}
               />
-            </div>
+            </motion.div>
 
             {/* Sidebar HUD (Visible on desktop OR when activeView === 'hud') */}
-            <div 
+            <motion.div 
               id="view-panel-hud"
               role="tabpanel"
               aria-labelledby="header-nav-tab-hud"
+              key={`view-hud-${activeView}`}
+              initial={{ opacity: 0, y: 8, scale: 0.995 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.995 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               className={`w-full lg:w-[400px] flex-col gap-4 pb-8 lg:pb-0 shrink-0 lg:overflow-y-auto lg:pr-2 ${
                 activeView === 'hud' ? 'flex' : 'hidden lg:flex'
               }`}
@@ -432,7 +435,7 @@ export default function App() {
                 onViewBankruptcySummary={(record) => setActiveBankruptcyRecord(record)}
                 isCpuTurn={isCpuTurn}
               />
-            </div>
+            </motion.div>
           </div>
 
           {/* Persistent Floating Bottom Nav for Mobile / Orientation Changes */}

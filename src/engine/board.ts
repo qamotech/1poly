@@ -1,5 +1,44 @@
 import { Space, SpaceType, PropertyState } from '../types';
 
+export const GAME_TOKENS = [
+  '🥷🏾', // Ninja (N8 / Default)
+  '🚗', // Vintage Car
+  '🎩', // Top Hat
+  '🐕', // Scottie Dog
+  '👞', // Classic Shoe
+  '🚢', // Battleship
+  '🚂', // Steam Train
+  '🚜', // Tractor
+  '🏎️', // Race Car
+  '✈️', // Jet Airplane
+  '🚀', // Rocket Ship
+  '🛸', // Flying Saucer
+  '🤖', // Robot
+  '🦄', // Unicorn
+  '🦖', // T-Rex Dinosaur
+  '🍕', // Pizza
+  '🍔', // Burger
+  '🤠', // Cowboy
+  '👻', // Ghost
+  '👾', // Space Alien
+  '🤡', // Jester / Clown
+  '🦊', // Fox
+  '🦁', // Lion
+  '🐼', // Panda
+  '🐸', // Frog
+  '🐙', // Octopus
+  '🦋', // Butterfly
+  '🎸', // Electric Guitar
+  '🛹', // Skateboard
+  '🏀', // Basketball
+  '⚽', // Soccer Ball
+  '🎱', // 8-Ball
+  '💎', // Diamond
+  '👑', // Royal Crown
+  '🔥', // Flame
+  '🧊', // Ice Cube
+];
+
 export const SPACES: Space[] = [
   { id: 'go', name: 'GO', type: SpaceType.GO, position: 0 },
   { id: 'prop_1', name: 'Mediterranean Ave', type: SpaceType.PROPERTY, position: 1, price: 60, rent: [2, 10, 30, 90, 160, 250], houseCost: 50, groupColor: '#8B4513' },

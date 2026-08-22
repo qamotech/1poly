@@ -102,6 +102,30 @@ export enum GamePhase {
 
 export type GameSpeed = 'normal' | 'fast' | 'max';
 
+export type BoardTheme = 'classic' | 'cyberpunk' | 'midnight' | 'sunset';
+
+export interface DiceRollRecord {
+  id: string;
+  playerId: PlayerId;
+  playerName: string;
+  playerToken: string;
+  dice: [number, number];
+  total: number;
+  isDouble: boolean;
+  doublesStreak: number;
+  timestamp: number;
+  turn: number;
+}
+
+export interface TurnHistorySnapshot {
+  turn: number;
+  activePlayerId: PlayerId;
+  netWorths: Record<PlayerId, number>;
+  cashBalances: Record<PlayerId, number>;
+  propertiesOwnedCount: Record<PlayerId, number>;
+  timestamp: number;
+}
+
 export interface AuctionState {
   propertyId: PropertyId;
   currentBid: number;
@@ -120,6 +144,9 @@ export interface TradeOffer {
   offerProperties: PropertyId[];
   requestMoney: number;
   requestProperties: PropertyId[];
+  negotiationRound?: number;
+  note?: string;
+  counterOfferSuggestion?: TradeOffer;
 }
 
 export interface HouseRules {
@@ -161,13 +188,18 @@ export interface GameState {
   communityChestDeck: ActionCard[];
   turnCount: number;
   pot: number; // For Free Parking house rules, if any
-  houseRules: HouseRules; // 12 custom game rules
+  houseRules: HouseRules; // 13 custom game rules
   lastDiceRoll: [number, number] | null;
   doublesRolledCount: number;
   logs: string[];
   pendingTrade?: TradeOffer | null;
   auction?: AuctionState | null;
   gameSpeed: GameSpeed;
+  boardTheme?: BoardTheme;
+  diceRollHistory?: DiceRollRecord[];
+  turnHistorySnapshots?: TurnHistorySnapshot[];
+  spaceVisits?: Record<number, number>;
+  activePresetName?: string;
   lastCardDrawn?: { card: ActionCard; playerId: PlayerId; deck: CardDeck } | null;
   bankruptcies?: Record<PlayerId, BankruptcyRecord>;
   recentBankruptcy?: BankruptcyRecord | null;

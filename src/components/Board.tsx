@@ -19,7 +19,11 @@ import {
   Sparkles,
   Building,
   Home,
-  CheckCircle2
+  CheckCircle2,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Maximize2
 } from 'lucide-react';
 
 const renderSpaceIcon = (space: any, isCorner: boolean) => {
@@ -73,21 +77,114 @@ interface BoardProps {
 export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBuyProperty, onDeclineProperty, onOpenTradeModal, onOpenPropertyModal, isCpuTurn, onPayBail }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [zoomMultiplier, setZoomMultiplier] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+
   const [visualPositions, setVisualPositions] = useState<Record<string, number>>({});
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
 
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  const handleZoomIn = () => {
+    audio.playUiClick();
+    setZoomMultiplier(prev => Math.min(2.0, Number((prev + 0.15).toFixed(2))));
+  };
+
+  const handleZoomOut = () => {
+    audio.playUiClick();
+    setZoomMultiplier(prev => {
+      const next = Math.max(0.75, Number((prev - 0.15).toFixed(2)));
+      if (next <= 1.0) {
+        setPanOffset({ x: 0, y: 0 });
+      }
+      return next;
+    });
+  };
+
+  const handleResetView = () => {
+    audio.playUiClick();
+    setZoomMultiplier(1);
+    setPanOffset({ x: 0, y: 0 });
+    setTilt({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    if ((e.target as HTMLElement).closest('button, [role="button"], input, #title-deed-modal, #board-zoom-toolbar')) return;
+    if (zoomMultiplier <= 1.0) return;
+
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      panX: panOffset.x,
+      panY: panOffset.y,
+    };
+  };
+
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      const currentScale = Math.max(0.2, scale * zoomMultiplier);
+      const dx = (e.clientX - dragStartRef.current.x) / currentScale;
+      const dy = (e.clientY - dragStartRef.current.y) / currentScale;
+      const maxPan = 350 * (zoomMultiplier - 0.8);
+      setPanOffset({
+        x: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panX + dx)),
+        y: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panY + dy)),
+      });
+      return;
+    }
+
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const xPct = (x / rect.width - 0.5) * 2; // -1 to 1
     const yPct = (y / rect.height - 0.5) * 2; // -1 to 1
-    setTilt({ x: -yPct * 5, y: xPct * 5 }); // 5 degree max tilt
+    setTilt({ x: -yPct * 4, y: xPct * 4 }); // 4 degree max tilt
   };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   const handleMouseLeave = () => {
+    setIsDragging(false);
     setTilt({ x: 0, y: 0 });
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1 && zoomMultiplier > 1.0) {
+      const touch = e.touches[0];
+      if ((e.target as HTMLElement).closest('button, [role="button"], input, #title-deed-modal, #board-zoom-toolbar')) return;
+      setIsDragging(true);
+      dragStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        panX: panOffset.x,
+        panY: panOffset.y,
+      };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging && e.touches.length === 1) {
+      const touch = e.touches[0];
+      const currentScale = Math.max(0.2, scale * zoomMultiplier);
+      const dx = (touch.clientX - dragStartRef.current.x) / currentScale;
+      const dy = (touch.clientY - dragStartRef.current.y) / currentScale;
+      const maxPan = 350 * (zoomMultiplier - 0.8);
+      setPanOffset({
+        x: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panX + dx)),
+        y: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panY + dy)),
+      });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
   };
 
   const [isRolling, setIsRolling] = useState(false);
@@ -182,24 +279,97 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
     return { gridRow: 1 + (position - 30), gridColumn: 11 };
   };
 
+  // Maps 1-indexed grid position to absolute percentage positions on the board
+  const getPercent = (index: number) => {
+    if (index === 1) return { start: 0, size: 12.5 };
+    if (index === 11) return { start: 87.5, size: 12.5 };
+    return { start: 12.5 + (index - 2) * (100 / 12), size: 100 / 12 };
+  };
+
   return (
     // Outer responsive container
     <div 
       ref={containerRef} 
-      className="w-full aspect-square max-w-[800px] mx-auto relative rounded-xl shadow-2xl bg-[#cde6d0] overflow-hidden transition-transform duration-200 ease-out"
+      className={`w-full aspect-square max-w-[800px] mx-auto relative rounded-xl shadow-2xl bg-[#cde6d0] overflow-hidden transition-transform duration-200 ease-out select-none ${
+        zoomMultiplier > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''
+      }`}
+      onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       style={{ transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
     >
+      {/* Floating Secondary Navigation & Quick Zoom Toolbar */}
+      <div
+        id="board-zoom-toolbar"
+        className="absolute top-2 right-2 sm:top-3 sm:right-3 z-30 flex items-center gap-1 p-1 bg-slate-900/90 hover:bg-slate-900 backdrop-blur-md rounded-xl border border-slate-700/80 shadow-xl transition-all select-none"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+      >
+        <button
+          id="board-zoom-out-btn"
+          type="button"
+          onClick={handleZoomOut}
+          disabled={zoomMultiplier <= 0.75}
+          title="Zoom Out (-)"
+          aria-label="Zoom Out"
+          className="p-1.5 sm:p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-slate-300 transition-colors flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+        >
+          <ZoomOut size={15} />
+        </button>
+
+        <span
+          id="board-zoom-indicator"
+          title="Current Zoom Level"
+          className="px-1.5 py-0.5 text-[11px] sm:text-xs font-mono font-bold text-emerald-400 bg-slate-950/60 rounded border border-slate-800 min-w-[40px] text-center select-none"
+        >
+          {Math.round(zoomMultiplier * 100)}%
+        </span>
+
+        <button
+          id="board-zoom-in-btn"
+          type="button"
+          onClick={handleZoomIn}
+          disabled={zoomMultiplier >= 2.0}
+          title="Zoom In (+)"
+          aria-label="Zoom In"
+          className="p-1.5 sm:p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-slate-300 transition-colors flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+        >
+          <ZoomIn size={15} />
+        </button>
+
+        <div className="w-px h-4 bg-slate-700/80 mx-0.5" />
+
+        <button
+          id="board-reset-view-btn"
+          type="button"
+          onClick={handleResetView}
+          title="Reset View (100% Zoom & Centered)"
+          aria-label="Reset View"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 transition-colors cursor-pointer active:scale-95"
+        >
+          <RotateCcw size={12} className={zoomMultiplier !== 1 || panOffset.x !== 0 || panOffset.y !== 0 ? 'text-amber-400' : 'text-slate-400'} />
+          <span className="hidden xs:inline">Reset View</span>
+        </button>
+      </div>
+
       {/* Inner fixed-size scaling board. This guarantees no text wrapping/jumbling on mobile. */}
       <div 
         style={{ 
           width: '800px', 
           height: '800px', 
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left'
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: `translate(calc(-50% + ${panOffset.x * scale}px), calc(-50% + ${panOffset.y * scale}px)) scale(${scale * zoomMultiplier})`,
+          transformOrigin: 'center center',
+          transition: isDragging ? 'none' : 'transform 0.15s ease-out'
         }}
-        className="absolute top-0 left-0 bg-[#b3d4b8] border-[12px] border-slate-300 border-t-slate-200 border-l-slate-200 border-b-slate-500 border-r-slate-500 shadow-[inset_0_0_30px_rgba(0,0,0,0.3)] p-[8px]"
+        className="bg-[#b3d4b8] border-[12px] border-slate-300 border-t-slate-200 border-l-slate-200 border-b-slate-500 border-r-slate-500 shadow-[inset_0_0_30px_rgba(0,0,0,0.3)] p-[8px]"
       >
         <div style={{ gridTemplateColumns: '1.5fr repeat(9, 1fr) 1.5fr', gridTemplateRows: '1.5fr repeat(9, 1fr) 1.5fr' }} className="w-full h-full grid gap-[2px] relative">
           {SPACES.map((space) => {
@@ -241,31 +411,57 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
               ? 'bg-gradient-to-br from-yellow-200 via-orange-200 to-red-400'
               : 'bg-gradient-to-br from-[#f2f9f3] to-[#cde6d0]';
 
-            const isActiveTarget = gameState.phase === GamePhase.POST_ROLL && 
-                                   currentPlayer?.position === space.position && 
-                                   visualPositions[currentPlayer?.id] === space.position;
+            const isSelected = selectedSpaceId === space.id;
+            const isCurrentPlayerPosition = currentPlayer?.position === space.position;
+            const isLandedOn = (gameState.phase === GamePhase.POST_ROLL || gameState.phase === GamePhase.TURN_START) && 
+                               isCurrentPlayerPosition && 
+                               visualPositions[currentPlayer?.id] === space.position;
+            const shouldHighlight = isLandedOn || isSelected;
 
             return (
               <motion.div 
                 key={space.id} 
+                id={`board-space-${space.id}`}
                 style={{ gridRow, gridColumn }}
-                animate={isActiveTarget ? { 
-                  scale: [1, 1.06, 1], 
-                  boxShadow: [
-                    'inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.1), 0 0 0px 0px rgba(59, 130, 246, 0)',
-                    'inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.1), 0 0 22px 6px rgba(245, 158, 11, 0.75)',
-                    'inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.1), 0 0 0px 0px rgba(59, 130, 246, 0)'
-                  ],
-                  zIndex: 10 
+                animate={shouldHighlight ? { 
+                  scale: isSelected ? [1, 1.03, 1] : [1, 1.05, 1], 
+                  zIndex: 15 
                 } : { 
                   scale: 1, 
-                  boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.1)',
                   zIndex: 1 
                 }}
-                transition={isActiveTarget ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
+                transition={shouldHighlight ? { duration: 1.4, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
                 onClick={() => setSelectedSpaceId(space.id)}
                 className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}`}
               >
+                {/* Subtle Framer Motion Pulsing Border Overlay for High-Visibility Navigation */}
+                {shouldHighlight && (
+                  <motion.div
+                    id={`board-space-pulse-${space.id}`}
+                    initial={{ opacity: 0.6 }}
+                    animate={{
+                      opacity: [0.65, 1, 0.65],
+                      boxShadow: isSelected
+                        ? [
+                            'inset 0 0 0 2px #06b6d4, 0 0 8px 2px rgba(6, 182, 212, 0.6)',
+                            'inset 0 0 0 3px #22d3ee, 0 0 18px 5px rgba(6, 182, 212, 0.85)',
+                            'inset 0 0 0 2px #06b6d4, 0 0 8px 2px rgba(6, 182, 212, 0.6)'
+                          ]
+                        : [
+                            'inset 0 0 0 2px #f59e0b, 0 0 10px 2px rgba(245, 158, 11, 0.7)',
+                            'inset 0 0 0 3.5px #fbbf24, 0 0 22px 6px rgba(245, 158, 11, 0.95)',
+                            'inset 0 0 0 2px #f59e0b, 0 0 10px 2px rgba(245, 158, 11, 0.7)'
+                          ]
+                    }}
+                    transition={{
+                      duration: 1.4,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="absolute inset-0 pointer-events-none z-30 rounded-[2px]"
+                  />
+                )}
+
                 <div className={`w-full h-full flex ${contentDirClass}`}>
                   {/* Property Color Bar */}
                   {space.groupColor && (
@@ -499,30 +695,53 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
 
             {/* Players/Tokens Overlay */}
             <div className="absolute inset-0 pointer-events-none z-20">
-              <div className="relative w-full h-full grid grid-cols-11 grid-rows-11 gap-[2px]">
+              <div className="relative w-full h-full">
                 {gameState.players.filter(p => !p.isBankrupt).map((player, idx) => {
                   const currentVisualPos = visualPositions[player.id] !== undefined ? visualPositions[player.id] : player.position;
                   const { gridRow, gridColumn } = getGridPosition(currentVisualPos);
                   
+                  const colInfo = getPercent(gridColumn);
+                  const rowInfo = getPercent(gridRow);
+
                   // Offset multiple players on the same space
                   const offset = (idx * 5) - (gameState.players.filter(p => !p.isBankrupt).length * 2.5);
 
                   return (
                     <motion.div
                       key={player.id}
-                      layout
-                      initial={{ scale: 0 }}
-                      animate={
-                        player.id === currentPlayer?.id && isRolling
-                          ? { scale: 1.2, x: offset, y: [offset, offset - 15, offset], rotate: [0, -10, 10, 0] }
-                          : { scale: 1, x: offset, y: offset, rotate: 0 }
-                      }
-                      transition={{ 
-                        layout: { type: "spring", stiffness: 300, damping: 25 },
-                        y: { duration: 0.3, repeat: (player.id === currentPlayer?.id && isRolling) ? Infinity : 0 }
+                      initial={{ 
+                        left: `${colInfo.start}%`, 
+                        top: `${rowInfo.start}%`,
+                        width: `${colInfo.size}%`,
+                        height: `${rowInfo.size}%`,
+                        scale: 0 
                       }}
-                      style={{ gridRow, gridColumn }}
-                      className="flex items-center justify-center w-full h-full pointer-events-none"
+                      animate={{
+                        left: `${colInfo.start}%`,
+                        top: `${rowInfo.start}%`,
+                        width: `${colInfo.size}%`,
+                        height: `${rowInfo.size}%`,
+                        scale: player.id === currentPlayer?.id && isRolling ? 1.25 : 1,
+                        x: offset,
+                        y: player.id === currentPlayer?.id && isRolling ? [offset, offset - 15, offset] : offset,
+                        rotate: player.id === currentPlayer?.id && isRolling ? [0, -10, 10, 0] : 0,
+                      }}
+                      transition={{
+                        left: { type: "spring", stiffness: 100, damping: 15 },
+                        top: { type: "spring", stiffness: 100, damping: 15 },
+                        scale: { type: "spring", stiffness: 300, damping: 25 },
+                        y: player.id === currentPlayer?.id && isRolling 
+                          ? { duration: 0.3, repeat: Infinity, ease: "easeInOut" }
+                          : { type: "spring", stiffness: 300, damping: 25 },
+                        rotate: player.id === currentPlayer?.id && isRolling
+                          ? { duration: 0.3, repeat: Infinity, ease: "easeInOut" }
+                          : { type: "spring", stiffness: 300, damping: 25 }
+                      }}
+                      style={{
+                        position: 'absolute',
+                        zIndex: player.id === currentPlayer?.id ? 25 : 20,
+                      }}
+                      className="flex items-center justify-center pointer-events-none"
                     >
                       <div className="text-3xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] filter">
                         {player.token}

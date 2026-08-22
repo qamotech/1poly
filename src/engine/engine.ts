@@ -1,6 +1,7 @@
-import { GameState, GamePhase, Player, PlayerType, SpaceType, ActionCard, CardActionType, CardDeck, HouseRules, BankruptcyRecord, AuctionState, GameSpeed } from '../types';
+import { GameState, GamePhase, Player, PlayerType, SpaceType, PropertyState, ActionCard, CardActionType, CardDeck, HouseRules, BankruptcyRecord, AuctionState, GameSpeed, BoardTheme, DiceRollRecord, TurnHistorySnapshot } from '../types';
 import { generateInitialPropertyStates, SPACES } from './board';
 import { CHANCE_DECK, COMMUNITY_CHEST_DECK, shuffleDeck } from './cards';
+import { RULES_PRESETS } from './rulesPresets';
 
 export const DEFAULT_RULES: HouseRules = {
   freeParkingJackpot: false,
@@ -16,6 +17,67 @@ export const DEFAULT_RULES: HouseRules = {
   mercyRule: false,
   rentControl: false,
   forcedJailBail: false,
+};
+
+export const calculatePlayerNetWorth = (player: Player, propertyStates: Record<string, PropertyState>): number => {
+  let netWorth = player.money - (player.loan || 0);
+  (player.properties || []).forEach(propId => {
+    const space = SPACES.find(s => s.id === propId);
+    if (!space) return;
+    const ps = propertyStates[propId];
+    if (ps?.isMortgaged) {
+      netWorth += Math.floor((space.price || 0) * 0.5);
+    } else {
+      netWorth += (space.price || 0);
+      if (ps?.houses) {
+        netWorth += ps.houses * (space.houseCost || 50);
+      }
+      if (ps?.hasHotel) {
+        netWorth += 5 * (space.houseCost || 50);
+      }
+    }
+  });
+  return netWorth;
+};
+
+export const createTurnSnapshot = (state: GameState, activePlayerId: string): TurnHistorySnapshot => {
+  const netWorths: Record<string, number> = {};
+  const cashBalances: Record<string, number> = {};
+  const propertiesOwnedCount: Record<string, number> = {};
+
+  state.players.forEach(p => {
+    netWorths[p.id] = calculatePlayerNetWorth(p, state.propertyStates);
+    cashBalances[p.id] = p.money;
+    propertiesOwnedCount[p.id] = (p.properties || []).length;
+  });
+
+  return {
+    turn: state.turnCount,
+    activePlayerId,
+    netWorths,
+    cashBalances,
+    propertiesOwnedCount,
+    timestamp: Date.now(),
+  };
+};
+
+export const setBoardTheme = (state: GameState, boardTheme: BoardTheme): GameState => {
+  return {
+    ...state,
+    boardTheme,
+    logs: [...state.logs, `Board visual theme changed to ${boardTheme.toUpperCase()}.`]
+  };
+};
+
+export const applyHouseRulesPreset = (state: GameState, presetId: string): GameState => {
+  const preset = RULES_PRESETS.find(p => p.id === presetId);
+  if (!preset) return state;
+  return {
+    ...state,
+    houseRules: { ...preset.rules },
+    activePresetName: preset.name,
+    logs: [...state.logs, `Applied House Rules Preset: "${preset.name}".`]
+  };
 };
 
 export const createInitialGameState = (): GameState => ({
@@ -34,12 +96,17 @@ export const createInitialGameState = (): GameState => ({
   lastCardDrawn: null,
   auction: null,
   gameSpeed: 'fast',
+  boardTheme: 'classic',
+  diceRollHistory: [],
+  turnHistorySnapshots: [],
+  spaceVisits: {},
+  activePresetName: 'Official Tournament',
   bankruptcies: {},
   recentBankruptcy: null,
 });
 
 export const updateHouseRules = (state: GameState, rules: Partial<HouseRules>): GameState => {
-  return { ...state, houseRules: { ...state.houseRules, ...rules } };
+  return { ...state, houseRules: { ...state.houseRules, ...rules }, activePresetName: 'Custom' };
 };
 
 export const setGameSpeed = (state: GameState, gameSpeed: GameSpeed): GameState => {

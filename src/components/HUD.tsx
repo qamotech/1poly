@@ -309,26 +309,40 @@ export const HUD: React.FC<HUDProps> = ({
                 id={`hud-player-${p.id}`}
                 className={`p-2 rounded-xl border transition-all flex items-center justify-between gap-2 ${
                   isTurn 
-                    ? 'bg-blue-950/50 border-blue-500/70 shadow-[0_0_10px_rgba(59,130,246,0.2)]' 
+                    ? 'bg-emerald-950/40 border-emerald-500/70 ring-2 ring-emerald-400/80 shadow-[0_0_12px_rgba(52,211,153,0.25)]' 
+                    : p.inJail
+                    ? 'bg-amber-950/30 border-amber-500/60 ring-2 ring-amber-400/80 shadow-[0_0_8px_rgba(251,191,36,0.2)]'
                     : 'bg-slate-800/60 border-slate-700/50 hover:bg-slate-800'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm shrink-0 ${
-                    isTurn ? 'bg-blue-600 text-white ring-2 ring-blue-400' : 'bg-slate-700 text-slate-200'
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm shrink-0 relative ${
+                    isTurn 
+                      ? 'bg-emerald-600/80 text-white ring-2 ring-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.35)]' 
+                      : p.inJail
+                      ? 'bg-amber-700/80 text-white ring-2 ring-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.3)]'
+                      : 'bg-slate-700 text-slate-200 ring-1 ring-slate-600/50'
                   }`}>
                     {p.token}
+                    {isTurn && (
+                      <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-slate-900 animate-pulse" />
+                    )}
+                    {p.inJail && !isTurn && (
+                      <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 border border-slate-900" />
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-bold truncate ${isTurn ? 'text-blue-200' : 'text-slate-200'}`}>
+                      <span className={`text-xs font-bold truncate ${isTurn ? 'text-emerald-200' : 'text-slate-200'}`}>
                         {p.name}
                       </span>
                       {p.type === 'CPU' && (
                         <span className="text-[9px] bg-slate-700 text-slate-300 px-1 rounded font-bold">CPU</span>
                       )}
                       {p.inJail && (
-                        <span className="text-[9px] bg-orange-900/80 text-orange-300 border border-orange-700 px-1 rounded font-bold">Jail</span>
+                        <span className="text-[9px] bg-amber-900/80 text-amber-300 border border-amber-600 px-1 rounded font-bold flex items-center gap-0.5">
+                          <Key size={9} /> Jail
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-slate-400">
@@ -341,7 +355,7 @@ export const HUD: React.FC<HUDProps> = ({
 
                 <div className="flex items-center gap-1">
                   {isTurn && (
-                    <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-blue-500/30 text-blue-300 border border-blue-400/50 rounded-md animate-pulse shrink-0">
+                    <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 rounded-md animate-pulse shrink-0">
                       Turn
                     </span>
                   )}

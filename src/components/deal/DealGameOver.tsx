@@ -17,8 +17,8 @@ export const DealGameOver: React.FC<DealGameOverProps> = ({
   onSwitchToClassic,
 }) => {
   useEffect(() => {
-    // Sound & Confetti blast
-    audio.playGo();
+    // Grand victory fanfare & Confetti blast
+    audio.playVictory();
 
     const duration = 4000;
     const end = Date.now() + duration;

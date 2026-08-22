@@ -216,6 +216,132 @@ export function evaluateTradeOffer(state: GameState, offer: TradeOffer): TradeVa
   };
 }
 
+export interface MonopolyImpact {
+  type: 'completes_monopoly' | 'blocks_monopoly' | 'breaks_monopoly';
+  playerId: string;
+  playerName: string;
+  colorName: string;
+  colorHex: string;
+  description: string;
+}
+
+export function analyzeTradeMonopolyImpacts(state: GameState, offer: TradeOffer): MonopolyImpact[] {
+  const impacts: MonopolyImpact[] = [];
+  const fromPlayer = state.players.find(p => p.id === offer.fromPlayerId);
+  const toPlayer = state.players.find(p => p.id === offer.toPlayerId);
+  if (!fromPlayer || !toPlayer) return impacts;
+
+  // Check what fromPlayer receives (offered by toPlayer in requestProperties)
+  for (const propId of offer.requestProperties) {
+    const space = SPACES.find(s => s.id === propId);
+    if (space?.groupColor && space.type === SpaceType.PROPERTY) {
+      const groupSpaces = SPACES.filter(s => s.groupColor === space.groupColor);
+      const fromCount = groupSpaces.filter(s => state.propertyStates[s.id]?.ownerId === fromPlayer.id).length;
+      if (fromCount === groupSpaces.length - 1) {
+        impacts.push({
+          type: 'completes_monopoly',
+          playerId: fromPlayer.id,
+          playerName: fromPlayer.name,
+          colorName: space.groupColor,
+          colorHex: space.groupColor,
+          description: `⚡ Completes ${fromPlayer.name}'s ${space.name} color monopoly!`
+        });
+      }
+    }
+  }
+
+  // Check what toPlayer receives (offered by fromPlayer in offerProperties)
+  for (const propId of offer.offerProperties) {
+    const space = SPACES.find(s => s.id === propId);
+    if (space?.groupColor && space.type === SpaceType.PROPERTY) {
+      const groupSpaces = SPACES.filter(s => s.groupColor === space.groupColor);
+      const toCount = groupSpaces.filter(s => state.propertyStates[s.id]?.ownerId === toPlayer.id).length;
+      if (toCount === groupSpaces.length - 1) {
+        impacts.push({
+          type: 'completes_monopoly',
+          playerId: toPlayer.id,
+          playerName: toPlayer.name,
+          colorName: space.groupColor,
+          colorHex: space.groupColor,
+          description: `⚡ Completes ${toPlayer.name}'s ${space.name} color monopoly!`
+        });
+      }
+    }
+  }
+
+  return impacts;
+}
+
+/**
+ * Generates an intelligent counter-offer when the AI rejects a proposal.
+ */
+export function generateAICounterOffer(state: GameState, offer: TradeOffer): TradeOffer | null {
+  const valuation = evaluateTradeOffer(state, offer);
+  if (valuation.isAcceptable) return null; // No counter needed if already acceptable
+
+  const toPlayer = state.players.find(p => p.id === offer.toPlayerId);
+  const fromPlayer = state.players.find(p => p.id === offer.fromPlayerId);
+  if (!toPlayer || !fromPlayer) return null;
+
+  // Don't counter if it's wildly absurd (giveValue is 4x getValue)
+  if (valuation.giveValue > (valuation.getValue + 1) * 3.5 && valuation.giveValue > 800) {
+    return null;
+  }
+
+  const deficit = valuation.giveValue - valuation.getValue;
+  const targetSweetener = Math.round(deficit * 1.15);
+
+  // Strategy A: If fromPlayer has enough liquid cash to bridge the gap
+  if (fromPlayer.money >= offer.offerMoney + targetSweetener && (offer.offerMoney + targetSweetener) <= fromPlayer.money) {
+    return {
+      fromPlayerId: toPlayer.id, // Counter-offer is now from toPlayer to fromPlayer
+      toPlayerId: fromPlayer.id,
+      offerMoney: offer.requestMoney,
+      offerProperties: [...offer.requestProperties],
+      requestMoney: offer.offerMoney + targetSweetener,
+      requestProperties: [...offer.offerProperties],
+      negotiationRound: (offer.negotiationRound || 1) + 1,
+      note: `I can accept if you include an extra $${targetSweetener} cash to balance strategic value!`
+    };
+  }
+
+  // Strategy B: If fromPlayer has additional properties that toPlayer wants
+  const otherFromProps = fromPlayer.properties.filter(id => !offer.offerProperties.includes(id));
+  for (const candidateId of otherFromProps) {
+    const candidateVal = calculatePropertyStrategicValue(state, candidateId, toPlayer.id, true, fromPlayer.id);
+    if (candidateVal >= deficit * 0.8 && candidateVal <= deficit * 1.5) {
+      const space = SPACES.find(s => s.id === candidateId);
+      return {
+        fromPlayerId: toPlayer.id,
+        toPlayerId: fromPlayer.id,
+        offerMoney: offer.requestMoney,
+        offerProperties: [...offer.requestProperties],
+        requestMoney: Math.max(0, offer.offerMoney - 50),
+        requestProperties: [...offer.offerProperties, candidateId],
+        negotiationRound: (offer.negotiationRound || 1) + 1,
+        note: `Include ${space?.name || 'an extra property'} and we have a deal!`
+      };
+    }
+  }
+
+  // Fallback cash adjustment with max available
+  if (fromPlayer.money > offer.offerMoney + 50) {
+    const affordableCash = Math.min(fromPlayer.money, offer.offerMoney + Math.min(deficit, fromPlayer.money - offer.offerMoney));
+    return {
+      fromPlayerId: toPlayer.id,
+      toPlayerId: fromPlayer.id,
+      offerMoney: offer.requestMoney,
+      offerProperties: [...offer.requestProperties],
+      requestMoney: affordableCash,
+      requestProperties: [...offer.offerProperties],
+      negotiationRound: (offer.negotiationRound || 1) + 1,
+      note: `Counter-offer: Increase cash offer to $${affordableCash}.`
+    };
+  }
+
+  return null;
+}
+
 /**
  * Boolean helper for AI trade decision
  */
