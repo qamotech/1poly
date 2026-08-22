@@ -110,32 +110,44 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
     setTilt({ x: 0, y: 0 });
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) return;
-    if ((e.target as HTMLElement).closest('button, [role="button"], input, #title-deed-modal, #board-zoom-toolbar')) return;
-    if (zoomMultiplier <= 1.0) return;
+  const stateRef = useRef({ zoomMultiplier, isDragging, scale, panOffset });
+  useEffect(() => {
+    stateRef.current = { zoomMultiplier, isDragging, scale, panOffset };
+  }, [zoomMultiplier, isDragging, scale, panOffset]);
+
+  const handleDragStart = (clientX: number, clientY: number, target: HTMLElement) => {
+    if (target.closest('button, [role="button"], input, #title-deed-modal, #board-zoom-toolbar')) return;
+    const currentZoom = stateRef.current.zoomMultiplier;
+    if (currentZoom <= 1.0) return;
 
     setIsDragging(true);
     dragStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      panX: panOffset.x,
-      panY: panOffset.y,
+      x: clientX,
+      y: clientY,
+      panX: stateRef.current.panOffset.x,
+      panY: stateRef.current.panOffset.y,
     };
   };
 
+  const handleDragMove = (clientX: number, clientY: number) => {
+    if (!stateRef.current.isDragging) return;
+    const { zoomMultiplier: currentZoom, scale: currentScale } = stateRef.current;
+    const effScale = Math.max(0.2, currentScale * currentZoom);
+    const dx = (clientX - dragStartRef.current.x) / effScale;
+    const dy = (clientY - dragStartRef.current.y) / effScale;
+    const maxPan = 350 * (currentZoom - 0.8);
+    setPanOffset({
+      x: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panX + dx)),
+      y: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panY + dy)),
+    });
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging) {
-      const currentScale = Math.max(0.2, scale * zoomMultiplier);
-      const dx = (e.clientX - dragStartRef.current.x) / currentScale;
-      const dy = (e.clientY - dragStartRef.current.y) / currentScale;
-      const maxPan = 350 * (zoomMultiplier - 0.8);
-      setPanOffset({
-        x: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panX + dx)),
-        y: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panY + dy)),
-      });
-      return;
-    }
+    if (isDragging) return;
 
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -146,46 +158,72 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
     setTilt({ x: -yPct * 4, y: xPct * 4 }); // 4 degree max tilt
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
   const handleMouseLeave = () => {
-    setIsDragging(false);
     setTilt({ x: 0, y: 0 });
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1 && zoomMultiplier > 1.0) {
-      const touch = e.touches[0];
-      if ((e.target as HTMLElement).closest('button, [role="button"], input, #title-deed-modal, #board-zoom-toolbar')) return;
-      setIsDragging(true);
-      dragStartRef.current = {
-        x: touch.clientX,
-        y: touch.clientY,
-        panX: panOffset.x,
-        panY: panOffset.y,
-      };
-    }
-  };
+  // Listen to mouse/touch drag-to-pan events directly on the entire view panel container
+  useEffect(() => {
+    const viewPanel = document.getElementById('view-panel-board');
+    if (!viewPanel) return;
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (isDragging && e.touches.length === 1) {
-      const touch = e.touches[0];
-      const currentScale = Math.max(0.2, scale * zoomMultiplier);
-      const dx = (touch.clientX - dragStartRef.current.x) / currentScale;
-      const dy = (touch.clientY - dragStartRef.current.y) / currentScale;
-      const maxPan = 350 * (zoomMultiplier - 0.8);
-      setPanOffset({
-        x: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panX + dx)),
-        y: Math.max(-maxPan, Math.min(maxPan, dragStartRef.current.panY + dy)),
-      });
-    }
-  };
+    const updateCursor = () => {
+      if (zoomMultiplier > 1.0) {
+        viewPanel.style.cursor = isDragging ? 'grabbing' : 'grab';
+      } else {
+        viewPanel.style.cursor = '';
+      }
+    };
+    updateCursor();
 
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      handleDragStart(e.clientX, e.clientY, e.target as HTMLElement);
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      handleDragMove(e.clientX, e.clientY);
+    };
+
+    const onMouseUp = () => {
+      handleDragEnd();
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        handleDragStart(touch.clientX, touch.clientY, e.target as HTMLElement);
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        handleDragMove(touch.clientX, touch.clientY);
+      }
+    };
+
+    const onTouchEnd = () => {
+      handleDragEnd();
+    };
+
+    viewPanel.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    viewPanel.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd);
+
+    return () => {
+      viewPanel.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      viewPanel.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      viewPanel.style.cursor = '';
+    };
+  }, [zoomMultiplier, isDragging]);
 
   const [isRolling, setIsRolling] = useState(false);
 
@@ -293,13 +331,8 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
       className={`w-full aspect-square max-w-[800px] mx-auto relative rounded-xl shadow-2xl bg-[#cde6d0] overflow-hidden transition-transform duration-200 ease-out select-none ${
         zoomMultiplier > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''
       }`}
-      onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
       style={{ transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
     >
       {/* Floating Secondary Navigation & Quick Zoom Toolbar */}
