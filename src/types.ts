@@ -93,10 +93,24 @@ export enum GamePhase {
   TURN_START = 'TURN_START',
   ROLLING = 'ROLLING',
   POST_ROLL = 'POST_ROLL', // Buying, paying rent, acting on space
+  AUCTION = 'AUCTION', // Active property bidding
   DEAL_ACTION = 'DEAL_ACTION', // Resolving a Deal card mechanic
   TRADING = 'TRADING',
   TURN_END = 'TURN_END',
   GAME_OVER = 'GAME_OVER',
+}
+
+export type GameSpeed = 'normal' | 'fast' | 'max';
+
+export interface AuctionState {
+  propertyId: PropertyId;
+  currentBid: number;
+  highestBidderId: PlayerId | null;
+  highestBidderName: string | null;
+  activeBidderIds: PlayerId[];
+  passedBidderIds: PlayerId[];
+  minBidIncrement: number;
+  returnPhase: GamePhase;
 }
 
 export interface TradeOffer {
@@ -124,6 +138,20 @@ export interface HouseRules {
   forcedJailBail: boolean;
 }
 
+export interface BankruptcyRecord {
+  player: Player;
+  bankruptAtTurn: number;
+  finalMoney: number;
+  finalDebt: number;
+  finalProperties: PropertyId[];
+  totalHouses: number;
+  totalHotels: number;
+  rentCollected: number;
+  totalRolls: number;
+  liquidatedAssetsValue: number;
+  cause: string;
+}
+
 export interface GameState {
   players: Player[];
   currentPlayerIndex: number;
@@ -138,5 +166,9 @@ export interface GameState {
   doublesRolledCount: number;
   logs: string[];
   pendingTrade?: TradeOffer | null;
+  auction?: AuctionState | null;
+  gameSpeed: GameSpeed;
   lastCardDrawn?: { card: ActionCard; playerId: PlayerId; deck: CardDeck } | null;
+  bankruptcies?: Record<PlayerId, BankruptcyRecord>;
+  recentBankruptcy?: BankruptcyRecord | null;
 }

@@ -4,17 +4,57 @@ import { GameState, GamePhase, SpaceType } from '../types';
 import { SPACES } from '../engine/board';
 import { audio } from '../audio';
 import { Dice3D } from './Dice3D';
+import { 
+  Train, 
+  Lightbulb, 
+  Droplet, 
+  HelpCircle, 
+  Briefcase, 
+  Receipt, 
+  Gem, 
+  ShieldAlert, 
+  Car, 
+  Flag, 
+  Flame, 
+  Sparkles,
+  Building,
+  Home,
+  CheckCircle2
+} from 'lucide-react';
 
-const getSpaceIcon = (space: any) => {
-  if (space.type === SpaceType.RAILROAD) return '🚂';
-  if (space.type === SpaceType.UTILITY) return space.name.includes('Water') ? '🚰' : '💡';
-  if (space.type === SpaceType.CHANCE) return '❓';
-  if (space.type === SpaceType.COMMUNITY_CHEST) return '💰';
-  if (space.type === SpaceType.TAX) return space.name.includes('Luxury') ? '💍' : '🧾';
-  if (space.name === 'Jail') return '🚓';
-  if (space.name === 'Go To Jail') return '👮';
-  if (space.name === 'Free Parking') return '🚗';
-  if (space.name === 'GO') return '🏁';
+const renderSpaceIcon = (space: any, isCorner: boolean) => {
+  const iconSize = isCorner ? 26 : 20;
+  if (space.type === SpaceType.RAILROAD) {
+    return <Train size={iconSize} className="text-slate-800 drop-shadow-sm" />;
+  }
+  if (space.type === SpaceType.UTILITY) {
+    return space.name.includes('Water') 
+      ? <Droplet size={iconSize} className="text-cyan-700 drop-shadow-sm fill-cyan-400/30" /> 
+      : <Lightbulb size={iconSize} className="text-amber-600 drop-shadow-sm fill-amber-300/40" />;
+  }
+  if (space.type === SpaceType.CHANCE) {
+    return <HelpCircle size={iconSize} className="text-orange-600 drop-shadow-sm stroke-[2.5]" />;
+  }
+  if (space.type === SpaceType.COMMUNITY_CHEST) {
+    return <Briefcase size={iconSize} className="text-blue-700 drop-shadow-sm" />;
+  }
+  if (space.type === SpaceType.TAX) {
+    return space.name.includes('Luxury') 
+      ? <Gem size={iconSize} className="text-purple-700 drop-shadow-sm" /> 
+      : <Receipt size={iconSize} className="text-rose-700 drop-shadow-sm" />;
+  }
+  if (space.name === 'Jail') {
+    return <ShieldAlert size={iconSize} className="text-orange-700 drop-shadow-sm" />;
+  }
+  if (space.name === 'Go To Jail') {
+    return <ShieldAlert size={iconSize} className="text-red-700 drop-shadow-sm animate-pulse" />;
+  }
+  if (space.name === 'Free Parking') {
+    return <Car size={iconSize} className="text-emerald-700 drop-shadow-sm fill-emerald-400/30" />;
+  }
+  if (space.name === 'GO') {
+    return <Flag size={iconSize} className="text-red-600 drop-shadow-sm fill-red-500" />;
+  }
   return null;
 };
 
@@ -23,13 +63,14 @@ interface BoardProps {
   onRoll: () => void;
   onEndTurn: () => void;
   onBuyProperty: () => void;
+  onDeclineProperty?: () => void;
   onOpenTradeModal: () => void;
   onOpenPropertyModal: () => void;
   isCpuTurn: boolean;
   onPayBail?: () => void;
 }
 
-export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBuyProperty, onOpenTradeModal, onOpenPropertyModal, isCpuTurn, onPayBail }) => {
+export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBuyProperty, onDeclineProperty, onOpenTradeModal, onOpenPropertyModal, isCpuTurn, onPayBail }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [visualPositions, setVisualPositions] = useState<Record<string, number>>({});
@@ -64,6 +105,15 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
     !propertyState.ownerId &&
     currentSpace.price !== undefined &&
     currentPlayer.money >= currentSpace.price;
+
+  const hasDoublesRollAgain = 
+    gameState.phase === GamePhase.POST_ROLL &&
+    !currentPlayer?.inJail &&
+    !currentPlayer?.isBankrupt &&
+    gameState.doublesRolledCount > 0 &&
+    gameState.doublesRolledCount < 3 &&
+    gameState.lastDiceRoll !== null &&
+    gameState.lastDiceRoll[0] === gameState.lastDiceRoll[1];
 
   const rollAnimationKey = `${gameState.turnCount}-${gameState.doublesRolledCount}-${gameState.logs.length}`;
 
@@ -124,7 +174,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
     return () => clearInterval(timer);
   }, [gameState.players]);
 
-  // A standard Monopoly board is 11x11 squares.
+  // A standard board is 11x11 squares.
   const getGridPosition = (position: number) => {
     if (position >= 0 && position <= 10) return { gridRow: 11, gridColumn: 11 - position };
     if (position > 10 && position <= 20) return { gridRow: 11 - (position - 10), gridColumn: 1 };
@@ -157,12 +207,31 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
             const isCorner = [0, 10, 20, 30].includes(space.position);
             const isGo = space.position === 0;
             
-            let rotationClass = '';
+            let contentDirClass = 'flex-col';
+            let contentRotClass = '';
+            let colorBarClass = 'w-full h-1/4 border-b-2 flex-row';
+
             if (!isCorner) {
-              if (space.position > 0 && space.position < 10) rotationClass = ''; // Bottom
-              if (space.position > 10 && space.position < 20) rotationClass = 'rotate-90'; // Left
-              if (space.position > 20 && space.position < 30) rotationClass = 'rotate-180'; // Top
-              if (space.position > 30 && space.position < 40) rotationClass = '-rotate-90'; // Right
+              if (space.position > 0 && space.position < 10) {
+                 contentDirClass = 'flex-col';
+                 contentRotClass = '';
+                 colorBarClass = 'w-full h-[25%] border-b-2 flex-row';
+              }
+              if (space.position > 10 && space.position < 20) {
+                 contentDirClass = 'flex-row-reverse';
+                 contentRotClass = 'rotate-90';
+                 colorBarClass = 'w-[25%] h-full border-l-2 flex-col';
+              }
+              if (space.position > 20 && space.position < 30) {
+                 contentDirClass = 'flex-col-reverse';
+                 contentRotClass = 'rotate-180';
+                 colorBarClass = 'w-full h-[25%] border-t-2 flex-row';
+              }
+              if (space.position > 30 && space.position < 40) {
+                 contentDirClass = 'flex-row';
+                 contentRotClass = '-rotate-90';
+                 colorBarClass = 'w-[25%] h-full border-r-2 flex-col';
+              }
             }
 
             const propState = gameState.propertyStates[space.id];
@@ -181,53 +250,79 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                 key={space.id} 
                 style={{ gridRow, gridColumn }}
                 animate={isActiveTarget ? { 
-                  scale: [1, 1.08, 1], 
+                  scale: [1, 1.06, 1], 
                   boxShadow: [
-                    'inset 2px 2px 4px rgba(255,255,255,0.8), inset -2px -2px 4px rgba(0,0,0,0.15), 0 0 0px 0px rgba(59, 130, 246, 0)',
-                    'inset 2px 2px 4px rgba(255,255,255,0.8), inset -2px -2px 4px rgba(0,0,0,0.15), 0 0 25px 8px rgba(59, 130, 246, 0.7)',
-                    'inset 2px 2px 4px rgba(255,255,255,0.8), inset -2px -2px 4px rgba(0,0,0,0.15), 0 0 0px 0px rgba(59, 130, 246, 0)'
+                    'inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.1), 0 0 0px 0px rgba(59, 130, 246, 0)',
+                    'inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.1), 0 0 22px 6px rgba(245, 158, 11, 0.75)',
+                    'inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.1), 0 0 0px 0px rgba(59, 130, 246, 0)'
                   ],
                   zIndex: 10 
                 } : { 
                   scale: 1, 
-                  boxShadow: 'inset 2px 2px 4px rgba(255,255,255,0.8), inset -2px -2px 4px rgba(0,0,0,0.15), 0 0 0px 0px rgba(59, 130, 246, 0)',
+                  boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.1)',
                   zIndex: 1 
                 }}
-                transition={isActiveTarget ? { duration: 1.5, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }}
+                transition={isActiveTarget ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
                 onClick={() => setSelectedSpaceId(space.id)}
-                className={`group relative ${bgClass} border border-slate-400 flex flex-col overflow-visible cursor-pointer hover:brightness-110 transition-colors ${isCorner ? 'p-2' : ''}`}
+                className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}`}
               >
-                <div className={`w-full h-full flex flex-col ${rotationClass}`}>
+                <div className={`w-full h-full flex ${contentDirClass}`}>
                   {/* Property Color Bar */}
                   {space.groupColor && (
                     <div 
-                      className="w-full h-1/4 shrink-0 border-b-2 border-slate-800 shadow-[inset_0_2px_5px_rgba(255,255,255,0.7)] flex items-center justify-center gap-[2px]"
+                      className={`${colorBarClass} shrink-0 border-slate-900/80 shadow-[inset_0_1px_3px_rgba(255,255,255,0.6)] flex items-center justify-center gap-1 relative overflow-hidden`}
                       style={{ backgroundColor: space.groupColor }}
                     >
                       {propState?.hasHotel ? (
-                        <div className="w-4 h-3 bg-red-600 border border-red-900 rounded-sm shadow-sm flex items-center justify-center text-[8px] leading-none text-white font-bold">H</div>
+                        <div className="w-4 h-3 bg-red-600 border border-red-950 rounded-sm shadow-sm flex items-center justify-center text-[7px] text-white font-black">
+                          H
+                        </div>
                       ) : propState?.houses > 0 ? (
                         Array.from({ length: propState.houses }).map((_, i) => (
-                          <div key={i} className="w-2.5 h-2.5 bg-emerald-500 border border-emerald-900 rounded-[1px] shadow-sm"></div>
+                          <div key={i} className="w-2.5 h-2.5 bg-emerald-500 border border-emerald-950 rounded-xs shadow-xs"></div>
                         ))
                       ) : null}
                     </div>
                   )}
                   
                   {/* Space Details */}
-                  <div className={`flex-1 flex flex-col items-center justify-center p-1 text-center ${isCorner ? 'transform rotate-45' : ''}`}>
-                    {getSpaceIcon(space) && (
-                      <span className={`${isCorner ? 'text-4xl' : 'text-3xl'} filter drop-shadow-md`}>
-                        {getSpaceIcon(space)}
+                  <div className={`flex-1 flex flex-col items-center justify-between p-1 text-center ${isCorner ? 'transform rotate-45 justify-center gap-1' : ''}`}>
+                    <div className={`flex flex-col items-center justify-center gap-0.5 w-full ${contentRotClass}`}>
+                      {/* Space Name */}
+                      <span className={`font-bold tracking-tight text-slate-900 leading-[1.05] ${isCorner ? 'text-[11px] uppercase font-black' : 'text-[8.5px]'}`}>
+                        {space.name}
                       </span>
-                    )}
+
+                      {/* Icon */}
+                      {renderSpaceIcon(space, isCorner) && (
+                        <div className="my-0.5 flex items-center justify-center">
+                          {renderSpaceIcon(space, isCorner)}
+                        </div>
+                      )}
+
+                      {/* Price Badge */}
+                      {space.price && !isCorner && (
+                        <span className="text-[8px] font-mono font-bold text-slate-700 bg-slate-200/80 px-1 py-0.2 rounded-xs">
+                          ${space.price}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Ownership Indicator */}
-                {owner && (
-                  <div className="absolute bottom-0 left-0 w-full h-1" style={{ backgroundColor: owner.token === '🚗' ? 'red' : 'blue' }}>
-                    <div className="w-full h-full bg-slate-800 opacity-80" />
+                {/* Mortgaged Visual Badge */}
+                {propState?.isMortgaged && (
+                  <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[1px] flex items-center justify-center z-10">
+                    <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-300 bg-amber-950/90 px-1.5 py-0.5 rounded border border-amber-500/70 shadow-sm">
+                      MORTGAGED
+                    </span>
+                  </div>
+                )}
+
+                {/* Ownership Ribbon Indicator */}
+                {owner && !propState?.isMortgaged && (
+                  <div className="absolute bottom-0 inset-x-0 h-1.5 bg-slate-900/90 flex items-center justify-center z-5 border-t border-slate-700">
+                    <span className="text-[7px] leading-none select-none">{owner.token}</span>
                   </div>
                 )}
               </motion.div>
@@ -235,29 +330,42 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
           })}
 
           {/* Center Area */}
-          <div className="col-start-2 col-end-11 row-start-2 row-end-11 bg-[#cde6d0] flex flex-col items-center justify-center pointer-events-none z-10">
+          <div className="col-start-2 col-end-11 row-start-2 row-end-11 bg-[#c5e1c8] flex flex-col items-center justify-center pointer-events-none z-10">
              
              {/* Center Rotation Container */}
-             <div className="transform -rotate-45 flex flex-col items-center justify-center gap-6 w-full h-full pointer-events-none">
+             <div className="transform -rotate-45 flex flex-col items-center justify-center gap-5 w-full h-full pointer-events-none">
+
+               {/* Center Logo graphic */}
+               <div className="flex flex-col items-center pointer-events-none select-none -mb-2">
+                 <div className="px-6 py-2 bg-red-600 border-4 border-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] rounded-lg transform -rotate-2">
+                   <h1 className="text-3xl font-black text-white uppercase tracking-widest drop-shadow-md">
+                     1POLY
+                   </h1>
+                 </div>
+               </div>
 
                {/* Free Parking Pot - Vibrant Design */}
                {gameState.pot > 0 && (
-                 <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 p-4 rounded-3xl shadow-[0_0_40px_rgba(168,85,247,0.5)] border-4 border-yellow-400 flex flex-col items-center justify-center relative overflow-hidden pointer-events-auto min-w-[200px]">
+                 <motion.div 
+                   initial={{ scale: 0.9, opacity: 0 }}
+                   animate={{ scale: 1, opacity: 1 }}
+                   className="bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-700 p-3 rounded-2xl shadow-[0_0_35px_rgba(168,85,247,0.6)] border-3 border-amber-400 flex flex-col items-center justify-center relative overflow-hidden pointer-events-auto min-w-[180px]"
+                 >
                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                   <h3 className="text-yellow-100 text-sm uppercase tracking-widest mb-1 relative z-10 flex items-center gap-2 font-black drop-shadow-md">
-                     <span>🚗</span> FREE PARKING
+                   <h3 className="text-amber-200 text-[11px] uppercase tracking-widest mb-0.5 relative z-10 flex items-center gap-1.5 font-black drop-shadow-md">
+                     <Car size={13} className="text-amber-300 fill-amber-300" /> FREE PARKING POT
                    </h3>
-                   <p className="text-yellow-300 font-mono text-5xl font-black drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)] relative z-10">
+                   <p className="text-amber-300 font-mono text-4xl font-black drop-shadow-[0_3px_3px_rgba(0,0,0,0.7)] relative z-10">
                      ${gameState.pot}
                    </p>
-                 </div>
+                 </motion.div>
                )}
 
                {/* Action Center overlay */}
                <div className="pointer-events-auto flex flex-col items-center gap-4 w-72">
                        <button 
                     onClick={() => {
-                      if (gameState.phase === GamePhase.TURN_START) {
+                      if (gameState.phase === GamePhase.TURN_START || hasDoublesRollAgain) {
                         setIsRolling(true);
                         audio.playDice(0);
                         setTimeout(() => {
@@ -270,23 +378,47 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       }
                     }}
                     disabled={isCpuTurn || isRolling || (gameState.phase !== GamePhase.TURN_START && gameState.phase !== GamePhase.POST_ROLL)}
-                    className={`w-full font-bold py-5 px-6 rounded-xl transition-all text-3xl shadow-xl border-4
-                      ${!isCpuTurn && !isRolling && gameState.phase === GamePhase.TURN_START 
-                        ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-400 cursor-pointer animate-pulse' 
+                    className={`w-full font-bold py-5 px-6 rounded-xl transition-all text-2xl md:text-3xl shadow-xl border-4
+                      ${!isCpuTurn && !isRolling && (gameState.phase === GamePhase.TURN_START || hasDoublesRollAgain)
+                        ? (hasDoublesRollAgain 
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-blue-400 cursor-pointer animate-pulse' 
+                            : 'bg-blue-600 hover:bg-blue-500 text-white border-blue-400 cursor-pointer animate-pulse')
                         : !isCpuTurn && !isRolling && gameState.phase === GamePhase.POST_ROLL
                         ? (gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'bg-red-900 hover:bg-red-800 text-red-100 border-red-700 cursor-pointer animate-pulse' : 'bg-red-600 hover:bg-red-500 text-white border-red-400 cursor-pointer animate-pulse')
                         : 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed opacity-80'
                       }
                     `}
                   >
-                    {isRolling ? 'ROLLING...' : gameState.phase === GamePhase.TURN_START ? 'ROLL DICE' : (gameState.players[gameState.currentPlayerIndex]?.money < 0 && !isCpuTurn ? 'BANKRUPT 💀' : 'END TURN')}
+                    {isRolling 
+                      ? 'ROLLING...' 
+                      : gameState.phase === GamePhase.TURN_START 
+                      ? 'ROLL DICE' 
+                      : hasDoublesRollAgain 
+                      ? 'ROLL DICE 🎲' 
+                      : (gameState.players[gameState.currentPlayerIndex]?.money < 0 && !isCpuTurn ? 'BANKRUPT 💀' : 'END TURN')}
                   </button>
 
                   {/* Dice visual */}
                   {(gameState.lastDiceRoll || isRolling) && (
-                    <div className="flex justify-center gap-6 py-2 pb-6">
-                      <Dice3D rolling={isRolling} face={gameState.lastDiceRoll ? gameState.lastDiceRoll[0] : 1} />
-                      <Dice3D rolling={isRolling} face={gameState.lastDiceRoll ? gameState.lastDiceRoll[1] : 1} />
+                    <div className="flex flex-col items-center gap-2 py-1 pb-4">
+                      <div className="flex justify-center gap-6">
+                        <Dice3D rolling={isRolling} face={gameState.lastDiceRoll ? gameState.lastDiceRoll[0] : 1} />
+                        <Dice3D rolling={isRolling} face={gameState.lastDiceRoll ? gameState.lastDiceRoll[1] : 1} />
+                      </div>
+                      {!isRolling && gameState.lastDiceRoll && (
+                        <div 
+                          className={`text-xs font-bold px-3 py-1 rounded-full border shadow-md flex items-center gap-1.5 transition-all ${
+                            gameState.lastDiceRoll[0] === gameState.lastDiceRoll[1]
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                              : 'bg-slate-800/90 text-slate-300 border-slate-700'
+                          }`}
+                        >
+                          {gameState.lastDiceRoll[0] === gameState.lastDiceRoll[1] 
+                            ? `🎲 DOUBLES! (${gameState.lastDiceRoll[0]} & ${gameState.lastDiceRoll[1]})` 
+                            : `🎲 Total: ${gameState.lastDiceRoll[0] + gameState.lastDiceRoll[1]} (${gameState.lastDiceRoll[0]} & ${gameState.lastDiceRoll[1]})`
+                          }
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -325,66 +457,83 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                     </button>
                   </div>
 
-                  {/* Buy Property Button */}
+                  {/* Buy / Auction Property Actions */}
                   <AnimatePresence>
-                    {canBuyProperty && currentSpace && (
-                      <motion.button 
+                    {gameState.phase === GamePhase.POST_ROLL && !isCpuTurn && currentSpace && [SpaceType.PROPERTY, SpaceType.RAILROAD, SpaceType.UTILITY].includes(currentSpace.type) && propertyState && !propertyState.ownerId && currentSpace.price !== undefined && (
+                      <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
-                        onClick={() => {
-                          audio.playUiClick();
-                          onBuyProperty();
-                        }}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500 border-4 border-emerald-400 text-white font-black py-3 px-6 rounded-xl transition-colors shadow-2xl flex flex-col items-center justify-center pointer-events-auto mt-2"
+                        className="w-full flex flex-col gap-1.5 mt-2 pointer-events-auto"
                       >
-                        <span className="text-xl">BUY {currentSpace.name.toUpperCase()}</span>
-                        <span className="text-lg text-emerald-200 font-mono">${currentSpace.price}</span>
-                      </motion.button>
+                        {canBuyProperty && (
+                          <button 
+                            onClick={() => {
+                              audio.playUiClick();
+                              onBuyProperty();
+                            }}
+                            className="w-full bg-emerald-600 hover:bg-emerald-500 border-4 border-emerald-400 text-white font-black py-2.5 px-4 rounded-xl transition-colors shadow-2xl flex flex-col items-center justify-center cursor-pointer"
+                          >
+                            <span className="text-lg leading-tight">BUY {currentSpace.name.toUpperCase()}</span>
+                            <span className="text-sm text-emerald-200 font-mono">${currentSpace.price}</span>
+                          </button>
+                        )}
+                        
+                        {onDeclineProperty && (
+                          <button
+                            onClick={() => {
+                              audio.playUiClick();
+                              onDeclineProperty();
+                            }}
+                            className="w-full bg-amber-600 hover:bg-amber-500 border-2 border-amber-400 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-colors shadow cursor-pointer"
+                          >
+                            <span>🔨</span> Pass to Auction (Bidding for All)
+                          </button>
+                        )}
+                      </motion.div>
                     )}
                   </AnimatePresence>
-               </div>
-               
-             </div>
-          </div>
+                </div>
+              </div>
+            </div>
 
-          {/* Players/Tokens Overlay */}
-          <div className="absolute inset-0 pointer-events-none z-20">
-            <div className="relative w-full h-full grid grid-cols-11 grid-rows-11 gap-[2px]">
-               {gameState.players.map((player, idx) => {
-                 const currentVisualPos = visualPositions[player.id] !== undefined ? visualPositions[player.id] : player.position;
-                 const { gridRow, gridColumn } = getGridPosition(currentVisualPos);
-                 
-                 // Offset multiple players on the same space
-                 const offset = (idx * 5) - (gameState.players.length * 2.5);
+            {/* Players/Tokens Overlay */}
+            <div className="absolute inset-0 pointer-events-none z-20">
+              <div className="relative w-full h-full grid grid-cols-11 grid-rows-11 gap-[2px]">
+                {gameState.players.filter(p => !p.isBankrupt).map((player, idx) => {
+                  const currentVisualPos = visualPositions[player.id] !== undefined ? visualPositions[player.id] : player.position;
+                  const { gridRow, gridColumn } = getGridPosition(currentVisualPos);
+                  
+                  // Offset multiple players on the same space
+                  const offset = (idx * 5) - (gameState.players.filter(p => !p.isBankrupt).length * 2.5);
 
-                 return (
-                   <motion.div
-                     key={player.id}
-                     layout
-                     initial={{ scale: 0 }}
-                     animate={
-                       player.id === currentPlayer?.id && isRolling
-                         ? { scale: 1.2, x: offset, y: [offset, offset - 15, offset], rotate: [0, -10, 10, 0] }
-                         : { scale: 1, x: offset, y: offset, rotate: 0 }
-                     }
-                     transition={{ 
-                       layout: { type: "spring", stiffness: 300, damping: 25 },
-                       y: { duration: 0.3, repeat: (player.id === currentPlayer?.id && isRolling) ? Infinity : 0 }
-                     }}
-                     style={{ gridRow, gridColumn }}
-                     className="flex items-center justify-center w-full h-full pointer-events-none"
-                   >
-                     <div className="text-3xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] filter">
-                       {player.token}
-                     </div>
-                   </motion.div>
-                 );
-               })}
+                  return (
+                    <motion.div
+                      key={player.id}
+                      layout
+                      initial={{ scale: 0 }}
+                      animate={
+                        player.id === currentPlayer?.id && isRolling
+                          ? { scale: 1.2, x: offset, y: [offset, offset - 15, offset], rotate: [0, -10, 10, 0] }
+                          : { scale: 1, x: offset, y: offset, rotate: 0 }
+                      }
+                      transition={{ 
+                        layout: { type: "spring", stiffness: 300, damping: 25 },
+                        y: { duration: 0.3, repeat: (player.id === currentPlayer?.id && isRolling) ? Infinity : 0 }
+                      }}
+                      style={{ gridRow, gridColumn }}
+                      className="flex items-center justify-center w-full h-full pointer-events-none"
+                    >
+                      <div className="text-3xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] filter">
+                        {player.token}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
       {/* Full-Screen Space Details Modal */}
       <AnimatePresence>

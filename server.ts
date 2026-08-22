@@ -4,8 +4,9 @@ import { Server } from 'socket.io';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 
-import { createInitialGameState, addPlayer, startGame, rollDice, endTurn, buyProperty, proposeTrade, resolveTrade, buildHouse, takeLoan, repayLoan, updateHouseRules } from './src/engine/engine.js';
+import { createInitialGameState, addPlayer, updatePlayer, removePlayer, startGame, rollDice, endTurn, buyProperty, proposeTrade, resolveTrade, buildHouse, sellHouse, useGetOutOfJailCard, takeLoan, repayLoan, updateHouseRules, mortgageProperty, unmortgageProperty, payBail, dismissRecentBankruptcy, startAuction, placeBid, passAuction, declineProperty, setGameSpeed } from './src/engine/engine.js';
 import { processAITurn } from './src/engine/ai.js';
+import { evaluateTradeForAI } from './src/engine/trade.js';
 import { GamePhase, PlayerType } from './src/types.js';
 
 const PORT = 3000;
@@ -33,6 +34,17 @@ async function startServer() {
       io.emit('game_state_update', gameState);
     });
 
+    socket.on('update_player', ({ playerId, updates }) => {
+      gameState = updatePlayer(gameState, playerId, updates);
+      io.emit('game_state_update', gameState);
+    });
+
+    socket.on('remove_player', ({ playerId }) => {
+      gameState = removePlayer(gameState, playerId);
+      io.emit('game_state_update', gameState);
+      checkAITurn();
+    });
+
     socket.on('start_game', () => {
       gameState = startGame(gameState);
       io.emit('game_state_update', gameState);
@@ -51,6 +63,35 @@ async function startServer() {
       checkAITurn();
     });
 
+    socket.on('decline_property', () => {
+      gameState = declineProperty(gameState);
+      io.emit('game_state_update', gameState);
+      checkAITurn();
+    });
+
+    socket.on('start_auction', ({ propertyId }) => {
+      gameState = startAuction(gameState, propertyId);
+      io.emit('game_state_update', gameState);
+      checkAITurn();
+    });
+
+    socket.on('place_bid', ({ playerId, bidAmount }) => {
+      gameState = placeBid(gameState, playerId, bidAmount);
+      io.emit('game_state_update', gameState);
+      checkAITurn();
+    });
+
+    socket.on('pass_auction', ({ playerId }) => {
+      gameState = passAuction(gameState, playerId);
+      io.emit('game_state_update', gameState);
+      checkAITurn();
+    });
+
+    socket.on('set_game_speed', ({ speed }) => {
+      gameState = setGameSpeed(gameState, speed);
+      io.emit('game_state_update', gameState);
+    });
+
     socket.on('end_turn', () => {
       gameState = endTurn(gameState);
       io.emit('game_state_update', gameState);
@@ -61,14 +102,16 @@ async function startServer() {
       gameState = proposeTrade(gameState, offer);
       io.emit('game_state_update', gameState);
       
-      // If a human proposes a trade to a CPU, the CPU should evaluate and reject it
+      // If a human proposes a trade to a CPU, the CPU evaluates it dynamically
       const targetPlayer = gameState.players.find(p => p.id === offer.toPlayerId);
       if (targetPlayer?.type === PlayerType.CPU) {
+        const tradeDelay = gameState.gameSpeed === 'max' ? 100 : gameState.gameSpeed === 'fast' ? 400 : 1000;
         setTimeout(() => {
-          gameState = resolveTrade(gameState, false);
+          const accepted = evaluateTradeForAI(gameState, offer);
+          gameState = resolveTrade(gameState, accepted);
           io.emit('game_state_update', gameState);
           checkAITurn();
-        }, 5000); // 5s delay so human can read the log
+        }, tradeDelay);
       }
     });
 
@@ -76,6 +119,11 @@ async function startServer() {
       gameState = resolveTrade(gameState, accepted);
       io.emit('game_state_update', gameState);
       checkAITurn();
+    });
+
+    socket.on('dismiss_bankruptcy', () => {
+      gameState = dismissRecentBankruptcy(gameState);
+      io.emit('game_state_update', gameState);
     });
 
     
@@ -94,8 +142,20 @@ async function startServer() {
       io.emit('game_state_update', gameState);
       checkAITurn();
     });
-socket.on('build_house', ({ playerId, propertyId }) => {
+
+    socket.on('use_jail_card', ({ playerId }) => {
+      gameState = useGetOutOfJailCard(gameState, playerId);
+      io.emit('game_state_update', gameState);
+      checkAITurn();
+    });
+
+    socket.on('build_house', ({ playerId, propertyId }) => {
       gameState = buildHouse(gameState, playerId, propertyId);
+      io.emit('game_state_update', gameState);
+    });
+
+    socket.on('sell_house', ({ playerId, propertyId }) => {
+      gameState = sellHouse(gameState, playerId, propertyId);
       io.emit('game_state_update', gameState);
     });
 
@@ -124,20 +184,30 @@ socket.on('build_house', ({ playerId, propertyId }) => {
     });
   });
 
-  // Basic Server-side AI Turn Loop
+  // Server-side AI Turn Loop with dynamic speed
   function checkAITurn() {
     if (gameState.phase !== GamePhase.LOBBY && gameState.phase !== GamePhase.GAME_OVER) {
+      // Check for CPU turn or CPU auction participant
       const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-      if (currentPlayer?.type === PlayerType.CPU) {
+      const isCpuTurn = currentPlayer?.type === PlayerType.CPU;
+      const isCpuAuction = gameState.phase === GamePhase.AUCTION && gameState.auction && 
+        gameState.players.some(p => p.type === PlayerType.CPU && !p.isBankrupt && !gameState.auction!.passedBidderIds.includes(p.id) && p.id !== gameState.auction!.highestBidderId);
+
+      if (isCpuTurn || isCpuAuction) {
+        const delay = gameState.gameSpeed === 'max' ? 80 : gameState.gameSpeed === 'fast' ? 500 : 1500;
         setTimeout(() => {
           gameState = processAITurn(gameState);
           io.emit('game_state_update', gameState);
           
-          // Recursively check if the AI's turn resulted in another AI's turn (or if they rolled doubles)
-          if (gameState.players[gameState.currentPlayerIndex]?.type === PlayerType.CPU) {
+          // Check if subsequent AI turn is needed
+          const nextPlayer = gameState.players[gameState.currentPlayerIndex];
+          const nextAuctionCpu = gameState.phase === GamePhase.AUCTION && gameState.auction && 
+            gameState.players.some(p => p.type === PlayerType.CPU && !p.isBankrupt && !gameState.auction!.passedBidderIds.includes(p.id) && p.id !== gameState.auction!.highestBidderId);
+          
+          if ((nextPlayer?.type === PlayerType.CPU && !nextPlayer.isBankrupt) || nextAuctionCpu) {
              checkAITurn();
           }
-        }, 5000); // 5s delay for realistic CPU pacing, allowing humans to read cards and logs
+        }, delay);
       }
     }
   }

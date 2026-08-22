@@ -1,6 +1,6 @@
 {
-  "name": "6-Step Pipeline App",
-  "description": "Building an application using a structured 6-step pipeline.",
+  "name": "1poly",
+  "description": "1poly property trading board game and 1poly Cards strategic card game featuring smart AI opponents, full rules guide, house rules, bank loans, and interactive trade & auction systems.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
