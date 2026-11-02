@@ -67,7 +67,15 @@ export const DealGame: React.FC<DealGameProps> = ({
   const [pendingCardForActionModal, setPendingCardForActionModal] = useState<DealCard | null>(null);
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showLogsDrawer, setShowLogsDrawer] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  // Reflects the shared audio engine's mute state (which is remembered
+  // across visits) — the header toggle below drives both.
+  const [isMuted, setIsMuted] = useState<boolean>(() => audio.isMuted());
+
+  const handleToggleMute = () => {
+    const next = !isMuted;
+    setIsMuted(next);
+    audio.setMuted(next);
+  };
   const [screenFlash, setScreenFlash] = useState(false);
 
   // Wildcard reassignment modal state
@@ -291,6 +299,13 @@ export const DealGame: React.FC<DealGameProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleToggleMute}
+            className="p-2 sm:px-3 sm:py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+            title={isMuted ? 'Unmute sounds' : 'Mute sounds'}
+          >
+            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          </button>
           <button
             onClick={() => {
               audio.playUiClick();

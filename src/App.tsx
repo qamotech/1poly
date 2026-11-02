@@ -96,6 +96,26 @@ export default function App() {
     };
   }, []);
 
+  // Deep link (also the PWA shortcut target): onepoly.onrender.com/#cards
+  // jumps straight into 1poly Cards, which runs locally — no server wait.
+  useEffect(() => {
+    if (window.location.hash === '#cards') {
+      setGameMode('deal');
+    }
+  }, []);
+
+  // If the server takes a while to answer it's almost always the free host
+  // waking from sleep — say so instead of leaving a bare spinner.
+  const [showWakeHint, setShowWakeHint] = useState(false);
+  useEffect(() => {
+    if (gameState) {
+      setShowWakeHint(false);
+      return;
+    }
+    const t = setTimeout(() => setShowWakeHint(true), 3500);
+    return () => clearTimeout(t);
+  }, [gameState]);
+
   const handleAddPlayer = (name: string, type: PlayerType, token: string) => {
     socket.emit('add_player', { name, type, token });
   };
@@ -239,8 +259,24 @@ export default function App() {
 
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-5 text-white p-6 text-center">
         <p className="text-xl animate-pulse">Connecting to server...</p>
+        {showWakeHint && (
+          <div className="max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-3">
+            <p className="text-sm text-slate-300">
+              ☕ <strong className="text-white">Waking up the game server…</strong> The free
+              host puts it to sleep after ~15 idle minutes, so the first load can take
+              30–60 seconds. This screen moves on by itself once it's awake — no need
+              to refresh.
+            </p>
+            <button
+              onClick={() => setGameMode('deal')}
+              className="w-full py-2.5 bg-blue-700 hover:bg-blue-600 rounded-xl font-bold text-sm transition-colors cursor-pointer"
+            >
+              🃏 Play 1poly Cards while you wait
+            </button>
+          </div>
+        )}
       </div>
     );
   }

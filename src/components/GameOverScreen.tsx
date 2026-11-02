@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { Player } from '../types';
@@ -12,11 +12,23 @@ interface GameOverScreenProps {
 
 export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestart }) => {
   const [activeTab, setActiveTab] = useState<'stats' | 'leaderboard'>('stats');
+  // Dedicated confetti canvas inside this screen (see useEffect): the shared
+  // default confetti canvas sits at z-index 100, underneath this screen's
+  // z-[200] dimmed backdrop, so the old celebration fired out of sight.
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const fireRef = useRef<ReturnType<typeof confetti.create> | null>(null);
+  const timersRef = useRef<any[]>([]);
 
-  // Trigger high-impact celebratory particle bursts using canvas-confetti
+  // Trigger high-impact celebratory particle bursts
   const triggerCelebrationConfetti = () => {
+    const fire = fireRef.current;
+    if (!fire) return;
+    const later = (fn: () => void, ms: number) => {
+      timersRef.current.push(setTimeout(fn, ms));
+    };
+
     // Center big burst
-    confetti({
+    fire({
       particleCount: 100,
       spread: 80,
       origin: { y: 0.6 },
@@ -24,8 +36,8 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
     });
 
     // Left cannon
-    setTimeout(() => {
-      confetti({
+    later(() => {
+      fire({
         particleCount: 60,
         angle: 60,
         spread: 60,
@@ -35,8 +47,8 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
     }, 250);
 
     // Right cannon
-    setTimeout(() => {
-      confetti({
+    later(() => {
+      fire({
         particleCount: 60,
         angle: 120,
         spread: 60,
@@ -51,7 +63,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
       if (Date.now() > end) {
         return clearInterval(interval);
       }
-      confetti({
+      fire({
         startVelocity: 30,
         spread: 360,
         ticks: 60,
@@ -62,18 +74,70 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
         colors: ['#FFD700', '#F59E0B', '#10B981', '#3B82F6', '#EC4899']
       });
     }, 400);
+    timersRef.current.push(interval);
   };
 
   useEffect(() => {
     // Grand celebratory victory fanfare
     audio.playVictory();
 
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const fire = confetti.create(canvas, { resize: true });
+    fireRef.current = fire;
+
     // Launch celebratory particle confetti
     triggerCelebrationConfetti();
+
+    // Money rain — bills & coins dropping from the top while the screen is up
+    const moneyShapes = ['💵', '🪙', '💰'].map((text) =>
+      confetti.shapeFromText({ text, scalar: 2 })
+    );
+    const rain = setInterval(() => {
+      fire({
+        shapes: moneyShapes,
+        scalar: 1.8,
+        particleCount: 9,
+        angle: 270,
+        spread: 35,
+        startVelocity: 12,
+        gravity: 0.55,
+        ticks: 260,
+        origin: { x: 0.15 + Math.random() * 0.7, y: 0 },
+      });
+    }, 1500);
+    timersRef.current.push(rain);
+
+    // A fresh explosion every few seconds
+    const boom = setInterval(() => {
+      fire({
+        particleCount: 70,
+        spread: 100,
+        startVelocity: 38,
+        origin: { x: 0.25 + Math.random() * 0.5, y: 0.35 + Math.random() * 0.2 },
+        colors: ['#FFD700', '#F59E0B', '#10B981', '#3B82F6', '#EC4899'],
+      });
+    }, 2800);
+    timersRef.current.push(boom);
+
+    return () => {
+      timersRef.current.forEach((t) => {
+        clearTimeout(t);
+        clearInterval(t);
+      });
+      timersRef.current = [];
+      fire.reset();
+      fireRef.current = null;
+    };
   }, []);
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-auto overflow-hidden p-4">
+      {/* Celebration canvas — above the backdrop and the card, clicks pass through */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 z-20 w-full h-full pointer-events-none"
+      />
       {/* Dimmed background with gold radial tint */}
       <motion.div 
         initial={{ opacity: 0 }}

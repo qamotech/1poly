@@ -18,7 +18,15 @@ class SoundEngine {
   private buffers: Record<string, AudioBuffer> = {};
   private soundUrls: Record<string, string>;
   private isInitialized = false;
-  private _isMuted = false;
+  // Mute is remembered across visits: the engine boots already muted if the
+  // player muted last time (applied when the master gain is created).
+  private _isMuted = (() => {
+    try {
+      return localStorage.getItem('1poly-muted') === '1';
+    } catch {
+      return false;
+    }
+  })();
   private _volume = 0.7;
 
   constructor(soundUrls: Record<string, string> = {}) {
@@ -111,6 +119,11 @@ class SoundEngine {
 
   setMuted(muted: boolean) {
     this._isMuted = muted;
+    try {
+      localStorage.setItem('1poly-muted', muted ? '1' : '0');
+    } catch {
+      // storage unavailable (private mode) — mute still applies this session
+    }
     if (this.masterGain && this.ctx) {
       this.masterGain.gain.setValueAtTime(muted ? 0 : this._volume, this.ctx.currentTime);
     }
