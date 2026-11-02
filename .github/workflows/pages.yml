@@ -1,0 +1,61 @@
+name: GitHub Pages → redirect to the live game
+
+# 1poly is a server-driven game (socket.io + Express). GitHub Pages can only
+# serve static files, so the Pages URL used to show the raw Vite source and a
+# blank page. The real game runs on Render; this workflow makes the Pages
+# address a doorway that sends players straight there.
+# Requires: repo Settings → Pages → Source = "GitHub Actions".
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Build the redirect page
+        run: |
+          mkdir -p _site
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>1poly — play on the live server</title>
+            <meta http-equiv="refresh" content="0; url=https://ai-monopoly.onrender.com/" />
+            <style>
+              body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+                     background:#020617; color:#f8fafc; font-family:system-ui,sans-serif; text-align:center; }
+              a { color:#f87171; font-weight:700; }
+            </style>
+            <script>location.replace('https://ai-monopoly.onrender.com/');</script>
+          </head>
+          <body>
+            <div>
+              <p style="font-size:1.25rem">🎲 Taking you to the live 1poly game…</p>
+              <p>If nothing happens, <a href="https://ai-monopoly.onrender.com/">tap here to play</a>.</p>
+              <p style="color:#94a3b8;font-size:.85rem">The game needs its live server, so it runs on Render — this page just points the way.</p>
+            </div>
+          </body>
+          </html>
+          HTML
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
