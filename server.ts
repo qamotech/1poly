@@ -29,6 +29,12 @@ async function startServer() {
     // Send initial state to the new client
     socket.emit('game_state_update', gameState);
 
+    // Clients ask for state on (re)connect: covers the race where the
+    // initial emit above fires before the client attached its listener.
+    socket.on('request_state', () => {
+      socket.emit('game_state_update', gameState);
+    });
+
     socket.on('add_player', ({ name, type, token }) => {
       gameState = addPlayer(gameState, name, type, token);
       io.emit('game_state_update', gameState);

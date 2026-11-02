@@ -32,6 +32,14 @@ if (typeof window !== 'undefined') {
   });
 }
 
+// Register the PWA service worker (production only). The SW caches static
+// assets for fast loads; it never intercepts socket.io traffic.
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <GameViewProvider>

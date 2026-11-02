@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'motion/react';
 import { GamePhase, PlayerType, GameState, TradeOffer, BankruptcyRecord, GameSpeed } from './types';
@@ -15,8 +15,11 @@ import { BankruptcyModal } from './components/BankruptcyModal';
 import { AuctionModal } from './components/AuctionModal';
 import { OpeningSequence } from './components/OpeningSequence';
 import { RulesModal } from './components/RulesModal';
-import { DealGame } from './components/deal/DealGame';
+// Lazy-loaded: the 1poly Cards mode ships as its own chunk so the classic
+// board game loads fast without paying for the card game up front.
+const DealGame = lazy(() => import('./components/deal/DealGame').then(m => ({ default: m.DealGame })));
 import { ViewNavigationTabs } from './components/ViewNavigationTabs';
+import { InstallButton } from './components/InstallButton';
 import { HeaderPlayerStatus } from './components/HeaderPlayerStatus';
 import { useGameView } from './context/GameViewContext';
 import { audio, useGameAudio } from './audio';
@@ -47,8 +50,18 @@ export default function App() {
   useGameAudio(gameState);
 
   useEffect(() => {
-    socket.on('connect', () => setIsConnected(true));
+    const handleConnect = () => {
+      setIsConnected(true);
+      // Always (re)sync state on connect: if the server's initial emit raced
+      // ahead of our listener registration, this is what un-sticks the lobby.
+      socket.emit('request_state');
+    };
+    socket.on('connect', handleConnect);
     socket.on('disconnect', () => setIsConnected(false));
+    // Socket may already be connected before this effect runs (module-scope io()).
+    if (socket.connected) {
+      handleConnect();
+    }
     
     socket.on('game_state_update', (newState: GameState) => {
       // Check if transitioning from Lobby to playing
@@ -210,11 +223,17 @@ export default function App() {
   // If currently playing 1poly Cards game
   if (gameMode === 'deal') {
     return (
-      <DealGame
-        initialPlayers={dealInitialPlayers}
-        onBackToLobby={() => setGameMode('classic')}
-        onSwitchToClassic={() => setGameMode('classic')}
-      />
+      <Suspense fallback={
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+          <p className="text-xl animate-pulse">Loading 1poly Cards...</p>
+        </div>
+      }>
+        <DealGame
+          initialPlayers={dealInitialPlayers}
+          onBackToLobby={() => setGameMode('classic')}
+          onSwitchToClassic={() => setGameMode('classic')}
+        />
+      </Suspense>
     );
   }
 
@@ -242,6 +261,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
+      <InstallButton />
       {/* Dynamic Turn Banner Notification */}
       {!isLobby && gameState.phase !== GamePhase.GAME_OVER && (
         <TurnNotification currentPlayer={currentPlayer} />
