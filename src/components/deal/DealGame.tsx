@@ -213,7 +213,7 @@ export const DealGame: React.FC<DealGameProps> = ({
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 select-none overflow-x-hidden font-sans relative">
+    <div className="flex flex-col h-dvh bg-slate-950 text-slate-100 select-none overflow-hidden font-sans relative">
       {/* Screen Flash Indicator when plays are up */}
       <AnimatePresence>
         {screenFlash && (
@@ -228,7 +228,7 @@ export const DealGame: React.FC<DealGameProps> = ({
       </AnimatePresence>
 
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md px-4 py-2.5 flex items-center justify-between shadow-md">
+      <header className="shrink-0 z-40 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md px-3 py-2 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🃏</span>
@@ -328,10 +328,12 @@ export const DealGame: React.FC<DealGameProps> = ({
         </div>
       </header>
 
-      {/* Main Playing Arena */}
-      <main className="flex-1 p-3 sm:p-5 flex flex-col justify-between max-w-7xl w-full mx-auto space-y-4">
+      {/* Main Playing Arena — the middle region scrolls internally only when it
+          truly can't fit; the hand dock at the bottom never scrolls away */}
+      <main className="flex-1 min-h-0 w-full max-w-7xl mx-auto flex flex-col gap-2 p-2 sm:p-4">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col gap-2 pr-0.5">
         {/* Opponents Area (Top Row) */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <section className="flex flex-col gap-2">
           {gameState.players
             .filter((p) => p.id !== localPlayer.id)
             .map((opponent) => {
@@ -341,16 +343,16 @@ export const DealGame: React.FC<DealGameProps> = ({
               return (
                 <div
                   key={opponent.id}
-                  className={`bg-slate-900/90 rounded-2xl p-3 sm:p-4 border transition-all ${
+                  className={`bg-slate-900/90 rounded-xl p-2 sm:p-3 border transition-all ${
                     isOpponentTurn
                       ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
                       : 'border-slate-800'
                   }`}
                 >
                   {/* Opponent Header */}
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">{opponent.token}</span>
+                      <span className="text-xl">{opponent.token}</span>
                       <div>
                         <div className="flex items-center gap-1">
                           <span className="font-bold text-white text-sm">{opponent.name}</span>
@@ -383,8 +385,10 @@ export const DealGame: React.FC<DealGameProps> = ({
                     </div>
                   </div>
 
-                  {/* Opponent Property Sets */}
-                  <div className="grid grid-cols-5 gap-1.5 mt-2 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                  {/* Opponent Property Sets (only rendered once they hold cards —
+                      an empty frame here was pure scroll height) */}
+                  {ALL_PLAYABLE_COLORS.some((col) => (opponent.propertySets[col]?.cards.length ?? 0) > 0) && (
+                  <div className="grid grid-cols-5 gap-1 mt-1 bg-slate-950/60 p-1.5 rounded-lg border border-slate-800/80">
                     {ALL_PLAYABLE_COLORS.map((col) => {
                       const set = opponent.propertySets[col];
                       if (!set || set.cards.length === 0) return null;
@@ -393,7 +397,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                       return (
                         <div
                           key={col}
-                          className={`p-1.5 rounded-lg border flex flex-col items-center justify-between text-center transition-all ${
+                          className={`p-1 rounded-md border flex flex-col items-center justify-between text-center transition-all ${
                             set.isComplete
                               ? `${config.bgClass} border-amber-400 ring-2 ring-amber-400/40 shadow-sm`
                               : 'bg-slate-900 border-slate-700'
@@ -411,15 +415,16 @@ export const DealGame: React.FC<DealGameProps> = ({
                       );
                     })}
                   </div>
+                  )}
                 </div>
               );
             })}
         </section>
 
         {/* Center Table Arena (Deck, Discard Pile & Action Announcement) */}
-        <section className="bg-slate-900/60 rounded-3xl p-4 sm:p-6 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden backdrop-blur-xs">
+        <section className="bg-slate-900/60 rounded-2xl p-2.5 sm:p-4 border border-slate-800 flex flex-row flex-wrap items-center justify-between gap-2 sm:gap-4 relative overflow-hidden backdrop-blur-xs shrink-0">
           {/* Deck Piles */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
             {/* Draw Deck */}
             <div className="flex flex-col items-center">
               <div className="w-20 h-28 sm:w-24 sm:h-34 rounded-xl border-2 border-dashed border-blue-500/50 bg-gradient-to-br from-blue-950 to-indigo-950 flex flex-col items-center justify-center text-center shadow-lg relative">
@@ -453,7 +458,7 @@ export const DealGame: React.FC<DealGameProps> = ({
           </div>
 
           {/* Action Spotlight Banner */}
-          <div className="flex-1 text-center sm:text-left px-2">
+          <div className="flex-1 min-w-0 text-center sm:text-left px-1 sm:px-2">
             <span className="text-[10px] uppercase font-extrabold tracking-widest text-amber-400 flex items-center justify-center sm:justify-start gap-1.5">
               <Sparkles size={13} /> Action Log
             </span>
@@ -465,12 +470,13 @@ export const DealGame: React.FC<DealGameProps> = ({
             </p>
           </div>
 
-          {/* Turn status & End Turn button */}
-          <div className="flex flex-col items-center sm:items-end gap-2">
+          {/* Turn status & End Turn button — full-width row under the piles on
+              phones so the wide "Turns Up" state never crowds the action log */}
+          <div className="flex flex-col items-center sm:items-end gap-2 shrink-0 w-full sm:w-auto">
             {isMyTurn ? (
               <button
                 onClick={handleEndTurn}
-                className={`px-6 py-3 font-black text-sm rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer ${
+                className={`px-4 py-2.5 font-black text-sm rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer whitespace-nowrap ${
                   turnsAreUp
                     ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/50 ring-4 ring-red-500/70 animate-pulse'
                     : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
@@ -488,13 +494,13 @@ export const DealGame: React.FC<DealGameProps> = ({
           </div>
         </section>
 
-        {/* Local Player Zone (Bank, Properties, and Interactive Hand) */}
-        <section className="space-y-3">
+        {/* Local Player Zone (Bank & Property Sets; the hand lives in the dock below) */}
+        <section>
           {/* Bank & Property Sets Header */}
-          <div className="bg-slate-900/90 rounded-2xl p-4 border border-slate-800">
-            <div className="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2">
+          <div className="bg-slate-900/90 rounded-2xl p-2.5 sm:p-4 border border-slate-800">
+            <div className="flex items-center justify-between mb-2 border-b border-slate-800/80 pb-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-3xl">{localPlayer.token}</span>
+                <span className="text-2xl">{localPlayer.token}</span>
                 <div>
                   <h2 className="text-base font-black text-white flex items-center gap-1.5">
                     <span>{localPlayer.name} (You)</span>
@@ -514,8 +520,8 @@ export const DealGame: React.FC<DealGameProps> = ({
               </div>
             </div>
 
-            {/* Local Player Property Sets */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+            {/* Local Player Property Sets — 5-up on phones too (was 2-up: five tall rows) */}
+            <div className="grid grid-cols-5 gap-1.5">
               {ALL_PLAYABLE_COLORS.map((color) => {
                 const set = localPlayer.propertySets[color];
                 const config = COLOR_CONFIG[color];
@@ -524,7 +530,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                 return (
                   <div
                     key={color}
-                    className={`p-2.5 rounded-xl border transition-all flex flex-col justify-between min-h-[90px] ${
+                    className={`p-1.5 rounded-lg border transition-all flex flex-col justify-between ${
                       set.isComplete
                         ? `${config.bgClass} border-amber-400 ring-2 ring-amber-400/40 shadow-md`
                         : hasCards
@@ -532,8 +538,8 @@ export const DealGame: React.FC<DealGameProps> = ({
                         : 'bg-slate-950/40 border-slate-800/50 opacity-60'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className={`text-[10px] font-black uppercase ${config.textClass}`}>
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={`text-[10px] font-black uppercase truncate ${config.textClass}`}>
                         {config.name}
                       </span>
                       <span className="text-[10px] font-bold text-white font-mono">
@@ -542,7 +548,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                     </div>
 
                     {/* Cards list in set */}
-                    <div className="flex flex-wrap gap-1 my-1">
+                    <div className="flex flex-wrap gap-0.5 my-0.5">
                       {set.cards.map((card) => {
                         const isWildcard = card.type === DealCardType.PROPERTY_WILD;
                         return (
@@ -587,9 +593,11 @@ export const DealGame: React.FC<DealGameProps> = ({
               })}
             </div>
           </div>
+        </section>
+        </div>
 
-          {/* Interactive Hand Area */}
-          <div className="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 space-y-2">
+        {/* Interactive Hand Dock — pinned below the table, always on screen */}
+        <div className="shrink-0 bg-slate-900/90 rounded-2xl p-2.5 sm:p-3 border border-slate-800 space-y-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                 <span>Your Hand ({localPlayer.hand.length} cards)</span>
@@ -652,7 +660,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             </div>
 
             {localPlayer.hand.length > 0 ? (
-              <div className="flex gap-2.5 overflow-x-auto pb-2 pt-1 custom-scrollbar">
+              <div className="flex gap-2.5 overflow-x-auto pb-1 pt-0.5 custom-scrollbar">
                 {localPlayer.hand.map((card) => {
                   const isSelected = selectedHandCardId === card.id;
 
@@ -677,12 +685,11 @@ export const DealGame: React.FC<DealGameProps> = ({
                 })}
               </div>
             ) : (
-              <div className="py-6 text-center text-slate-500 italic text-xs">
+              <div className="py-4 text-center text-slate-500 italic text-xs">
                 Hand is empty! (You will draw 5 cards at the start of your next turn).
               </div>
             )}
-          </div>
-        </section>
+        </div>
       </main>
 
       {/* Activity Logs Slide-over Drawer */}
