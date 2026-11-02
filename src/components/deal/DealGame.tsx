@@ -489,6 +489,9 @@ export const DealGame: React.FC<DealGameProps> = ({
                       >
                         {opponent.completedSetsCount}/3 Full Sets
                       </span>
+                      {opponent.completedSetsCount > 0 && (
+                        <span key={opponent.completedSetsCount} className="fx-fanfare-badge">🎉 SET!</span>
+                      )}
                       <span className="relative text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800"><AnimatedMoney value={totalBank} />M<CoinBurst amount={totalBank} /></span>
                     </div>
                   </div>
@@ -532,6 +535,9 @@ export const DealGame: React.FC<DealGameProps> = ({
 
         {/* Center Table Arena (Deck, Discard Pile & Action Announcement) */}
         <section className="bg-slate-900/60 rounded-2xl p-2.5 sm:p-4 border border-slate-800 flex flex-row flex-wrap items-center justify-between gap-2 sm:gap-4 relative overflow-hidden backdrop-blur-xs shrink-0">
+          {gameState.lastActionMessage && (
+            <span key={gameState.lastActionMessage + ':' + gameState.logs.length} className="fx-spotlight" aria-hidden="true" />
+          )}
           {/* Deck Piles */}
           <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
             {/* Draw Deck */}
@@ -616,6 +622,9 @@ export const DealGame: React.FC<DealGameProps> = ({
                     <span className="text-xs font-normal text-slate-400">
                       • {localPlayer.completedSetsCount} / 3 Full Sets
                     </span>
+                    {localPlayer.completedSetsCount > 0 && (
+                      <span key={localPlayer.completedSetsCount} className="fx-fanfare-badge">🎉 SET!</span>
+                    )}
                   </h2>
                 </div>
               </div>

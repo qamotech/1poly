@@ -83,6 +83,10 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
   const dragStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
 
   const [visualPositions, setVisualPositions] = useState<Record<string, number>>({});
+  const [goBursts, setGoBursts] = useState<Record<string, number>>({});
+  const [freshBuys, setFreshBuys] = useState<Record<string, number>>({});
+  const visualRef = useRef<Record<string, number>>({});
+  const prevOwnersRef = useRef<Record<string, string | null>>({});
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
 
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -309,6 +313,36 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
     return () => clearInterval(timer);
   }, [gameState.players]);
 
+  useEffect(() => { visualRef.current = visualPositions; }, [visualPositions]);
+
+  // PASS GO burst: a token stepping 39 -> 0 while walking forward
+  useEffect(() => {
+    const timer = setInterval(() => {
+      gameState.players.forEach(p => {
+        const cur = visualRef.current[p.id];
+        if (cur === 39 && p.position !== 39 && !p.inJail && p.position <= 15) {
+          setGoBursts(prev => (prev[p.id] ? prev : { ...prev, [p.id]: Date.now() }));
+          setTimeout(() => setGoBursts(prev => { const n = { ...prev }; delete n[p.id]; return n; }), 2000);
+        }
+      });
+    }, 160);
+    return () => clearInterval(timer);
+  }, [gameState.players]);
+
+  // Buy pop: a property gaining an owner
+  useEffect(() => {
+    const prev = prevOwnersRef.current;
+    const next: Record<string, string | null> = {};
+    Object.entries(gameState.propertyStates || {}).forEach(([spaceId, st]) => {
+      next[spaceId] = (st as { ownerId?: string } | undefined)?.ownerId ?? null;
+      if (next[spaceId] && prev[spaceId] === null) {
+        setFreshBuys(fb => ({ ...fb, [spaceId]: Date.now() }));
+        setTimeout(() => setFreshBuys(fb => { const n = { ...fb }; delete n[spaceId]; return n; }), 1600);
+      }
+    });
+    prevOwnersRef.current = next;
+  }, [gameState.propertyStates]);
+
   // A standard board is 11x11 squares.
   const getGridPosition = (position: number) => {
     if (position >= 0 && position <= 10) return { gridRow: 11, gridColumn: 11 - position };
@@ -402,7 +436,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
           transformOrigin: 'center center',
           transition: isDragging ? 'none' : 'transform 0.15s ease-out'
         }}
-        className="bg-[#b3d4b8] border-[12px] border-slate-300 border-t-slate-200 border-l-slate-200 border-b-slate-500 border-r-slate-500 shadow-[inset_0_0_30px_rgba(0,0,0,0.3)] p-[8px]"
+        className="bg-[#b3d4b8] border-[12px] border-slate-300 border-t-slate-200 border-l-slate-200 border-b-slate-500 border-r-slate-500 shadow-[inset_0_0_30px_rgba(0,0,0,0.3)] p-[8px] fx-living-frame"
       >
         <div style={{ gridTemplateColumns: '1.5fr repeat(9, 1fr) 1.5fr', gridTemplateRows: '1.5fr repeat(9, 1fr) 1.5fr' }} className="w-full h-full grid gap-[2px] relative">
           {SPACES.map((space) => {
@@ -465,8 +499,11 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                 }}
                 transition={shouldHighlight ? { duration: 1.4, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
                 onClick={() => setSelectedSpaceId(space.id)}
-                className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}`}
+                className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}${freshBuys[space.id] ? ' fx-buy-pop' : ''}`}
               >
+                {freshBuys[space.id] && (
+                  <span key={freshBuys[space.id]} className="fx-sparkles" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
+                )}
                 {/* Subtle Framer Motion Pulsing Border Overlay for High-Visibility Navigation */}
                 {shouldHighlight && (
                   <motion.div
@@ -779,6 +816,9 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       <div className="text-3xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] filter">
                         <span key={currentVisualPos} className="fx-hop">{player.token}</span>
                       </div>
+                      {goBursts[player.id] && (
+                        <span key={goBursts[player.id]} className="fx-go-badge">+$200 GO! 💸</span>
+                      )}
                     </motion.div>
                   );
                 })}

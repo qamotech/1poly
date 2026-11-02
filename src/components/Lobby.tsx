@@ -387,8 +387,10 @@ export const Lobby: React.FC<LobbyProps> = ({
                 {isHost ? '👑 Your room — share this code' : '🏠 You joined this room'}
               </p>
               <div className="flex items-center gap-3 justify-center sm:justify-start">
-                <span className="text-4xl md:text-5xl font-black tracking-[0.3em] text-white font-mono">
-                  {roomCode}
+                <span className="flex items-center gap-1.5 sm:gap-2">
+                  {roomCode.split('').map((ch, i) => (
+                    <span key={i} className="fx-code-tile text-3xl md:text-4xl font-black text-white font-mono" style={{ animationDelay: `${i * 95}ms` }}>{ch}</span>
+                  ))}
                 </span>
                 <button
                   onClick={handleCopyCode}

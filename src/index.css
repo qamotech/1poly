@@ -185,3 +185,115 @@
   50% { transform: translateY(-6px); }
 }
 .fx-wave-letter { animation: fx-wave-letter 1.4s ease-in-out infinite; display: inline-block; }
+
+/* ============================================================
+   COLOR & MOTION PACK — ROUND 2
+   ============================================================ */
+
+/* R2-1 — living rainbow frame for the classic board */
+.fx-living-frame {
+  border: 12px solid transparent;
+  background:
+    linear-gradient(#b3d4b8, #b3d4b8) padding-box,
+    linear-gradient(120deg, #f59e0b, #ef4444, #d946ef, #3b82f6, #10b981, #f59e0b) border-box;
+  background-size: auto, 300% 300%;
+  animation: fx-shimmer 9s linear infinite;
+  box-shadow: 0 0 34px rgba(217, 70, 239, 0.28), inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+
+/* R2-2 — PASS GO burst badge */
+@keyframes fx-go-badge {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.6); }
+  18% { opacity: 1; transform: translate(-50%, -4px) scale(1.1); }
+  30% { transform: translate(-50%, -8px) scale(1); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -26px) scale(0.95); }
+}
+.fx-go-badge {
+  position: absolute; left: 50%; top: -14px; z-index: 40; pointer-events: none;
+  white-space: nowrap; font-size: 10px; font-weight: 900; letter-spacing: 0.02em;
+  color: #fff; background: linear-gradient(92deg, #059669, #10b981, #84cc16);
+  padding: 2px 7px; border-radius: 9999px;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.75), 0 3px 8px rgba(0, 0, 0, 0.45);
+  animation: fx-go-badge 1.9s ease-out both;
+}
+
+/* R2-3 — newly bought tile pop */
+@keyframes fx-buy-pop {
+  0% { transform: scale(1); filter: brightness(1); }
+  35% { transform: scale(1.14); filter: brightness(1.45); }
+  65% { transform: scale(0.97); filter: brightness(1.1); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+.fx-buy-pop { animation: fx-buy-pop 0.65s ease-out both; }
+
+/* R2-4 — Cards action-log spotlight flash */
+@keyframes fx-spotlight-flash {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.fx-spotlight {
+  position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background: radial-gradient(620px 220px at 50% 0%, rgba(245, 158, 11, 0.30), rgba(217, 70, 239, 0.10) 55%, transparent 75%);
+  animation: fx-spotlight-flash 0.95s ease-out both;
+}
+
+/* R2-5 — full-set fanfare badge */
+@keyframes fx-fanfare-pop {
+  0% { opacity: 0; transform: scale(0.4) rotate(-10deg); }
+  55% { opacity: 1; transform: scale(1.3) rotate(4deg); }
+  75% { transform: scale(0.94) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.fx-fanfare-badge {
+  font-size: 10px; font-weight: 900; letter-spacing: 0.04em; color: #fff;
+  padding: 2px 8px; border-radius: 9999px; white-space: nowrap;
+  background-image: linear-gradient(92deg, #dc2626, #d946ef, #7c3aed);
+  box-shadow: 0 0 14px rgba(217, 70, 239, 0.55);
+  animation: fx-fanfare-pop 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+/* R2-6 — shine sweep across neon buttons */
+.fx-neon-btn, .fx-neon-btn-blue { position: relative; overflow: hidden; }
+.fx-neon-btn::after, .fx-neon-btn-blue::after {
+  content: ""; position: absolute; top: -10%; bottom: -10%; width: 45%; left: -70%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: skewX(-18deg); pointer-events: none;
+  animation: fx-sheen 4.2s ease-in-out infinite;
+}
+@keyframes fx-sheen {
+  0% { left: -70%; }
+  45%, 100% { left: 135%; }
+}
+
+/* R2-7 — room-code letter tiles */
+@keyframes fx-code-flip {
+  0% { opacity: 0; transform: rotateX(88deg) translateY(8px); }
+  100% { opacity: 1; transform: rotateX(0deg) translateY(0); }
+}
+.fx-code-tile {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 2.5rem; padding: 0.3em 0.18em; border-radius: 0.75rem;
+  background: linear-gradient(180deg, rgba(51, 65, 85, 0.95), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  box-shadow: 0 0 14px rgba(59, 130, 246, 0.25), 0 4px 10px rgba(0, 0, 0, 0.4);
+  animation: fx-code-flip 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* R2-8 — rotating rainbow border chase (win screens) */
+@property --fx-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes fx-chase {
+  to { --fx-angle: 360deg; }
+}
+.fx-chase-frame {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#0f172a, #0f172a) padding-box,
+    conic-gradient(from var(--fx-angle), #f59e0b, #ef4444, #d946ef, #3b82f6, #10b981, #f59e0b) border-box;
+  animation: fx-chase 5s linear infinite;
+}

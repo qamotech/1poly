@@ -166,7 +166,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
         transition={{ type: "spring", bounce: 0.45, duration: 0.9 }}
         className="relative z-10 bg-gradient-to-b from-amber-300 via-yellow-500 to-amber-600 p-1.5 rounded-3xl shadow-[0_0_90px_rgba(245,158,11,0.5)] max-w-lg w-full"
       >
-        <div className="bg-slate-900 rounded-[22px] p-6 sm:p-8 flex flex-col items-center border border-amber-400/50 shadow-2xl relative overflow-hidden">
+        <div className="bg-slate-900 rounded-[22px] p-6 sm:p-8 flex flex-col items-center border border-amber-400/50 shadow-2xl relative overflow-hidden fx-chase-frame">
           
           {/* Top Floating Trophy Badge */}
           <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-widest mb-3">
