@@ -9,12 +9,16 @@ interface AuctionModalProps {
   gameState: GameState;
   onPlaceBid: (playerId: string, bidAmount: number) => void;
   onPassAuction: (playerId: string) => void;
+  /** Multiplayer: this phone's seat. When provided, bids are locked to that
+   *  player; null = spectating (watch only). */
+  myPlayerId?: string | null;
 }
 
 export const AuctionModal: React.FC<AuctionModalProps> = ({
   gameState,
   onPlaceBid,
-  onPassAuction
+  onPassAuction,
+  myPlayerId
 }) => {
   const auction = gameState.auction;
   if (!auction) return null;
@@ -25,7 +29,12 @@ export const AuctionModal: React.FC<AuctionModalProps> = ({
   const currentBid = auction.currentBid;
   const highestBidder = gameState.players.find(p => p.id === auction.highestBidderId);
   const activeHumanPlayers = gameState.players.filter(p => !p.isBankrupt && p.type === PlayerType.USER);
-  const currentHuman = activeHumanPlayers.find(p => !auction.passedBidderIds.includes(p.id)) || activeHumanPlayers[0];
+  // Multiplayer: the bidder is MY seat (undefined while spectating). Without
+  // a seat prop, fall back to the first active human (hot-seat behavior).
+  const watching = myPlayerId !== undefined && !activeHumanPlayers.some(p => p.id === myPlayerId);
+  const currentHuman = myPlayerId !== undefined
+    ? activeHumanPlayers.find(p => p.id === myPlayerId)
+    : activeHumanPlayers.find(p => !auction.passedBidderIds.includes(p.id)) || activeHumanPlayers[0];
 
   const minNextBid = currentBid === 0 ? 10 : currentBid + 10;
   const canAffordMin = currentHuman && currentHuman.money >= minNextBid;
@@ -197,9 +206,11 @@ export const AuctionModal: React.FC<AuctionModalProps> = ({
           ) : (
             <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 text-center">
               <p className="text-xs text-slate-400">
-                {hasPassed 
-                  ? "You have passed on this auction. Waiting for remaining bidders to conclude..." 
-                  : "CPUs and other players are resolving bids..."}
+                {hasPassed
+                  ? "You have passed on this auction. Waiting for remaining bidders to conclude..."
+                  : watching
+                    ? "👀 You're watching this auction — only seated players can bid."
+                    : "CPUs and other players are resolving bids..."}
               </p>
             </div>
           )}

@@ -8,9 +8,11 @@ import { Trophy, Sparkles, RotateCcw, Award, DollarSign, Home, Building } from '
 interface GameOverScreenProps {
   winner: Player | null;
   onRestart: () => void;
+  /** Multiplayer: only the host can restart; others wait for the host. */
+  canRestart?: boolean;
 }
 
-export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestart }) => {
+export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestart, canRestart = true }) => {
   const [activeTab, setActiveTab] = useState<'stats' | 'leaderboard'>('stats');
   // Dedicated confetti canvas inside this screen (see useEffect): the shared
   // default confetti canvas sits at z-index 100, underneath this screen's
@@ -244,15 +246,21 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
             >
               <Sparkles size={16} /> More Confetti!
             </button>
-            <button 
-              onClick={() => {
-                audio.playUiClick();
-                onRestart();
-              }}
-              className="w-full sm:w-1/2 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm rounded-xl shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-all hover:scale-102 active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <RotateCcw size={16} /> Play Again
-            </button>
+            {canRestart ? (
+              <button
+                onClick={() => {
+                  audio.playUiClick();
+                  onRestart();
+                }}
+                className="w-full sm:w-1/2 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm rounded-xl shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-all hover:scale-102 active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <RotateCcw size={16} /> Play Again
+              </button>
+            ) : (
+              <div className="w-full sm:w-1/2 py-3 bg-slate-800/60 text-slate-400 border border-slate-700 font-bold text-sm rounded-xl flex items-center justify-center gap-2">
+                ⏳ Waiting for the host to start a new game…
+              </div>
+            )}
           </div>
         </div>
       </motion.div>

@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'motion/react';
 import { GamePhase, PlayerType, GameState, TradeOffer, BankruptcyRecord, GameSpeed } from './types';
 import { Lobby } from './components/Lobby';
+import { RoomGate } from './components/RoomGate';
 import { Board } from './components/Board';
 import { HUD } from './components/HUD';
 import { TradeModal } from './components/TradeModal';
@@ -38,6 +39,38 @@ export default function App() {
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [rulesModalDefaultTab, setRulesModalDefaultTab] = useState<'classic' | 'deal'>('classic');
 
+  // -- Multiplayer room identity -------------------------------------------
+  // playerToken: persistent per-browser identity (survives refresh) that a
+  // seat is bound to server-side. roomCode/myPlayerId: my room + my seat.
+  const [playerToken] = useState<string>(() => {
+    try {
+      let t = localStorage.getItem('1poly-player-token');
+      if (!t) {
+        t =
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `tok-${Date.now()}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem('1poly-player-token', t);
+      }
+      return t;
+    } catch {
+      return `tok-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+  });
+  const [roomCode, setRoomCode] = useState<string | null>(null);
+  const [isHost, setIsHost] = useState(false);
+  const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
+  const [seatTaken, setSeatTaken] = useState<Record<string, boolean>>({});
+  const [inRoom, setInRoom] = useState(false);
+  const [gateError, setGateError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2800);
+    return () => clearTimeout(t);
+  }, [toast]);
+
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
@@ -52,8 +85,18 @@ export default function App() {
   useEffect(() => {
     const handleConnect = () => {
       setIsConnected(true);
-      // Always (re)sync state on connect: if the server's initial emit raced
-      // ahead of our listener registration, this is what un-sticks the lobby.
+      // Rejoin my room first (reclaims my seat by token), then (re)sync
+      // state: if the server's emit raced ahead of our listener
+      // registration, this is what un-sticks the lobby.
+      let savedCode: string | null = null;
+      try {
+        savedCode = localStorage.getItem('1poly-room-code');
+      } catch {
+        savedCode = null;
+      }
+      if (savedCode) {
+        socket.emit('join_room', { code: savedCode, token: playerToken });
+      }
       socket.emit('request_state');
     };
     socket.on('connect', handleConnect);
@@ -62,7 +105,65 @@ export default function App() {
     if (socket.connected) {
       handleConnect();
     }
-    
+
+    socket.on('room_joined', ({ code, isHost: host, myPlayerId: seatId }) => {
+      setRoomCode(code);
+      setIsHost(!!host);
+      setMyPlayerId(seatId ?? null);
+      setInRoom(true);
+      setGateError(null);
+      try {
+        localStorage.setItem('1poly-room-code', code);
+      } catch {
+        // storage unavailable — reconnect reclaim just won't persist
+      }
+    });
+
+    socket.on('room_error', ({ message }) => {
+      setGateError(message || 'Could not join that room.');
+      setInRoom(false);
+      setRoomCode(null);
+      try {
+        localStorage.removeItem('1poly-room-code');
+      } catch {
+        // ignore
+      }
+    });
+
+    socket.on('room_closed', () => {
+      setInRoom(false);
+      setRoomCode(null);
+      setMyPlayerId(null);
+      setIsHost(false);
+      setGameState(null);
+      setGateError('The host closed this room.');
+      try {
+        localStorage.removeItem('1poly-room-code');
+      } catch {
+        // ignore
+      }
+    });
+
+    socket.on('seat_update', ({ seats }) => {
+      const map: Record<string, boolean> = {};
+      (seats || []).forEach((s: { playerId: string; taken: boolean }) => {
+        map[s.playerId] = !!s.taken;
+      });
+      setSeatTaken(map);
+    });
+
+    socket.on('seat_claimed', ({ playerId }) => {
+      setMyPlayerId(playerId);
+    });
+
+    socket.on('seat_rejected', ({ message }) => {
+      setToast(message || 'That seat is taken.');
+    });
+
+    socket.on('action_denied', ({ message }) => {
+      setToast(message || 'Not your turn');
+    });
+
     socket.on('game_state_update', (newState: GameState) => {
       // Check if transitioning from Lobby to playing
       if (previousPhase.current === GamePhase.LOBBY && newState.phase !== GamePhase.LOBBY) {
@@ -93,7 +194,15 @@ export default function App() {
       socket.off('connect');
       socket.off('disconnect');
       socket.off('game_state_update');
+      socket.off('room_joined');
+      socket.off('room_error');
+      socket.off('room_closed');
+      socket.off('seat_update');
+      socket.off('seat_claimed');
+      socket.off('seat_rejected');
+      socket.off('action_denied');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Deep link (also the PWA shortcut target): onepoly.onrender.com/#cards
@@ -115,6 +224,39 @@ export default function App() {
     const t = setTimeout(() => setShowWakeHint(true), 3500);
     return () => clearTimeout(t);
   }, [gameState]);
+
+  // -- Room actions ----------------------------------------------------------
+  const handleCreateRoom = () => {
+    setGateError(null);
+    socket.emit('create_room', { token: playerToken });
+  };
+
+  const handleJoinRoom = (code: string) => {
+    setGateError(null);
+    socket.emit('join_room', { code, token: playerToken });
+  };
+
+  const handleClaimSeat = (playerId: string) => {
+    socket.emit('claim_seat', { playerId });
+  };
+
+  const handleLeaveRoom = () => {
+    socket.emit('leave_room');
+    setInRoom(false);
+    setRoomCode(null);
+    setMyPlayerId(null);
+    setIsHost(false);
+    setGameState(null);
+    try {
+      localStorage.removeItem('1poly-room-code');
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleCloseRoom = () => {
+    socket.emit('close_room');
+  };
 
   const handleAddPlayer = (name: string, type: PlayerType, token: string) => {
     socket.emit('add_player', { name, type, token });
@@ -257,26 +399,47 @@ export default function App() {
     );
   }
 
+  if (!inRoom) {
+    if (!isConnected) {
+      return (
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-5 text-white p-6 text-center">
+          <p className="text-xl animate-pulse">Connecting to server...</p>
+          {showWakeHint && (
+            <div className="max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-3">
+              <p className="text-sm text-slate-300">
+                ☕ <strong className="text-white">Waking up the game server…</strong> The free
+                host puts it to sleep after ~15 idle minutes, so the first load can take
+                30–60 seconds. This screen moves on by itself once it's awake — no need
+                to refresh.
+              </p>
+              <button
+                onClick={() => setGameMode('deal')}
+                className="w-full py-2.5 bg-blue-700 hover:bg-blue-600 rounded-xl font-bold text-sm transition-colors cursor-pointer"
+              >
+                🃏 Play 1poly Cards while you wait
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return (
+      <>
+        <InstallButton />
+        <RoomGate
+          onCreate={handleCreateRoom}
+          onJoin={handleJoinRoom}
+          onPlayCards={() => setGameMode('deal')}
+          error={gateError}
+        />
+      </>
+    );
+  }
+
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-5 text-white p-6 text-center">
-        <p className="text-xl animate-pulse">Connecting to server...</p>
-        {showWakeHint && (
-          <div className="max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-3">
-            <p className="text-sm text-slate-300">
-              ☕ <strong className="text-white">Waking up the game server…</strong> The free
-              host puts it to sleep after ~15 idle minutes, so the first load can take
-              30–60 seconds. This screen moves on by itself once it's awake — no need
-              to refresh.
-            </p>
-            <button
-              onClick={() => setGameMode('deal')}
-              className="w-full py-2.5 bg-blue-700 hover:bg-blue-600 rounded-xl font-bold text-sm transition-colors cursor-pointer"
-            >
-              🃏 Play 1poly Cards while you wait
-            </button>
-          </div>
-        )}
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <p className="text-xl animate-pulse">Joining room {roomCode}…</p>
       </div>
     );
   }
@@ -290,29 +453,55 @@ export default function App() {
     ? gameState.players.find(p => !p.isBankrupt) || null
     : null;
 
-  // In a true multiplayer scenario, we'd check if THIS client is the target player.
-  const isTargetPlayerHuman = gameState.pendingTrade 
-    ? gameState.players.find(p => p.id === gameState.pendingTrade!.toPlayerId)?.type === PlayerType.USER 
+  // Multiplayer identity: my seat in this room (null = spectating).
+  const myPlayer = myPlayerId
+    ? gameState.players.find(p => p.id === myPlayerId) ?? null
+    : null;
+  const isMyTurn = !!myPlayer && currentPlayer?.id === myPlayer.id;
+  // Board/HUD lock every control when it isn't this phone's turn (their
+  // isCpuTurn prop already means "hands off"), and the server enforces it.
+  const controlsLocked = isCpuTurn || !isMyTurn;
+
+  // The trade response belongs to the phone holding the target seat.
+  const isTargetPlayerHuman = gameState.pendingTrade
+    ? gameState.pendingTrade.toPlayerId === myPlayerId
     : false;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
       <InstallButton />
+      {/* Soft notice from the server when an action isn't this phone's to make */}
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[120] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none">
+          {toast}
+        </div>
+      )}
       {/* Dynamic Turn Banner Notification */}
       {!isLobby && gameState.phase !== GamePhase.GAME_OVER && (
         <TurnNotification currentPlayer={currentPlayer} />
       )}
 
       {isLobby ? (
-        <Lobby 
-          gameState={gameState} 
-          onAddPlayer={handleAddPlayer} 
+        <Lobby
+          gameState={gameState}
+          onAddPlayer={handleAddPlayer}
           onUpdatePlayer={handleUpdatePlayer}
-          onRemovePlayer={handleRemovePlayer} 
+          onRemovePlayer={handleRemovePlayer}
           onStartGame={handleStartGame}
           onStartDealGame={handleStartDealGame}
           onOpenRules={handleOpenRules}
-          onUpdateRules={handleUpdateRules} 
+          onUpdateRules={handleUpdateRules}
+          roomCode={roomCode ?? ''}
+          isHost={isHost}
+          myPlayerId={myPlayerId}
+          takenSeats={new Set(
+            Object.entries(seatTaken)
+              .filter(([pid, taken]) => taken && pid !== myPlayerId)
+              .map(([pid]) => pid)
+          )}
+          onClaimSeat={handleClaimSeat}
+          onCloseRoom={handleCloseRoom}
+          onLeaveRoom={handleLeaveRoom}
         />
       ) : (
         <div className="flex flex-col min-h-screen lg:h-screen max-w-[1600px] mx-auto overflow-hidden">
@@ -335,6 +524,16 @@ export default function App() {
                   onOpenPortfolio={() => setIsPropertyModalOpen(true)}
                 />
               )}
+
+              {/* Room + my-seat identity */}
+              <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+                <span className="text-[11px] font-black tracking-[0.2em] bg-slate-800 border border-slate-700 text-amber-300 px-2 py-1 rounded-lg">
+                  🏠 {roomCode}
+                </span>
+                <span className="text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 px-2 py-1 rounded-lg max-w-[140px] truncate">
+                  {myPlayer ? `${myPlayer.token} You: ${myPlayer.name}` : '👀 Spectating'}
+                </span>
+              </div>
             </div>
 
             {/* View Switcher & Header Controls */}
@@ -372,7 +571,7 @@ export default function App() {
                   <span className="hidden lg:inline">1poly Cards</span>
                 </button>
 
-                {currentPlayer && (
+                {myPlayer && (
                   <button
                     id="header-portfolio-btn"
                     onClick={() => {
@@ -387,7 +586,7 @@ export default function App() {
                   </button>
                 )}
 
-                {currentPlayer && gameState.players.filter(p => !p.isBankrupt).length > 1 && (
+                {myPlayer && gameState.players.filter(p => !p.isBankrupt).length > 1 && (
                   <button
                     id="header-trade-btn"
                     onClick={() => {
@@ -415,19 +614,21 @@ export default function App() {
                   <span className="hidden xl:inline">Intro</span>
                 </button>
 
-                <button
-                  id="header-restart-btn"
-                  onClick={() => {
-                    audio.playUiClick();
-                    if (window.confirm('Restart game and return to lobby?')) {
-                      handleRestart();
-                    }
-                  }}
-                  className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-red-400 rounded-xl border border-slate-700/80 text-xs transition-colors cursor-pointer"
-                  title="Reset Game & Return to Lobby"
-                >
-                  <RotateCcw size={15} />
-                </button>
+                {isHost && (
+                  <button
+                    id="header-restart-btn"
+                    onClick={() => {
+                      audio.playUiClick();
+                      if (window.confirm('Restart game and return to lobby?')) {
+                        handleRestart();
+                      }
+                    }}
+                    className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-red-400 rounded-xl border border-slate-700/80 text-xs transition-colors cursor-pointer"
+                    title="Reset Game & Return to Lobby"
+                  >
+                    <RotateCcw size={15} />
+                  </button>
+                )}
               </div>
             </div>
           </header>
@@ -458,7 +659,7 @@ export default function App() {
                 onDeclineProperty={handleDeclineProperty}
                 onOpenTradeModal={() => setIsTradeModalOpen(true)}
                 onOpenPropertyModal={() => setIsPropertyModalOpen(true)}
-                isCpuTurn={isCpuTurn}
+                isCpuTurn={controlsLocked}
               />
             </motion.div>
 
@@ -489,7 +690,7 @@ export default function App() {
                 onSetGameSpeed={handleSetGameSpeed}
                 onRemovePlayer={handleRemovePlayer}
                 onViewBankruptcySummary={(record) => setActiveBankruptcyRecord(record)}
-                isCpuTurn={isCpuTurn}
+                isCpuTurn={controlsLocked}
               />
             </motion.div>
           </div>
@@ -506,26 +707,27 @@ export default function App() {
 
       {/* Auction Modal */}
       {gameState.phase === GamePhase.AUCTION && gameState.auction && (
-        <AuctionModal 
+        <AuctionModal
           gameState={gameState}
           onPlaceBid={handlePlaceBid}
           onPassAuction={handlePassAuction}
+          myPlayerId={myPlayerId}
         />
       )}
 
-      {isTradeModalOpen && currentPlayer && (
-        <TradeModal 
+      {isTradeModalOpen && myPlayer && (
+        <TradeModal
           gameState={gameState}
-          currentPlayer={currentPlayer}
+          currentPlayer={myPlayer}
           onPropose={handleProposeTrade}
           onCancel={() => setIsTradeModalOpen(false)}
         />
       )}
 
-      {isPropertyModalOpen && currentPlayer && (
-        <PropertyManagerModal 
+      {isPropertyModalOpen && myPlayer && (
+        <PropertyManagerModal
           gameState={gameState}
-          currentPlayer={currentPlayer}
+          currentPlayer={myPlayer}
           onBuildHouse={handleBuildHouse}
           onSellHouse={handleSellHouse}
           onMortgage={handleMortgage}
@@ -576,7 +778,7 @@ export default function App() {
       />
 
       {gameState.phase === GamePhase.GAME_OVER && (
-        <GameOverScreen winner={winner} onRestart={handleRestart} />
+        <GameOverScreen winner={winner} onRestart={handleRestart} canRestart={isHost} />
       )}
     </div>
   );

@@ -74,18 +74,44 @@ interface LobbyProps {
   onStartDealGame?: (players?: Array<{ id: string; name: string; type: 'USER' | 'CPU'; token: string }>) => void;
   onOpenRules?: (tab: 'classic' | 'deal') => void;
   onUpdateRules: (rules: Partial<HouseRules>) => void;
+  // Multiplayer room context (optional; defaults keep single-host behavior)
+  roomCode?: string;
+  isHost?: boolean;
+  myPlayerId?: string | null;
+  takenSeats?: Set<string>;
+  onClaimSeat?: (playerId: string) => void;
+  onCloseRoom?: () => void;
+  onLeaveRoom?: () => void;
 }
 
-export const Lobby: React.FC<LobbyProps> = ({ 
-  gameState, 
-  onAddPlayer, 
+export const Lobby: React.FC<LobbyProps> = ({
+  gameState,
+  onAddPlayer,
   onUpdatePlayer,
-  onRemovePlayer, 
+  onRemovePlayer,
   onStartGame,
   onStartDealGame,
   onOpenRules,
-  onUpdateRules 
+  onUpdateRules,
+  roomCode = '',
+  isHost = true,
+  myPlayerId = null,
+  takenSeats,
+  onClaimSeat,
+  onCloseRoom,
+  onLeaveRoom
 }) => {
+  const [codeCopied, setCodeCopied] = useState(false);
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(roomCode);
+    } catch {
+      // clipboard unavailable — the code is big on screen to read aloud
+    }
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  };
   const [name, setName] = useState('N8');
   const [type, setType] = useState<PlayerType>(PlayerType.USER);
   const [token, setToken] = useState(TOKENS[0]);
@@ -345,10 +371,58 @@ export const Lobby: React.FC<LobbyProps> = ({
         </div>
       </div>
       
+      {/* ROOM BANNER: code to share + how seats work */}
+      {roomCode && (
+        <div className="w-full max-w-2xl bg-slate-900/90 border-2 border-amber-500/60 rounded-3xl p-4 md:p-5 shadow-xl backdrop-blur-md">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-center sm:text-left">
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">
+                {isHost ? '👑 Your room — share this code' : '🏠 You joined this room'}
+              </p>
+              <div className="flex items-center gap-3 justify-center sm:justify-start">
+                <span className="text-4xl md:text-5xl font-black tracking-[0.3em] text-white font-mono">
+                  {roomCode}
+                </span>
+                <button
+                  onClick={handleCopyCode}
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg border border-slate-600 transition-colors cursor-pointer"
+                >
+                  {codeCopied ? '✓ Copied!' : '📋 Copy'}
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-col items-center sm:items-end gap-2">
+              <p className="text-xs text-slate-400 text-center sm:text-right max-w-[240px]">
+                {isHost
+                  ? 'Family opens 1poly, taps Join Game, enters the code, then taps "I am …" on their player.'
+                  : 'Tap "I am …" on your player below — your phone will only control you.'}
+              </p>
+              {isHost ? (
+                <button
+                  onClick={() => {
+                    if (window.confirm('Close this room for everyone?')) onCloseRoom?.();
+                  }}
+                  className="text-[11px] font-bold text-red-400 hover:text-red-300 bg-red-950/50 hover:bg-red-950 border border-red-800/60 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                >
+                  Close room
+                </button>
+              ) : (
+                <button
+                  onClick={() => onLeaveRoom?.()}
+                  className="text-[11px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                >
+                  Leave room
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-slate-800/80 p-4 md:p-8 rounded-3xl shadow-2xl border border-slate-700 w-full max-w-2xl backdrop-blur-sm">
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h2 className="text-xl md:text-2xl text-white font-semibold flex items-center gap-2">
-            <Users className="text-blue-400" /> 
+            <Users className="text-blue-400" />
             Classic Match Players ({gameState.players.length}/8)
           </h2>
           {gameState.players.length >= 2 && (
@@ -434,24 +508,51 @@ export const Lobby: React.FC<LobbyProps> = ({
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3">
                   <span className="text-2xl md:text-3xl filter drop-shadow-md">{p.token}</span>
-                  
-                  {/* Edit Player Button */}
-                  <button
-                    onClick={() => handleStartEdit(p)}
-                    title={`Edit ${p.name}`}
-                    className="text-slate-400 hover:text-yellow-400 hover:bg-yellow-500/10 p-2 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <Edit2 size={16} />
-                  </button>
 
-                  {/* Remove Player Button with Confirmation */}
-                  <button
-                    onClick={() => handlePromptDelete(p)}
-                    title={`Remove ${p.name}`}
-                    className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 p-2 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  {/* Seat claim: this phone controls exactly one human player */}
+                  {p.type === PlayerType.USER && onClaimSeat && (
+                    myPlayerId === p.id ? (
+                      <span className="text-[11px] font-black text-emerald-300 bg-emerald-950/80 border border-emerald-600/70 px-2.5 py-1.5 rounded-lg whitespace-nowrap">
+                        ✅ This is you
+                      </span>
+                    ) : takenSeats?.has(p.id) ? (
+                      <span className="text-[11px] font-bold text-slate-400 bg-slate-800 border border-slate-700 px-2.5 py-1.5 rounded-lg whitespace-nowrap">
+                        📱 Taken
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          audio.playUiClick();
+                          onClaimSeat(p.id);
+                        }}
+                        className="text-[11px] font-black text-white bg-blue-600 hover:bg-blue-500 px-2.5 py-1.5 rounded-lg shadow transition-colors cursor-pointer whitespace-nowrap"
+                      >
+                        📱 I am {p.name}
+                      </button>
+                    )
+                  )}
+
+                  {isHost && (
+                    <>
+                      {/* Edit Player Button */}
+                      <button
+                        onClick={() => handleStartEdit(p)}
+                        title={`Edit ${p.name}`}
+                        className="text-slate-400 hover:text-yellow-400 hover:bg-yellow-500/10 p-2 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+
+                      {/* Remove Player Button with Confirmation */}
+                      <button
+                        onClick={() => handlePromptDelete(p)}
+                        title={`Remove ${p.name}`}
+                        className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 p-2 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             );
@@ -460,7 +561,7 @@ export const Lobby: React.FC<LobbyProps> = ({
           {gameState.players.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 text-slate-400 space-y-2 border-2 border-dashed border-slate-600 rounded-xl">
               <Users size={32} className="opacity-50" />
-              <p className="italic">No players added yet. Add players below or pick Quick Play!</p>
+              <p className="italic">{isHost ? 'No players added yet. Add players below or pick Quick Play!' : 'No players yet — the host is setting up the game…'}</p>
             </div>
           )}
         </div>
@@ -533,8 +634,8 @@ export const Lobby: React.FC<LobbyProps> = ({
           </div>
         )}
 
-        {/* Add Player Box */}
-        {gameState.players.length < 8 && (
+        {/* Add Player Box (host sets the roster) */}
+        {isHost && gameState.players.length < 8 && (
           <div className="bg-slate-900/50 p-3 md:p-4 rounded-xl mb-6 space-y-4 border border-slate-700">
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <div className="relative flex-1">
@@ -592,6 +693,7 @@ export const Lobby: React.FC<LobbyProps> = ({
         <div className="mb-6 p-4 md:p-6 bg-slate-900/60 rounded-xl border border-slate-700/80 shadow-inner">
            <h3 className="text-slate-300 font-bold uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
              <span className="text-yellow-500">⚙️</span> Custom House Rules (Classic 1poly)
+             {!isHost && <span className="text-slate-500 normal-case tracking-normal">(set by the host)</span>}
            </h3>
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 max-h-64 overflow-y-auto custom-scrollbar pr-2 pb-2">
              {Object.entries(RULE_LABELS).map(([key, label]) => {
@@ -608,9 +710,10 @@ export const Lobby: React.FC<LobbyProps> = ({
                    title={RULE_DESCRIPTIONS[ruleKey]}
                  >
                    <div className="relative flex items-center justify-center mt-0.5">
-                     <input 
-                       type="checkbox" 
+                     <input
+                       type="checkbox"
                        checked={isChecked}
+                       disabled={!isHost}
                        onChange={(e) => onUpdateRules({ [ruleKey]: e.target.checked })}
                        className="peer appearance-none w-5 h-5 border-2 border-slate-500 rounded bg-slate-800 checked:bg-blue-500 checked:border-blue-500 transition-colors cursor-pointer" 
                      />
@@ -632,6 +735,7 @@ export const Lobby: React.FC<LobbyProps> = ({
            </div>
         </div>
 
+        {isHost ? (
         <div className="flex flex-col gap-4 mt-6">
           {gameState.players.length < 2 && (
             <div className="p-3 bg-amber-950/40 border border-amber-500/40 rounded-xl text-center">
@@ -689,6 +793,16 @@ export const Lobby: React.FC<LobbyProps> = ({
             </p>
           </div>
         </div>
+        ) : (
+          <div className="mt-6 p-4 md:p-5 bg-slate-900/60 border border-slate-700 rounded-xl text-center space-y-2">
+            <p className="text-sm font-bold text-slate-200">⏳ Waiting for the host to start the game…</p>
+            <p className="text-xs text-slate-400">
+              {myPlayerId
+                ? "✅ Your seat is claimed — you're ready when the game starts!"
+                : 'Tap "📱 I am …" on your player above so your phone controls you when the game starts.'}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
