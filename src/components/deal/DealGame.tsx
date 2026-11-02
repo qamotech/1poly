@@ -78,15 +78,20 @@ export const DealGame: React.FC<DealGameProps> = ({
   const isMyTurn = currentPlayer?.id === localPlayer?.id && gameState.phase === DealGamePhase.PLAYING;
   const turnsAreUp = isMyTurn && gameState.playsRemaining === 0;
 
-  // Flash screen effect when turn plays reach 0
+  // Flash screen effect when turn plays reach 0.
+  // The not-turnsAreUp branch MUST clear the flash: ending the turn inside
+  // the 900ms window runs this effect's cleanup, which used to cancel the
+  // off-timer and strand the red overlay on screen into the next turn.
   useEffect(() => {
-    if (turnsAreUp) {
-      setScreenFlash(true);
-      const timer = setTimeout(() => {
-        setScreenFlash(false);
-      }, 900);
-      return () => clearTimeout(timer);
+    if (!turnsAreUp) {
+      setScreenFlash(false);
+      return;
     }
+    setScreenFlash(true);
+    const timer = setTimeout(() => {
+      setScreenFlash(false);
+    }, 900);
+    return () => clearTimeout(timer);
   }, [turnsAreUp]);
 
   // AI Turn automation loop
