@@ -66,6 +66,11 @@ export default function App() {
   const [inRoom, setInRoom] = useState(false);
   const [gateError, setGateError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  // True while the join attempt in flight is the automatic rejoin of the
+  // saved room (vs. a code the user typed). A dead saved room is expected —
+  // servers restart and lobbies empty — so its failure stays quiet instead
+  // of showing the "Room not found" error meant for hand-typed codes.
+  const autoJoinRef = useRef(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -106,6 +111,7 @@ export default function App() {
         savedCode = null;
       }
       if (savedCode) {
+        autoJoinRef.current = true;
         socket.emit('join_room', { code: savedCode, token: playerToken });
       }
       socket.emit('request_state');
@@ -118,6 +124,7 @@ export default function App() {
     }
 
     socket.on('room_joined', ({ code, isHost: host, myPlayerId: seatId }) => {
+      autoJoinRef.current = false;
       setRoomCode(code);
       setIsHost(!!host);
       setMyPlayerId(seatId ?? null);
@@ -131,7 +138,15 @@ export default function App() {
     });
 
     socket.on('room_error', ({ message }) => {
-      setGateError(message || 'Could not join that room.');
+      if (autoJoinRef.current) {
+        // The saved room simply ended (server restart / everyone left).
+        // Land quietly on the gate with a gentle note — the "not found"
+        // error is reserved for codes the user types in by hand.
+        autoJoinRef.current = false;
+        setGateError('Your last room has ended — start a new one below, or join with a fresh code.');
+      } else {
+        setGateError(message || 'Could not join that room.');
+      }
       setInRoom(false);
       setRoomCode(null);
       try {
@@ -268,6 +283,7 @@ export default function App() {
   };
 
   const handleJoinRoom = (code: string) => {
+    autoJoinRef.current = false;
     setGateError(null);
     socket.emit('join_room', { code, token: playerToken });
   };
