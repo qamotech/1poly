@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { DealPlayer } from '../../deal/dealTypes';
@@ -16,38 +16,90 @@ export const DealGameOver: React.FC<DealGameOverProps> = ({
   onRestart,
   onSwitchToClassic,
 }) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   useEffect(() => {
-    // Grand victory fanfare & Confetti blast
+    // Grand victory fanfare & a celebration that runs the whole time the
+    // champion screen is up: opening explosion, side cannons, money rain
+    // (bills & coins dropping from the top) and fresh explosions every few
+    // seconds — on EVERY win, not just the first.
     audio.playVictory();
 
-    const duration = 4000;
-    const end = Date.now() + duration;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
+    // Dedicated confetti canvas rendered inside this overlay at z-[400].
+    // The shared default confetti canvas lives at z-index 100 — underneath
+    // this screen's z-[300] 90%-opaque backdrop — which is why the old
+    // 4-second blast was barely visible behind the dim.
+    const fire = confetti.create(canvas, { resize: true });
+    const colors = ['#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6'];
+    const moneyShapes = ['💵', '🪙', '💰'].map((text) =>
+      confetti.shapeFromText({ text, scalar: 2 })
+    );
+
+    // Opening explosion
+    fire({
+      particleCount: 90,
+      spread: 110,
+      startVelocity: 42,
+      origin: { x: 0.5, y: 0.45 },
+      colors,
+    });
+
+    // Side cannons for the first few seconds
+    const cannonEnd = Date.now() + 3000;
+    let raf = 0;
     const frame = () => {
-      confetti({
-        particleCount: 4,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ['#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6'],
-      });
-      confetti({
-        particleCount: 4,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ['#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6'],
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
+      fire({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.7 }, colors });
+      fire({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.7 }, colors });
+      if (Date.now() < cannonEnd) {
+        raf = requestAnimationFrame(frame);
       }
     };
     frame();
+
+    // Money rain — bills and coins dropping from the top
+    const rain = setInterval(() => {
+      fire({
+        shapes: moneyShapes,
+        scalar: 1.8,
+        particleCount: 9,
+        angle: 270,
+        spread: 35,
+        startVelocity: 12,
+        gravity: 0.55,
+        ticks: 260,
+        origin: { x: 0.15 + Math.random() * 0.7, y: 0 },
+      });
+    }, 1500);
+
+    // A fresh explosion every few seconds
+    const boom = setInterval(() => {
+      fire({
+        particleCount: 70,
+        spread: 100,
+        startVelocity: 38,
+        origin: { x: 0.25 + Math.random() * 0.5, y: 0.35 + Math.random() * 0.2 },
+        colors,
+      });
+    }, 2800);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      clearInterval(rain);
+      clearInterval(boom);
+      fire.reset();
+    };
   }, []);
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+      {/* Celebration canvas — above the backdrop and the card, clicks pass through */}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 z-[400] w-full h-full pointer-events-none"
+      />
       <motion.div
         initial={{ scale: 0.85, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
