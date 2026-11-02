@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { GamePhase, PlayerType, GameState, TradeOffer, BankruptcyRecord, GameSpeed } from './types';
 import { Lobby } from './components/Lobby';
 import { RoomGate } from './components/RoomGate';
+import type { DealGameState } from './deal/dealTypes';
+import type { DealRemoteAction } from './components/deal/DealGame';
 import { Board } from './components/Board';
 import { HUD } from './components/HUD';
 import { TradeModal } from './components/TradeModal';
@@ -70,6 +72,15 @@ export default function App() {
     const t = setTimeout(() => setToast(null), 2800);
     return () => clearTimeout(t);
   }, [toast]);
+
+  // -- Room Cards match (server-hosted Deal game) ---------------------------
+  const [dealView, setDealView] = useState<DealGameState | null>(null);
+  const [dealActive, setDealActive] = useState(false);
+  const [dealRemote, setDealRemote] = useState(false);
+  const dealRemoteRef = useRef(false);
+  useEffect(() => {
+    dealRemoteRef.current = dealRemote;
+  }, [dealRemote]);
 
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
@@ -164,6 +175,28 @@ export default function App() {
       setToast(message || 'Not your turn');
     });
 
+    // Cards match lifecycle: the server pushes a fresh (redacted) view after
+    // every move; deal_started pulls everyone in the room into the match.
+    socket.on('deal_started', () => {
+      setDealActive(true);
+      setDealRemote(true);
+      setGameMode('deal');
+    });
+
+    socket.on('deal_state', ({ state }) => {
+      setDealView(state);
+      setDealActive(true);
+    });
+
+    socket.on('deal_ended', () => {
+      setDealActive(false);
+      setDealView(null);
+      setDealRemote(false);
+      if (dealRemoteRef.current) {
+        setGameMode('classic');
+      }
+    });
+
     socket.on('game_state_update', (newState: GameState) => {
       // Check if transitioning from Lobby to playing
       if (previousPhase.current === GamePhase.LOBBY && newState.phase !== GamePhase.LOBBY) {
@@ -201,6 +234,9 @@ export default function App() {
       socket.off('seat_claimed');
       socket.off('seat_rejected');
       socket.off('action_denied');
+      socket.off('deal_started');
+      socket.off('deal_state');
+      socket.off('deal_ended');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -240,6 +276,20 @@ export default function App() {
     socket.emit('claim_seat', { playerId });
   };
 
+  // -- Room Cards match actions ----------------------------------------------
+  const handleStartRoomDealMatch = () => {
+    socket.emit('start_deal_match');
+  };
+
+  const handleDealAction = (action: DealRemoteAction) => {
+    socket.emit('deal_action', { action });
+  };
+
+  const handleEnterDealMatch = () => {
+    setDealRemote(true);
+    setGameMode('deal');
+  };
+
   const handleLeaveRoom = () => {
     socket.emit('leave_room');
     setInRoom(false);
@@ -276,6 +326,8 @@ export default function App() {
   };
 
   const handleStartDealGame = (players?: Array<{ id: string; name: string; type: 'USER' | 'CPU'; token: string }>) => {
+    // Solo Cards (local AI) — explicitly not the room match.
+    setDealRemote(false);
     if (players && players.length >= 2) {
       setDealInitialPlayers(players);
     } else if (gameState && gameState.players.length >= 2) {
@@ -384,6 +436,41 @@ export default function App() {
 
   // If currently playing 1poly Cards game
   if (gameMode === 'deal') {
+    // Room match: server-hosted, my view is redacted to my own hand.
+    if (dealRemote && dealView) {
+      return (
+        <Suspense fallback={
+          <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+            <p className="text-xl animate-pulse">Loading 1poly Cards...</p>
+          </div>
+        }>
+          <DealGame
+            initialPlayers={dealView.players.map((p) => ({
+              id: p.id,
+              name: p.name,
+              type: p.type,
+              token: p.token,
+            }))}
+            remote={{
+              state: dealView,
+              myPlayerId,
+              isHost,
+              onAction: handleDealAction,
+            }}
+            onBackToLobby={() => setGameMode('classic')}
+            onSwitchToClassic={() => setGameMode('classic')}
+          />
+        </Suspense>
+      );
+    }
+    if (dealRemote && !dealView) {
+      return (
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+          <p className="text-xl animate-pulse">Joining Cards match…</p>
+        </div>
+      );
+    }
+    // Solo Cards vs local AI (unchanged).
     return (
       <Suspense fallback={
         <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
@@ -502,6 +589,9 @@ export default function App() {
           onClaimSeat={handleClaimSeat}
           onCloseRoom={handleCloseRoom}
           onLeaveRoom={handleLeaveRoom}
+          dealActive={dealActive}
+          onWatchDealMatch={handleEnterDealMatch}
+          onStartRoomDealMatch={handleStartRoomDealMatch}
         />
       ) : (
         <div className="flex flex-col min-h-screen lg:h-screen max-w-[1600px] mx-auto overflow-hidden">

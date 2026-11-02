@@ -47,21 +47,60 @@ import {
   Flame,
 } from 'lucide-react';
 
+/** Actions a remote (multiplayer) client can ask the server to apply. */
+export type DealRemoteAction =
+  | { type: 'bank'; cardId: string }
+  | { type: 'property'; cardId: string; targetColor?: DealColor }
+  | {
+      type: 'action';
+      cardId: string;
+      payload?: {
+        targetPlayerId?: string;
+        targetColor?: DealColor;
+        targetCardId?: string;
+        swapMyCardId?: string;
+        isDoubled?: boolean;
+      };
+    }
+  | { type: 'move_wildcard'; cardId: string; fromColor: DealColor; toColor: DealColor }
+  | { type: 'just_say_no'; useNo: boolean }
+  | { type: 'pay_debt'; bankCardIds: string[]; propertyCards: { color: DealColor; cardId: string }[] }
+  | { type: 'discard'; cardId: string }
+  | { type: 'end_turn' }
+  | { type: 'restart' }
+  | { type: 'end_match' };
+
 interface DealGameProps {
   initialPlayers: Array<{ id: string; name: string; type: 'USER' | 'CPU'; token: string }>;
   onBackToLobby: () => void;
   onSwitchToClassic: () => void;
+  /**
+   * Multiplayer room mode: the server owns the state (this client receives
+   * a redacted view — other hands are stubs) and every move is sent as an
+   * action for the server to referee. Absent = solo vs local AI, unchanged.
+   */
+  remote?: {
+    state: DealGameState;
+    myPlayerId: string | null;
+    isHost: boolean;
+    onAction: (action: DealRemoteAction) => void;
+  };
 }
 
 export const DealGame: React.FC<DealGameProps> = ({
   initialPlayers,
   onBackToLobby,
   onSwitchToClassic,
+  remote,
 }) => {
-  // Deal Game State
-  const [gameState, setGameState] = useState<DealGameState>(() => {
+  // Solo mode owns its state locally; remote mode renders the server's view.
+  const [localState, setLocalState] = useState<DealGameState>(() => {
     return createInitialDealGame(initialPlayers);
   });
+  const gameState = remote ? remote.state : localState;
+  const setGameState = (updater: (prev: DealGameState) => DealGameState) => {
+    if (!remote) setLocalState(updater);
+  };
 
   const [selectedHandCardId, setSelectedHandCardId] = useState<string | null>(null);
   const [pendingCardForActionModal, setPendingCardForActionModal] = useState<DealCard | null>(null);
@@ -82,8 +121,16 @@ export const DealGame: React.FC<DealGameProps> = ({
   const [wildcardToMove, setWildcardToMove] = useState<{ card: DealCard; fromColor: DealColor } | null>(null);
 
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-  const localPlayer = gameState.players.find((p) => p.type === 'USER') || gameState.players[0];
-  const isMyTurn = currentPlayer?.id === localPlayer?.id && gameState.phase === DealGamePhase.PLAYING;
+  // Solo: the (single) human player. Remote: my seat's player — or nobody,
+  // when I'm spectating a match I have no seat in.
+  const remotePlayer = remote
+    ? gameState.players.find((p) => p.id === remote.myPlayerId) ?? null
+    : null;
+  const spectating = !!remote && !remotePlayer;
+  const localPlayer =
+    remotePlayer || gameState.players.find((p) => p.type === 'USER') || gameState.players[0];
+  const isMyTurn =
+    !spectating && currentPlayer?.id === localPlayer?.id && gameState.phase === DealGamePhase.PLAYING;
   const turnsAreUp = isMyTurn && gameState.playsRemaining === 0;
 
   // Flash screen effect when turn plays reach 0.
@@ -102,8 +149,10 @@ export const DealGame: React.FC<DealGameProps> = ({
     return () => clearTimeout(timer);
   }, [turnsAreUp]);
 
-  // AI Turn automation loop
+  // AI Turn automation loop (solo only — in remote matches the server
+  // drives CPUs and empty seats)
   useEffect(() => {
+    if (remote) return;
     if (gameState.phase === DealGamePhase.GAME_OVER) return;
 
     const isCpuTurn = currentPlayer?.type === 'CPU';
@@ -140,10 +189,12 @@ export const DealGame: React.FC<DealGameProps> = ({
     }
   }, [gameState, currentPlayer]);
 
-  // Handlers for Human Player
+  // Handlers for Human Player — solo applies the engine locally; remote
+  // sends the same move to the server, which referees and broadcasts back.
   const handleBankCard = (cardId: string) => {
     audio.playBuy();
-    setGameState((prev) => playCardToBank(prev, cardId));
+    if (remote) remote.onAction({ type: 'bank', cardId });
+    else setGameState((prev) => playCardToBank(prev, cardId));
     setSelectedHandCardId(null);
   };
 
@@ -159,7 +210,8 @@ export const DealGame: React.FC<DealGameProps> = ({
     }
 
     audio.playUiClick();
-    setGameState((prev) => playCardToProperty(prev, card.id, targetColor));
+    if (remote) remote.onAction({ type: 'property', cardId: card.id, targetColor });
+    else setGameState((prev) => playCardToProperty(prev, card.id, targetColor));
     setSelectedHandCardId(null);
   };
 
@@ -178,7 +230,8 @@ export const DealGame: React.FC<DealGameProps> = ({
       setSelectedHandCardId(null);
     } else {
       // Pass Go, Birthday, etc.
-      setGameState((prev) => playActionCard(prev, card.id));
+      if (remote) remote.onAction({ type: 'action', cardId: card.id });
+      else setGameState((prev) => playActionCard(prev, card.id));
       setSelectedHandCardId(null);
     }
   };
@@ -195,10 +248,12 @@ export const DealGame: React.FC<DealGameProps> = ({
 
     if (card.type === DealCardType.PROPERTY || card.type === DealCardType.PROPERTY_WILD || card.type === DealCardType.BUILDING) {
       audio.playUiClick();
-      setGameState((prev) => playCardToProperty(prev, card.id, payload.targetColor));
+      if (remote) remote.onAction({ type: 'property', cardId: card.id, targetColor: payload.targetColor });
+      else setGameState((prev) => playCardToProperty(prev, card.id, payload.targetColor));
     } else {
       audio.playDice();
-      setGameState((prev) => playActionCard(prev, card.id, payload));
+      if (remote) remote.onAction({ type: 'action', cardId: card.id, payload });
+      else setGameState((prev) => playActionCard(prev, card.id, payload));
     }
     setPendingCardForActionModal(null);
   };
@@ -206,21 +261,35 @@ export const DealGame: React.FC<DealGameProps> = ({
   const handleMoveWildcardColor = (toColor: DealColor) => {
     if (!wildcardToMove) return;
     audio.playUiClick();
-    setGameState((prev) =>
-      moveWildcard(prev, wildcardToMove.card.id, wildcardToMove.fromColor, toColor)
-    );
+    if (remote) {
+      remote.onAction({
+        type: 'move_wildcard',
+        cardId: wildcardToMove.card.id,
+        fromColor: wildcardToMove.fromColor,
+        toColor,
+      });
+    } else {
+      setGameState((prev) =>
+        moveWildcard(prev, wildcardToMove.card.id, wildcardToMove.fromColor, toColor)
+      );
+    }
     setWildcardToMove(null);
   };
 
   const handleEndTurn = () => {
     audio.playUiClick();
-    setGameState((prev) => endDealTurn(prev));
+    if (remote) remote.onAction({ type: 'end_turn' });
+    else setGameState((prev) => endDealTurn(prev));
     setSelectedHandCardId(null);
   };
 
   const handleRestart = () => {
     audio.playUiClick();
-    setGameState(createInitialDealGame(initialPlayers));
+    if (remote) {
+      if (remote.isHost) remote.onAction({ type: 'restart' });
+    } else {
+      setLocalState(createInitialDealGame(initialPlayers));
+    }
     setSelectedHandCardId(null);
     setPendingCardForActionModal(null);
   };
@@ -338,13 +407,30 @@ export const DealGame: React.FC<DealGameProps> = ({
             <span className="hidden lg:inline">Classic 1poly</span>
           </button>
 
-          <button
-            onClick={handleRestart}
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 text-xs font-bold transition-colors cursor-pointer"
-            title="Restart Deal Match"
-          >
-            <RefreshCw size={16} />
-          </button>
+          {(!remote || remote.isHost) && (
+            <button
+              onClick={handleRestart}
+              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 text-xs font-bold transition-colors cursor-pointer"
+              title="Restart Deal Match"
+            >
+              <RefreshCw size={16} />
+            </button>
+          )}
+
+          {remote && remote.isHost && (
+            <button
+              onClick={() => {
+                audio.playUiClick();
+                if (window.confirm('End this Cards match for everyone?')) {
+                  remote.onAction({ type: 'end_match' });
+                }
+              }}
+              className="p-2 bg-slate-800 hover:bg-slate-700 text-red-300 hover:text-red-200 rounded-xl border border-slate-700 text-xs font-bold transition-colors cursor-pointer"
+              title="End Cards match for everyone (host)"
+            >
+              <Home size={16} />
+            </button>
+          )}
         </div>
       </header>
 
@@ -523,7 +609,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                 <span className="text-2xl">{localPlayer.token}</span>
                 <div>
                   <h2 className="text-base font-black text-white flex items-center gap-1.5">
-                    <span>{localPlayer.name} (You)</span>
+                    <span>{localPlayer.name}{spectating ? '' : ' (You)'}</span>
                     <span className="text-xs font-normal text-slate-400">
                       • {localPlayer.completedSetsCount} / 3 Full Sets
                     </span>
@@ -620,7 +706,7 @@ export const DealGame: React.FC<DealGameProps> = ({
         <div className="shrink-0 bg-slate-900/90 rounded-2xl p-2.5 sm:p-3 border border-slate-800 space-y-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <span>Your Hand ({localPlayer.hand.length} cards)</span>
+                <span>{spectating ? '👀 Spectating — hands are hidden' : `Your Hand (${localPlayer.hand.length} cards)`}</span>
                 {isMyTurn && !turnsAreUp && (
                   <span className="text-amber-400 font-bold">• Pick a card to play!</span>
                 )}
@@ -679,7 +765,11 @@ export const DealGame: React.FC<DealGameProps> = ({
               )}
             </div>
 
-            {localPlayer.hand.length > 0 ? (
+            {spectating ? (
+              <div className="py-4 text-center text-slate-400 italic text-xs">
+                You're watching this match — claim a seat in the lobby to play in the next one!
+              </div>
+            ) : localPlayer.hand.length > 0 ? (
               <div className="flex gap-2.5 overflow-x-auto pb-1 pt-0.5 custom-scrollbar">
                 {localPlayer.hand.map((card) => {
                   const isSelected = selectedHandCardId === card.id;
@@ -753,25 +843,30 @@ export const DealGame: React.FC<DealGameProps> = ({
         defaultTab="deal"
       />
 
-      {/* Action Target & Debt Resolution Modal */}
-      <DealActionModal
-        gameState={gameState}
-        localPlayer={localPlayer}
-        pendingCardToPlay={pendingCardForActionModal}
-        onCancelCardPlay={() => setPendingCardForActionModal(null)}
-        onResolveJustSayNo={(useNo) => {
-          setGameState((prev) => respondWithJustSayNo(prev, localPlayer.id, useNo));
-        }}
-        onPayDebt={(bankIds, propCards) => {
-          audio.playBuy();
-          setGameState((prev) => payDebtWithCards(prev, localPlayer.id, bankIds, propCards));
-        }}
-        onDiscard={(cardId) => {
-          audio.playUiClick();
-          setGameState((prev) => discardCardFromHand(prev, cardId));
-        }}
-        onSelectActionTargets={handleActionModalTargets}
-      />
+      {/* Action Target & Debt Resolution Modal (never for spectators) */}
+      {!spectating && (
+        <DealActionModal
+          gameState={gameState}
+          localPlayer={localPlayer}
+          pendingCardToPlay={pendingCardForActionModal}
+          onCancelCardPlay={() => setPendingCardForActionModal(null)}
+          onResolveJustSayNo={(useNo) => {
+            if (remote) remote.onAction({ type: 'just_say_no', useNo });
+            else setGameState((prev) => respondWithJustSayNo(prev, localPlayer.id, useNo));
+          }}
+          onPayDebt={(bankIds, propCards) => {
+            audio.playBuy();
+            if (remote) remote.onAction({ type: 'pay_debt', bankCardIds: bankIds, propertyCards: propCards });
+            else setGameState((prev) => payDebtWithCards(prev, localPlayer.id, bankIds, propCards));
+          }}
+          onDiscard={(cardId) => {
+            audio.playUiClick();
+            if (remote) remote.onAction({ type: 'discard', cardId });
+            else setGameState((prev) => discardCardFromHand(prev, cardId));
+          }}
+          onSelectActionTargets={handleActionModalTargets}
+        />
+      )}
 
       {/* Reassign Wildcard Color Modal */}
       {wildcardToMove && (
@@ -825,6 +920,7 @@ export const DealGame: React.FC<DealGameProps> = ({
           winner={gameState.winner}
           onRestart={handleRestart}
           onSwitchToClassic={onSwitchToClassic}
+          canRestart={remote ? remote.isHost : true}
         />
       )}
     </div>

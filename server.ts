@@ -9,6 +9,20 @@ import { processAITurn } from './src/engine/ai.js';
 import { evaluateTradeForAI } from './src/engine/trade.js';
 import { GamePhase, PlayerType } from './src/types.js';
 import type { GameState } from './src/types.js';
+import {
+  createInitialDealGame,
+  playCardToBank,
+  playCardToProperty,
+  playActionCard,
+  respondWithJustSayNo,
+  payDebtWithCards,
+  discardCardFromHand,
+  endDealTurn,
+  moveWildcard,
+} from './src/deal/dealEngine.js';
+import { processAIDealStep } from './src/deal/dealAI.js';
+import { DealGamePhase, DealCardType } from './src/deal/dealTypes.js';
+import type { DealGameState, DealCard } from './src/deal/dealTypes.js';
 
 // Render (and most PaaS hosts) assign the port via $PORT; 3000 is the local default.
 const PORT = Number(process.env.PORT) || 3000;
@@ -37,6 +51,8 @@ interface Room {
   seats: Map<string, string>; // playerToken -> playerId
   seatOwners: Map<string, string>; // playerId -> playerToken
   sockets: Map<string, string>; // socketId -> playerToken
+  // A 1poly Cards match hosted inside this room (null = none running).
+  deal: { state: DealGameState; gen: number; aiPending: boolean } | null;
 }
 
 const rooms = new Map<string, Room>();
@@ -74,6 +90,108 @@ async function startServer() {
     io.to(room.code).emit('seat_update', { seats });
   }
 
+  // -- 1poly Cards (Deal) matches ------------------------------------------
+  // A match runs on the same room + seats as the classic game. Hands and the
+  // deck are secret: every socket receives its OWN redacted view (other
+  // players' hands and the draw pile are stub cards of the right count).
+
+  function dealViewerId(room: Room, token: string): string | null {
+    if (!room.deal) return null;
+    const seatId = room.seats.get(token) ?? null;
+    return seatId && room.deal.state.players.some((p) => p.id === seatId) ? seatId : null;
+  }
+
+  const hiddenCard = (owner: string, i: number): DealCard => ({
+    id: `hidden-${owner}-${i}`,
+    name: 'Hidden Card',
+    type: DealCardType.MONEY,
+    value: 0,
+    description: '',
+  });
+
+  function dealViewFor(state: DealGameState, viewerId: string | null): DealGameState {
+    const view = JSON.parse(JSON.stringify(state)) as DealGameState;
+    view.deck = state.deck.map((_, i) => hiddenCard('deck', i));
+    for (const p of view.players) {
+      if (p.id !== viewerId) p.hand = p.hand.map((_, i) => hiddenCard(p.id, i));
+    }
+    if (view.winner && view.winner.id !== viewerId) {
+      view.winner.hand = view.winner.hand.map((_, i) => hiddenCard(view.winner!.id, i));
+    }
+    return view;
+  }
+
+  function sendDealViews(room: Room) {
+    if (!room.deal) return;
+    for (const [sid, tok] of room.sockets) {
+      const s = io.sockets.sockets.get(sid);
+      if (!s) continue;
+      s.emit('deal_state', { state: dealViewFor(room.deal.state, dealViewerId(room, tok)) });
+    }
+  }
+
+  // A player is human-driven only while their seat owner is connected;
+  // CPUs and empty seats are driven by the shared AI so a match never stalls.
+  function dealControl(room: Room, player: { id: string; type: 'USER' | 'CPU' }): 'human' | 'ai' {
+    if (player.type === 'CPU') return 'ai';
+    const owner = room.seatOwners.get(player.id);
+    if (owner && [...room.sockets.values()].includes(owner)) return 'human';
+    return 'ai';
+  }
+
+  function dealNeedsAI(room: Room): boolean {
+    const st = room.deal?.state;
+    if (!st || st.phase === DealGamePhase.GAME_OVER) return false;
+    if (st.phase === DealGamePhase.AWAITING_JUST_SAY_NO && st.pendingAction) {
+      const responder = st.players.find(
+        (p) =>
+          st.pendingAction!.pendingPaymentPlayerIds.includes(p.id) ||
+          p.id === st.pendingAction!.targetPlayerId ||
+          (st.pendingAction!.lastJustSayNoPlayerId && p.id === st.pendingAction!.sourcePlayerId)
+      );
+      return !!responder && dealControl(room, responder) === 'ai';
+    }
+    if (st.phase === DealGamePhase.AWAITING_PAYMENT && st.pendingAction) {
+      return st.players.some(
+        (p) => st.pendingAction!.pendingPaymentPlayerIds.includes(p.id) && dealControl(room, p) === 'ai'
+      );
+    }
+    const current = st.players[st.currentPlayerIndex];
+    return !!current && dealControl(room, current) === 'ai';
+  }
+
+  function scheduleDealAI(room: Room) {
+    if (!room.deal || room.deal.aiPending) return;
+    if (!dealNeedsAI(room)) return;
+    const gen = room.deal.gen;
+    room.deal.aiPending = true;
+    setTimeout(() => {
+      if (rooms.get(room.code) !== room || !room.deal || room.deal.gen !== gen) return;
+      room.deal.aiPending = false;
+      if (!dealNeedsAI(room)) return;
+      try {
+        // Present AI-driven USER seats as CPU inside a scratch copy so the
+        // shared AI driver will step them; restore real types on the result.
+        const before = room.deal.state;
+        const flipped = JSON.parse(JSON.stringify(before)) as DealGameState;
+        for (const p of flipped.players) {
+          if (p.type === 'USER' && dealControl(room, p) === 'ai') p.type = 'CPU';
+        }
+        const next = processAIDealStep(flipped);
+        if (next !== flipped) {
+          const types = new Map(before.players.map((p) => [p.id, p.type]));
+          for (const p of next.players) p.type = types.get(p.id) ?? p.type;
+          if (next.winner) next.winner.type = types.get(next.winner.id) ?? next.winner.type;
+          room.deal.state = next;
+          sendDealViews(room);
+        }
+      } catch (e) {
+        console.error('deal AI step failed', e);
+      }
+      scheduleDealAI(room);
+    }, 1000);
+  }
+
   interface Ctx {
     room: Room;
     token: string;
@@ -109,8 +227,10 @@ async function startServer() {
   function cleanupRoomIfEmpty(room: Room) {
     if (room.sockets.size > 0) return;
     // Safe to delete: an untouched lobby, or a room nobody ever sat in.
-    // A mid-game room with claimed seats persists so players can reconnect.
-    if (room.state.phase === GamePhase.LOBBY || room.seats.size === 0) {
+    // A mid-game room (classic or Cards) with claimed seats persists so
+    // players can reconnect.
+    const dealLive = !!room.deal && room.deal.state.phase !== DealGamePhase.GAME_OVER;
+    if ((room.state.phase === GamePhase.LOBBY && !dealLive) || room.seats.size === 0) {
       rooms.delete(room.code);
       console.log(`Room ${room.code} cleaned up`);
     }
@@ -137,6 +257,14 @@ async function startServer() {
         taken: room.seatOwners.has(p.id),
       }));
       socket.emit('seat_update', { seats });
+      // A Cards match may already be running in this room: send this
+      // socket its (redacted) view, and pull seated players straight back
+      // into the match — that's what makes refresh/reconnect seamless.
+      if (room.deal) {
+        const viewerId = dealViewerId(room, token);
+        socket.emit('deal_state', { state: dealViewFor(room.deal.state, viewerId) });
+        if (viewerId) socket.emit('deal_started', {});
+      }
     };
 
     // -- Room lifecycle -----------------------------------------------------
@@ -150,6 +278,7 @@ async function startServer() {
         seats: new Map(),
         seatOwners: new Map(),
         sockets: new Map(),
+        deal: null,
       };
       rooms.set(room.code, room);
       joinSocketToRoom(room, hostToken);
@@ -281,6 +410,11 @@ async function startServer() {
       if (!c) return;
       if (!c.isHost) return deny(socket, 'Only the host can restart the game');
       c.room.state = createInitialGameState();
+      // A roster rebuild invalidates any running Cards match too.
+      if (c.room.deal) {
+        c.room.deal = null;
+        io.to(c.room.code).emit('deal_ended', {});
+      }
       // Back to a fresh lobby: the roster is rebuilt, so seats reset too.
       c.room.seats.clear();
       c.room.seatOwners.clear();
@@ -476,6 +610,120 @@ async function startServer() {
       broadcastState(c.room);
     });
 
+    // -- 1poly Cards match (host starts; seats drive; server referees) -------
+
+    socket.on('start_deal_match', () => {
+      const c = ctxOf(socket);
+      if (!c) return;
+      if (!c.isHost) return deny(socket, 'Only the host can start a Cards match');
+      if (c.room.state.players.length < 2) return deny(socket, 'Add at least 2 players first');
+      if (c.room.deal && c.room.deal.state.phase !== DealGamePhase.GAME_OVER) {
+        return deny(socket, 'A Cards match is already running');
+      }
+      const roster = c.room.state.players.map((p) => ({
+        id: p.id,
+        name: p.name,
+        type: p.type,
+        token: p.token,
+      }));
+      c.room.deal = {
+        state: createInitialDealGame(roster),
+        gen: (c.room.deal?.gen ?? 0) + 1,
+        aiPending: false,
+      };
+      io.to(c.room.code).emit('deal_started', {});
+      sendDealViews(c.room);
+      scheduleDealAI(c.room);
+    });
+
+    socket.on('deal_action', ({ action }: { action?: any } = {}) => {
+      const c = ctxOf(socket);
+      if (!c || !c.room.deal || !action || typeof action.type !== 'string') return;
+      const room = c.room;
+      const st = room.deal.state;
+      const me = c.myId;
+      const current = st.players[st.currentPlayerIndex];
+      const isCurrent = !!me && current?.id === me;
+      try {
+        switch (action.type) {
+          case 'restart': {
+            if (!c.isHost) return deny(socket, 'Only the host can restart the match');
+            const roster = st.players.map((p) => ({
+              id: p.id,
+              name: p.name,
+              type: p.type,
+              token: p.token,
+            }));
+            room.deal = {
+              state: createInitialDealGame(roster),
+              gen: room.deal.gen + 1,
+              aiPending: false,
+            };
+            io.to(room.code).emit('deal_started', {});
+            sendDealViews(room);
+            scheduleDealAI(room);
+            return;
+          }
+          case 'end_match': {
+            if (!c.isHost) return deny(socket, 'Only the host can end the match');
+            room.deal = null;
+            io.to(room.code).emit('deal_ended', {});
+            return;
+          }
+          case 'bank':
+            if (!isCurrent) return deny(socket);
+            room.deal.state = playCardToBank(st, action.cardId);
+            break;
+          case 'property':
+            if (!isCurrent) return deny(socket);
+            room.deal.state = playCardToProperty(st, action.cardId, action.targetColor);
+            break;
+          case 'action':
+            if (!isCurrent) return deny(socket);
+            room.deal.state = playActionCard(st, action.cardId, action.payload);
+            break;
+          case 'move_wildcard':
+            if (!isCurrent) return deny(socket);
+            room.deal.state = moveWildcard(st, action.cardId, action.fromColor, action.toColor);
+            break;
+          case 'end_turn':
+            if (!isCurrent) return deny(socket);
+            room.deal.state = endDealTurn(st);
+            break;
+          case 'discard':
+            if (!isCurrent) return deny(socket);
+            room.deal.state = discardCardFromHand(st, action.cardId);
+            break;
+          case 'just_say_no': {
+            const pa = st.pendingAction;
+            if (!pa || !me) return deny(socket);
+            const canRespond =
+              pa.pendingPaymentPlayerIds.includes(me) ||
+              pa.targetPlayerId === me ||
+              (!!pa.lastJustSayNoPlayerId && pa.sourcePlayerId === me);
+            if (!canRespond) return deny(socket);
+            room.deal.state = respondWithJustSayNo(st, me, !!action.useNo);
+            break;
+          }
+          case 'pay_debt': {
+            const pa = st.pendingAction;
+            if (!pa || !me || !pa.pendingPaymentPlayerIds.includes(me)) {
+              return deny(socket, 'Not your payment to make');
+            }
+            room.deal.state = payDebtWithCards(st, me, action.bankCardIds || [], action.propertyCards || []);
+            break;
+          }
+          default:
+            return;
+        }
+      } catch (e) {
+        console.error('deal_action failed', e);
+        return;
+      }
+      sendDealViews(room);
+      scheduleDealAI(room);
+    });
+
     socket.on('disconnect', () => {
       console.log('Client disconnected:', socket.id);
       const code = socketRoom.get(socket.id);
@@ -484,6 +732,8 @@ async function startServer() {
         const room = rooms.get(code);
         if (room) {
           room.sockets.delete(socket.id);
+          // A phone leaving mid-match hands its seat to the AI until it's back.
+          if (room.deal) scheduleDealAI(room);
           cleanupRoomIfEmpty(room);
         }
       }

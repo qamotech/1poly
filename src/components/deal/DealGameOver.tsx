@@ -9,12 +9,15 @@ interface DealGameOverProps {
   winner: DealPlayer | null;
   onRestart: () => void;
   onSwitchToClassic: () => void;
+  /** Multiplayer: only the host can deal the rematch. */
+  canRestart?: boolean;
 }
 
 export const DealGameOver: React.FC<DealGameOverProps> = ({
   winner,
   onRestart,
   onSwitchToClassic,
+  canRestart = true,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -147,15 +150,21 @@ export const DealGameOver: React.FC<DealGameOverProps> = ({
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
-          <button
-            onClick={() => {
-              audio.playUiClick();
-              onRestart();
-            }}
-            className="flex-1 py-3 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <RefreshCw size={16} /> Deal Again (Rematch)
-          </button>
+          {canRestart ? (
+            <button
+              onClick={() => {
+                audio.playUiClick();
+                onRestart();
+              }}
+              className="flex-1 py-3 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <RefreshCw size={16} /> Deal Again (Rematch)
+            </button>
+          ) : (
+            <div className="flex-1 py-3 px-4 bg-slate-800/60 text-slate-400 font-bold text-sm rounded-xl border border-slate-700 flex items-center justify-center gap-2">
+              ⏳ Waiting for the host to deal the rematch…
+            </div>
+          )}
           <button
             onClick={() => {
               audio.playUiClick();

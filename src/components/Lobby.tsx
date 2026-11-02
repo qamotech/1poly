@@ -82,6 +82,10 @@ interface LobbyProps {
   onClaimSeat?: (playerId: string) => void;
   onCloseRoom?: () => void;
   onLeaveRoom?: () => void;
+  // Room Cards match (server-hosted Deal game in this room)
+  dealActive?: boolean;
+  onWatchDealMatch?: () => void;
+  onStartRoomDealMatch?: () => void;
 }
 
 export const Lobby: React.FC<LobbyProps> = ({
@@ -99,7 +103,10 @@ export const Lobby: React.FC<LobbyProps> = ({
   takenSeats,
   onClaimSeat,
   onCloseRoom,
-  onLeaveRoom
+  onLeaveRoom,
+  dealActive = false,
+  onWatchDealMatch,
+  onStartRoomDealMatch
 }) => {
   const [codeCopied, setCodeCopied] = useState(false);
 
@@ -397,6 +404,17 @@ export const Lobby: React.FC<LobbyProps> = ({
                   ? 'Family opens 1poly, taps Join Game, enters the code, then taps "I am …" on their player.'
                   : 'Tap "I am …" on your player below — your phone will only control you.'}
               </p>
+              {dealActive && onWatchDealMatch && (
+                <button
+                  onClick={() => {
+                    audio.playUiClick();
+                    onWatchDealMatch();
+                  }}
+                  className="text-[11px] font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-3 py-1.5 rounded-lg shadow transition-all cursor-pointer"
+                >
+                  🃏 Cards match live — jump in!
+                </button>
+              )}
               {isHost ? (
                 <button
                   onClick={() => {
@@ -757,11 +775,18 @@ export const Lobby: React.FC<LobbyProps> = ({
               <Play fill="currentColor" size={18} /> Start Classic 1poly ({gameState.players.length})
             </button>
 
-            <button 
-              onClick={() => handleStartDealWithCurrentPlayers()}
+            <button
+              onClick={() => {
+                if (roomCode && onStartRoomDealMatch) {
+                  audio.playUiClick();
+                  onStartRoomDealMatch();
+                } else {
+                  handleStartDealWithCurrentPlayers();
+                }
+              }}
               className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer"
             >
-              <Sparkles size={20} /> Start 1poly Cards
+              <Sparkles size={20} /> {roomCode ? 'Start 1poly Cards — Room Match 🌐' : 'Start 1poly Cards'}
             </button>
           </div>
 
@@ -801,6 +826,17 @@ export const Lobby: React.FC<LobbyProps> = ({
                 ? "✅ Your seat is claimed — you're ready when the game starts!"
                 : 'Tap "📱 I am …" on your player above so your phone controls you when the game starts.'}
             </p>
+            {dealActive && onWatchDealMatch && (
+              <button
+                onClick={() => {
+                  audio.playUiClick();
+                  onWatchDealMatch();
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs rounded-xl shadow transition-all cursor-pointer"
+              >
+                🃏 A Cards match is live — jump in!
+              </button>
+            )}
           </div>
         )}
       </div>
