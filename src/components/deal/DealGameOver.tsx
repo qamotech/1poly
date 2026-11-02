@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { DealPlayer } from '../../deal/dealTypes';
 import { Trophy, Sparkles, RefreshCw, Home, DollarSign, Swords } from 'lucide-react';
 import { audio } from '../../audio';
+import { WaveText } from '../Fx';
 
 interface DealGameOverProps {
   winner: DealPlayer | null;
@@ -106,7 +107,7 @@ export const DealGameOver: React.FC<DealGameOverProps> = ({
       <motion.div
         initial={{ scale: 0.85, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="bg-slate-900 border-2 border-amber-400 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center shadow-2xl space-y-6 relative overflow-hidden"
+        className="bg-slate-900 border-2 border-amber-400 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center shadow-2xl space-y-6 relative overflow-hidden fx-modal-frame"
       >
         {/* Glow effect */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -115,10 +116,10 @@ export const DealGameOver: React.FC<DealGameOverProps> = ({
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black uppercase tracking-widest">
             <Trophy size={14} /> 1poly Cards Champion
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-white">
-            {winner?.name} Wins!
+          <h2 className="text-3xl sm:text-4xl font-black fx-shimmer-text">
+            <WaveText text={winner?.name ?? ''} /> Wins!
           </h2>
-          <div className="text-5xl my-3 filter drop-shadow-lg">{winner?.token}</div>
+          <div className="text-5xl my-3 filter drop-shadow-lg fx-trophy-bounce">{winner?.token}</div>
           <p className="text-xs sm:text-sm text-slate-300 max-w-sm mx-auto">
             Successfully collected <strong>3 Complete Property Sets</strong> and conquered the 1poly Cards arena!
           </p>

@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { Player } from '../types';
 import { audio } from '../audio';
+import { WaveText } from './Fx';
 import { Trophy, Sparkles, RotateCcw, Award, DollarSign, Home, Building } from 'lucide-react';
 
 interface GameOverScreenProps {
@@ -174,7 +175,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
             <Sparkles size={14} className="text-amber-400" />
           </div>
           
-          <h1 className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 drop-shadow-sm mb-4 text-center tracking-tight">
+          <h1 className="text-4xl sm:text-5xl font-black fx-shimmer-text drop-shadow-sm mb-4 text-center tracking-tight">
             VICTORY!
           </h1>
 
@@ -194,7 +195,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
               </motion.div>
 
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white text-center">
-                {winner.name}
+                <WaveText text={winner.name} />
               </h2>
               
               <div className="mt-1 flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/50">

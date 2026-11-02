@@ -74,7 +74,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-slate-900 border-2 border-indigo-500/80 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 text-center relative"
+          className="bg-slate-900 border-2 border-indigo-500/80 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 text-center relative fx-modal-pop"
         >
           <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 flex items-center justify-center mx-auto text-2xl shadow-inner">
             <Shield size={32} />
@@ -166,7 +166,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-slate-900 border-2 border-red-500/80 rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl space-y-4 overflow-hidden"
+          className="bg-slate-900 border-2 border-red-500/80 rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl space-y-4 overflow-hidden fx-modal-pop"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -278,7 +278,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-slate-900 border-2 border-amber-500/80 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-4"
+          className="bg-slate-900 border-2 border-amber-500/80 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-4 fx-modal-pop"
         >
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
@@ -333,7 +333,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-900 border-2 border-red-500 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4"
+            className="bg-slate-900 border-2 border-red-500 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 fx-modal-pop"
           >
             <h3 className="text-xl font-black text-white flex items-center gap-2">
               <Swords className="text-red-500" /> Choose Complete Set to Steal
@@ -392,7 +392,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-900 border-2 border-amber-500 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-4"
+            className="bg-slate-900 border-2 border-amber-500 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-4 fx-modal-pop"
           >
             <h3 className="text-xl font-black text-white flex items-center gap-2">
               <Swords className="text-amber-500" /> Choose Single Property to Steal
@@ -462,7 +462,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-4 max-h-[85vh] flex flex-col"
+            className="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-4 max-h-[85vh] flex flex-col fx-modal-pop"
           >
             <h3 className="text-xl font-black text-white flex items-center gap-2">
               <ArrowRightLeft className="text-emerald-400" /> Forced Deal (Swap Properties)
@@ -579,7 +579,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-900 border-2 border-amber-500 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4"
+            className="bg-slate-900 border-2 border-amber-500 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 fx-modal-pop"
           >
             <h3 className="text-xl font-black text-white flex items-center gap-2">
               <DollarSign className="text-amber-400" /> Debt Collector ($5M)
@@ -643,7 +643,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4"
+            className="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 fx-modal-pop"
           >
             <h3 className="text-xl font-black text-white flex items-center gap-2">
               <Home className="text-emerald-400" /> Place {isHouse ? 'House (+ $3M Rent)' : 'Hotel (+ $4M Rent)'}
@@ -703,7 +703,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-900 border-2 border-indigo-500 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4"
+            className="bg-slate-900 border-2 border-indigo-500 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 fx-modal-pop"
           >
             <h3 className="text-xl font-black text-white flex items-center gap-2">
               <Sparkles className="text-indigo-400" /> Choose Color for Wildcard
@@ -757,7 +757,7 @@ export const DealActionModal: React.FC<DealActionModalProps> = ({
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-900 border-2 border-cyan-500 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4"
+            className="bg-slate-900 border-2 border-cyan-500 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 fx-modal-pop"
           >
             <h3 className="text-xl font-black text-white flex items-center gap-2">
               <DollarSign className="text-cyan-400" /> Charge Rent on Property Set

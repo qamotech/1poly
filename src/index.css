@@ -24,3 +24,164 @@
     backface-visibility: hidden;
   }
 }
+
+/* ============================================================
+   1poly COLOR & MOTION PACK
+   Effects: aura background, rainbow shimmer text, neon buttons,
+   rainbow rings, modal gradient frames, coin bursts, dice sparkles.
+   Animations: float bob, deal-in, dice shake, banner slide-in,
+   modal pop, token hop, trophy bounce, winner-name wave.
+   (No reduced-motion handling — Nathan's standing rule.)
+   ============================================================ */
+
+/* E1 — layered rainbow aura over the slate base */
+.fx-aura-bg {
+  background-color: #020617;
+  background-image:
+    radial-gradient(620px 420px at 12% -5%, rgba(139, 92, 246, 0.22), transparent 60%),
+    radial-gradient(720px 520px at 92% 8%, rgba(16, 185, 129, 0.15), transparent 60%),
+    radial-gradient(820px 620px at 50% 112%, rgba(217, 70, 239, 0.13), transparent 62%),
+    radial-gradient(420px 320px at 82% 82%, rgba(59, 130, 246, 0.13), transparent 60%),
+    radial-gradient(380px 300px at 8% 78%, rgba(245, 158, 11, 0.10), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* E2 — animated rainbow shimmer text */
+@keyframes fx-shimmer {
+  to { background-position: 200% 0; }
+}
+.fx-shimmer-text {
+  background-image: linear-gradient(90deg, #fbbf24, #f87171, #e879f9, #a78bfa, #60a5fa, #34d399, #fbbf24);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fx-shimmer 7s linear infinite;
+}
+
+/* E5 — neon gradient primary buttons */
+.fx-neon-btn {
+  background-image: linear-gradient(92deg, #7c3aed, #d946ef 55%, #f59e0b);
+  box-shadow: 0 0 22px rgba(217, 70, 239, 0.45), 0 4px 14px rgba(0, 0, 0, 0.45);
+  color: #fff;
+}
+.fx-neon-btn:hover { filter: brightness(1.13); }
+.fx-neon-btn-blue {
+  background-image: linear-gradient(92deg, #2563eb, #7c3aed 60%, #06b6d4);
+  box-shadow: 0 0 22px rgba(124, 58, 237, 0.45), 0 4px 14px rgba(0, 0, 0, 0.45);
+  color: #fff;
+}
+.fx-neon-btn-blue:hover { filter: brightness(1.13); }
+
+/* E5b — rainbow ring (turn banners, highlights) */
+.fx-rainbow-ring {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgba(2, 6, 23, 0.92), rgba(2, 6, 23, 0.92)) padding-box,
+    linear-gradient(100deg, #f59e0b, #ef4444, #d946ef, #3b82f6, #10b981, #f59e0b) border-box;
+  background-size: auto, 220% 100%;
+  animation: fx-shimmer 5s linear infinite;
+  box-shadow: 0 0 26px rgba(217, 70, 239, 0.35), 0 10px 34px rgba(0, 0, 0, 0.5);
+}
+
+/* E6 — modal gradient frame */
+.fx-modal-frame {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#0f172a, #0f172a) padding-box,
+    linear-gradient(135deg, rgba(245, 158, 11, 0.75), rgba(217, 70, 239, 0.6), rgba(59, 130, 246, 0.65)) border-box;
+}
+
+/* A5 — modal spring pop-in */
+@keyframes fx-pop {
+  0% { opacity: 0; transform: scale(0.9) translateY(14px); }
+  60% { opacity: 1; transform: scale(1.025) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.fx-modal-pop { animation: fx-pop 0.38s cubic-bezier(0.22, 0.9, 0.3, 1.15) both; }
+
+/* A1 — gentle floating bob */
+@keyframes fx-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+.fx-float-bob { animation: fx-bob 3.2s ease-in-out infinite; }
+
+/* A2 — hand card deal-in */
+@keyframes fx-deal-in {
+  0% { opacity: 0; transform: translateY(18px) scale(0.9) rotate(-2deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+.fx-deal-in { animation: fx-deal-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+/* A3 — dice wrapper shake while rolling (the 3D cube spins separately) */
+@keyframes fx-dice-shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-2px, -3px) rotate(-4deg); }
+  40% { transform: translate(3px, -1px) rotate(3deg); }
+  60% { transform: translate(-3px, 2px) rotate(-3deg); }
+  80% { transform: translate(2px, -2px) rotate(4deg); }
+}
+.fx-dice-shake { animation: fx-dice-shake 0.42s ease-in-out infinite; }
+
+/* E8 — sparkle burst around the rolling dice */
+@keyframes fx-sparkle {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.3); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(1.15); }
+}
+.fx-sparkles { position: absolute; inset: 0; pointer-events: none; }
+.fx-sparkles i {
+  position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; border-radius: 9999px;
+  animation: fx-sparkle 0.9s ease-out infinite;
+}
+.fx-sparkles i:nth-child(1) { --sx: -34px; --sy: -26px; background: #fbbf24; animation-delay: 0s; }
+.fx-sparkles i:nth-child(2) { --sx: 30px; --sy: -32px; background: #e879f9; animation-delay: 0.12s; }
+.fx-sparkles i:nth-child(3) { --sx: 38px; --sy: 12px; background: #60a5fa; animation-delay: 0.24s; }
+.fx-sparkles i:nth-child(4) { --sx: -38px; --sy: 16px; background: #34d399; animation-delay: 0.36s; }
+.fx-sparkles i:nth-child(5) { --sx: 0px; --sy: -42px; background: #f87171; animation-delay: 0.48s; }
+.fx-sparkles i:nth-child(6) { --sx: -14px; --sy: 34px; background: #a78bfa; animation-delay: 0.6s; }
+.fx-sparkles i:nth-child(7) { --sx: 18px; --sy: 32px; background: #fbbf24; animation-delay: 0.72s; }
+.fx-sparkles i:nth-child(8) { --sx: 0px; --sy: 0px; background: #fff; animation-delay: 0.84s; }
+
+/* E7 — coin burst when cash goes up */
+@keyframes fx-coin-float {
+  0% { opacity: 0; transform: translate(0, 4px) scale(0.5); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--cx), -46px) scale(1.1); }
+}
+.fx-coin-burst { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
+.fx-coin-burst i {
+  position: absolute; right: 6px; top: -2px; font-style: normal; font-size: 13px;
+  animation: fx-coin-float 1.15s ease-out both;
+}
+
+/* A4 — turn banner slide-in */
+@keyframes fx-banner-in {
+  0% { opacity: 0; transform: translateY(-14px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.fx-banner-in { animation: fx-banner-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+/* A6 — board token hop (one hop per board step) */
+@keyframes fx-hop {
+  0% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-9px) scale(1.12); }
+  70% { transform: translateY(1px) scale(0.97); }
+  100% { transform: translateY(0) scale(1); }
+}
+.fx-hop { animation: fx-hop 0.3s ease-out both; display: inline-block; }
+
+/* A8 — trophy bounce + winner-name letter wave */
+@keyframes fx-trophy-bounce {
+  0%, 100% { transform: translateY(0) rotate(-3deg) scale(1); }
+  30% { transform: translateY(-12px) rotate(3deg) scale(1.08); }
+  55% { transform: translateY(0) rotate(0deg) scale(0.97); }
+  75% { transform: translateY(-6px) scale(1.04); }
+}
+.fx-trophy-bounce { animation: fx-trophy-bounce 1.8s ease-in-out infinite; display: inline-block; }
+@keyframes fx-wave-letter {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.fx-wave-letter { animation: fx-wave-letter 1.4s ease-in-out infinite; display: inline-block; }

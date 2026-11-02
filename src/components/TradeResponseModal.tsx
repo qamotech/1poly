@@ -46,7 +46,7 @@ export const TradeResponseModal: React.FC<TradeResponseModalProps> = ({ gameStat
         id="trade-response-modal-card"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-slate-900 border-2 border-blue-500/50 rounded-3xl p-6 shadow-[0_0_40px_rgba(59,130,246,0.25)] max-w-xl w-full flex flex-col gap-5 text-white max-h-[92dvh] overflow-y-auto custom-scrollbar"
+        className="bg-slate-900 border-2 border-blue-500/50 rounded-3xl p-6 shadow-[0_0_40px_rgba(59,130,246,0.25)] max-w-xl w-full flex flex-col gap-5 text-white max-h-[92dvh] overflow-y-auto custom-scrollbar fx-modal-pop"
       >
         <div className="text-center">
           <span className="text-4xl mb-1 block">🤝</span>

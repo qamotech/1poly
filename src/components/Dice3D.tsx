@@ -15,7 +15,12 @@ export const Dice3D: React.FC<{ rolling: boolean, face: number }> = ({ rolling, 
   const rot = faceRotations[face] || faceRotations[1];
 
   return (
-    <div className="w-16 h-16 relative" style={{ perspective: '1000px' }}>
+    <div className={`w-16 h-16 relative ${rolling ? 'fx-dice-shake' : ''}`} style={{ perspective: '1000px' }}>
+      {rolling && (
+        <span className="fx-sparkles" aria-hidden="true">
+          <i /><i /><i /><i /><i /><i /><i /><i />
+        </span>
+      )}
       <motion.div
         className="w-full h-full relative"
         style={{ transformStyle: 'preserve-3d' }}

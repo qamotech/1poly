@@ -571,7 +571,7 @@ export default function App() {
     : false;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-slate-950 fx-aura-bg text-slate-50 font-sans selection:bg-blue-500/30">
       <InstallButton />
       {/* Soft notice from the server when an action isn't this phone's to make */}
       {toast && (

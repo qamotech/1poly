@@ -48,7 +48,7 @@ export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({
         initial={{ scale: 0.94, opacity: 0, y: 15 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.94, opacity: 0, y: 15 }}
-        className="bg-slate-900 border-2 border-slate-700 rounded-3xl shadow-2xl max-w-3xl w-full flex flex-col max-h-[92vh] overflow-hidden"
+        className="bg-slate-900 border-2 border-slate-700 rounded-3xl shadow-2xl max-w-3xl w-full flex flex-col max-h-[92vh] overflow-hidden fx-modal-pop"
       >
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 border-b border-slate-800 shrink-0 gap-4 bg-slate-900/90">

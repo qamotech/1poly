@@ -33,7 +33,7 @@ export const CardDrawModal: React.FC<CardDrawModalProps> = ({ gameState, onClose
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
-      <div className="relative w-full max-w-sm" onClick={e => e.stopPropagation()} style={{ perspective: '1200px' }}>
+      <div className="relative w-full max-w-sm fx-modal-pop" onClick={e => e.stopPropagation()} style={{ perspective: '1200px' }}>
         
         {/* The Card Container */}
         <motion.div

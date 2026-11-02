@@ -119,7 +119,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({ gameState, currentPlayer
         id="trade-modal-card"
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="bg-slate-900 border border-slate-700 rounded-3xl p-4 sm:p-6 shadow-2xl max-w-2xl w-full flex flex-col gap-4 sm:gap-5 text-white max-h-[92dvh]"
+        className="bg-slate-900 border border-slate-700 rounded-3xl p-4 sm:p-6 shadow-2xl max-w-2xl w-full flex flex-col gap-4 sm:gap-5 text-white max-h-[92dvh] fx-modal-pop fx-modal-frame"
       >
         <div className="flex justify-between items-center border-b border-slate-800 pb-3 shrink-0">
           <h2 className="text-2xl font-black text-white flex items-center gap-2">

@@ -326,7 +326,7 @@ export const Lobby: React.FC<LobbyProps> = ({
 
       <h1 
         id="lobby-main-title" 
-        className="relative text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-yellow-400 to-amber-500 drop-shadow-[0_4px_12px_rgba(245,158,11,0.35)] tracking-wider sm:tracking-widest uppercase text-center max-w-full break-words flex items-center justify-center gap-3 sm:gap-4 py-1"
+        className="relative text-4xl sm:text-6xl md:text-7xl font-black fx-shimmer-text drop-shadow-[0_4px_12px_rgba(217,70,239,0.35)] tracking-wider sm:tracking-widest uppercase text-center max-w-full break-words flex items-center justify-center gap-3 sm:gap-4 py-1"
       >
         <motion.span 
           animate={{ 
@@ -517,7 +517,7 @@ export const Lobby: React.FC<LobbyProps> = ({
             }
 
             return (
-              <div key={p.id} className="flex items-center justify-between bg-slate-700/50 p-3 md:p-4 rounded-xl border border-slate-600/50 group hover:border-slate-500 transition-all">
+              <div key={p.id} className="flex items-center justify-between bg-slate-700/50 p-3 md:p-4 rounded-xl border border-slate-600/50 group hover:border-slate-500 transition-all" style={{ boxShadow: `0 0 14px ${p.color}2e, inset 0 0 0 1px ${p.color}38` }}>
                 <div className="flex items-center gap-3">
                   {p.type === PlayerType.USER ? <User className="text-green-400" /> : <Bot className="text-blue-400" />}
                   <span className="text-white font-medium text-base md:text-lg">
@@ -770,7 +770,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                 onStartGame();
               }}
               disabled={gameState.players.length < 2}
-              className="flex items-center justify-center gap-3 bg-green-500 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer"
+              className="flex items-center justify-center gap-3 fx-neon-btn disabled:opacity-50 disabled:cursor-not-allowed font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer"
             >
               <Play fill="currentColor" size={18} /> Start Classic 1poly ({gameState.players.length})
             </button>
@@ -784,7 +784,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                   handleStartDealWithCurrentPlayers();
                 }
               }}
-              className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer"
+              className="flex items-center justify-center gap-3 fx-neon-btn-blue font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer"
             >
               <Sparkles size={20} /> {roomCode ? 'Start 1poly Cards — Room Match 🌐' : 'Start 1poly Cards'}
             </button>

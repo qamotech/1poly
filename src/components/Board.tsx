@@ -550,7 +550,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
 
                 {/* Ownership Ribbon Indicator */}
                 {owner && !propState?.isMortgaged && (
-                  <div className="absolute bottom-0 inset-x-0 h-1.5 bg-slate-900/90 flex items-center justify-center z-5 border-t border-slate-700">
+                  <div className="absolute bottom-0 inset-x-0 h-1.5 flex items-center justify-center z-5 border-t" style={{ backgroundColor: owner.color, borderColor: owner.color, boxShadow: `0 -2px 12px ${owner.color}` }}>
                     <span className="text-[7px] leading-none select-none">{owner.token}</span>
                   </div>
                 )}
@@ -611,7 +611,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       ${!isCpuTurn && !isRolling && (gameState.phase === GamePhase.TURN_START || hasDoublesRollAgain)
                         ? (hasDoublesRollAgain 
                             ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-blue-400 cursor-pointer animate-pulse' 
-                            : 'bg-blue-600 hover:bg-blue-500 text-white border-blue-400 cursor-pointer animate-pulse')
+                            : 'fx-neon-btn border-fuchsia-300/70 cursor-pointer animate-pulse')
                         : !isCpuTurn && !isRolling && gameState.phase === GamePhase.POST_ROLL
                         ? (gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'bg-red-900 hover:bg-red-800 text-red-100 border-red-700 cursor-pointer animate-pulse' : 'bg-red-600 hover:bg-red-500 text-white border-red-400 cursor-pointer animate-pulse')
                         : 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed opacity-80'
@@ -777,7 +777,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       className="flex items-center justify-center pointer-events-none"
                     >
                       <div className="text-3xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] filter">
-                        {player.token}
+                        <span key={currentVisualPos} className="fx-hop">{player.token}</span>
                       </div>
                     </motion.div>
                   );

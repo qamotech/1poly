@@ -31,9 +31,9 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
   const shownError = localError || error;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col items-center justify-center p-4 space-y-6">
-      <h1 className="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-yellow-400 to-amber-500 tracking-wider uppercase text-center flex items-center gap-3">
-        <span className="text-4xl sm:text-5xl -scale-x-100 inline-block select-none">🏃🏾‍♂️</span>
+    <div className="min-h-screen bg-slate-950 fx-aura-bg text-slate-50 flex flex-col items-center justify-center p-4 space-y-6">
+      <h1 className="text-5xl sm:text-6xl font-black fx-shimmer-text tracking-wider uppercase text-center flex items-center gap-3">
+        <span className="text-4xl sm:text-5xl -scale-x-100 inline-block select-none fx-float-bob">🏃🏾‍♂️</span>
         1poly
       </h1>
       <p className="text-slate-400 text-sm font-semibold -mt-2 text-center">
@@ -54,7 +54,7 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
               audio.playUiClick();
               onCreate();
             }}
-            className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-base rounded-xl shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-3.5 fx-neon-btn font-black text-base rounded-xl shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
           >
             <Users size={18} /> Create Game
           </button>
@@ -79,7 +79,7 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
             />
             <button
               onClick={handleJoin}
-              className="px-5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl shadow-lg transition-colors cursor-pointer"
+              className="px-5 fx-neon-btn-blue font-black rounded-xl shadow-lg transition-all cursor-pointer"
             >
               Join Game
             </button>

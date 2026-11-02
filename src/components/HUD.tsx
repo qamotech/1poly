@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GameState, GamePhase, BankruptcyRecord, GameSpeed } from '../types';
 import { audio } from '../audio';
+import { AnimatedMoney, CoinBurst } from './Fx';
 import { RotateCcw, Key, ShieldCheck, Zap, UserX, Trash2 } from 'lucide-react';
 
 const getLogStyle = (log: string) => {
@@ -192,7 +193,7 @@ export const HUD: React.FC<HUDProps> = ({
                 {currentPlayer?.inJail && <span className="text-[10px] bg-orange-600 text-white px-1.5 py-0.5 rounded font-bold shrink-0">In Jail</span>}
               </h2>
               <div className="flex items-center gap-3">
-                <p className="text-green-400 font-mono text-base font-bold">${currentPlayer?.money || 0}</p>
+                <p className="relative text-green-400 font-mono text-base font-bold"><AnimatedMoney value={currentPlayer?.money || 0} /><CoinBurst amount={currentPlayer?.money || 0} /></p>
                 {currentPlayer?.loan ? (
                   <span className="text-[10px] text-red-400 font-medium">Loan: ${currentPlayer.loan}</span>
                 ) : null}
@@ -314,6 +315,7 @@ export const HUD: React.FC<HUDProps> = ({
                     ? 'bg-amber-950/30 border-amber-500/60 ring-2 ring-amber-400/80 shadow-[0_0_8px_rgba(251,191,36,0.2)]'
                     : 'bg-slate-800/60 border-slate-700/50 hover:bg-slate-800'
                 }`}
+                style={isTurn || p.inJail ? undefined : { boxShadow: `0 0 14px ${p.color}30, inset 0 0 0 1px ${p.color}40` }}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm shrink-0 relative ${
@@ -346,7 +348,7 @@ export const HUD: React.FC<HUDProps> = ({
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                      <span className="text-emerald-400 font-mono font-bold">${p.money}</span>
+                      <span className="relative text-emerald-400 font-mono font-bold"><AnimatedMoney value={p.money} /><CoinBurst amount={p.money} /></span>
                       <span>•</span>
                       <span>{p.properties.length} props</span>
                     </div>

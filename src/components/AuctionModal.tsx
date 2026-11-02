@@ -46,7 +46,7 @@ export const AuctionModal: React.FC<AuctionModalProps> = ({
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="bg-slate-900 border-2 border-amber-500/80 rounded-3xl shadow-2xl max-w-xl w-full flex flex-col overflow-hidden"
+        className="bg-slate-900 border-2 border-amber-500/80 rounded-3xl shadow-2xl max-w-xl w-full flex flex-col overflow-hidden fx-modal-pop fx-modal-frame"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-amber-900/60 to-yellow-900/60 p-4 border-b border-amber-500/40 flex items-center justify-between">

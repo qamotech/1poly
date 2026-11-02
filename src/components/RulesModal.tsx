@@ -20,7 +20,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose, default
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="bg-slate-900 border-2 border-amber-400/60 rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden relative"
+        className="bg-slate-900 border-2 border-amber-400/60 rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden relative fx-modal-pop"
       >
         {/* Header with Game Tabs */}
         <div className="p-5 bg-slate-950 border-b border-slate-800 flex items-center justify-between">

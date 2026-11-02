@@ -27,6 +27,9 @@ import { DealActionModal } from './DealActionModal';
 import { DealGameOver } from './DealGameOver';
 import { RulesModal } from '../RulesModal';
 import { audio } from '../../audio';
+import { AnimatedMoney, CoinBurst } from '../Fx';
+
+const FX_PLAYER_HUES = ['#f59e0b', '#38bdf8', '#e879f9', '#34d399', '#fb7185', '#a78bfa'];
 import {
   Layers,
   Sparkles,
@@ -295,7 +298,7 @@ export const DealGame: React.FC<DealGameProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-dvh bg-slate-950 text-slate-100 select-none overflow-hidden font-sans relative">
+    <div className="flex flex-col h-dvh bg-slate-950 fx-aura-bg text-slate-100 select-none overflow-hidden font-sans relative">
       {/* Screen Flash Indicator when plays are up */}
       <AnimatePresence>
         {screenFlash && (
@@ -316,7 +319,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             <span className="text-2xl">🃏</span>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 uppercase">
+                <h1 className="text-base sm:text-lg font-black tracking-wider fx-shimmer-text uppercase">
                   1poly Cards
                 </h1>
                 <span className="hidden sm:inline-block text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded-full bg-blue-900/80 text-blue-300 border border-blue-600">
@@ -442,7 +445,7 @@ export const DealGame: React.FC<DealGameProps> = ({
         <section className="flex flex-col gap-2">
           {gameState.players
             .filter((p) => p.id !== localPlayer.id)
-            .map((opponent) => {
+            .map((opponent, opponentIdx) => {
               const isOpponentTurn = currentPlayer.id === opponent.id;
               const totalBank = opponent.bank.reduce((sum, c) => sum + c.value, 0);
 
@@ -454,6 +457,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                       ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
                       : 'border-slate-800'
                   }`}
+                  style={isOpponentTurn ? undefined : { boxShadow: `0 0 16px ${FX_PLAYER_HUES[opponentIdx % FX_PLAYER_HUES.length]}33, inset 0 0 0 1px ${FX_PLAYER_HUES[opponentIdx % FX_PLAYER_HUES.length]}44` }}
                 >
                   {/* Opponent Header */}
                   <div className="flex items-center justify-between mb-1">
@@ -485,9 +489,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                       >
                         {opponent.completedSetsCount}/3 Full Sets
                       </span>
-                      <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800">
-                        ${totalBank}M
-                      </span>
+                      <span className="relative text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800"><AnimatedMoney value={totalBank} />M<CoinBurst amount={totalBank} /></span>
                     </div>
                   </div>
 
@@ -508,6 +510,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                               ? `${config.bgClass} border-amber-400 ring-2 ring-amber-400/40 shadow-sm`
                               : 'bg-slate-900 border-slate-700'
                           }`}
+                          style={{ boxShadow: `0 0 ${set.isComplete ? 14 : 9}px ${config.hex}${set.isComplete ? 'aa' : '55'}` }}
                         >
                           <span className="text-[9px] font-black uppercase text-white truncate max-w-full">
                             {config.name.slice(0, 5)}
@@ -578,14 +581,14 @@ export const DealGame: React.FC<DealGameProps> = ({
 
           {/* Turn status & End Turn button — full-width row under the piles on
               phones so the wide "Turns Up" state never crowds the action log */}
-          <div className="flex flex-col items-center sm:items-end gap-2 shrink-0 w-full sm:w-auto">
+          <div key={gameState.currentPlayerIndex} className="flex flex-col items-center sm:items-end gap-2 shrink-0 w-full sm:w-auto fx-banner-in">
             {isMyTurn ? (
               <button
                 onClick={handleEndTurn}
                 className={`px-4 py-2.5 font-black text-sm rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer whitespace-nowrap ${
                   turnsAreUp
                     ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/50 ring-4 ring-red-500/70 animate-pulse'
-                    : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
+                    : 'fx-neon-btn'
                 }`}
               >
                 <span>{turnsAreUp ? 'Turns Up • End Turn' : 'End Turn'}</span>
@@ -620,9 +623,7 @@ export const DealGame: React.FC<DealGameProps> = ({
               {/* Local Player Bank Summary */}
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-400">Your Bank:</span>
-                <span className="text-base font-mono font-black text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-xl border border-emerald-700/60 shadow-sm">
-                  ${localPlayer.bank.reduce((sum, c) => sum + c.value, 0)}M ({localPlayer.bank.length} cards)
-                </span>
+                <span className="relative text-base font-mono font-black text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-xl border border-emerald-700/60 shadow-sm"><AnimatedMoney value={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} />M ({localPlayer.bank.length} cards)<CoinBurst amount={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} /></span>
               </div>
             </div>
 
@@ -643,6 +644,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                         ? 'bg-slate-950 border-slate-700'
                         : 'bg-slate-950/40 border-slate-800/50 opacity-60'
                     }`}
+                    style={hasCards ? { boxShadow: `0 0 ${set.isComplete ? 15 : 9}px ${config.hex}${set.isComplete ? 'aa' : '55'}` } : undefined}
                   >
                     <div className="flex items-center justify-between gap-1">
                       <span className={`text-[10px] font-black uppercase truncate ${config.textClass}`}>
@@ -771,11 +773,11 @@ export const DealGame: React.FC<DealGameProps> = ({
               </div>
             ) : localPlayer.hand.length > 0 ? (
               <div className="flex gap-2.5 overflow-x-auto pb-1 pt-0.5 custom-scrollbar">
-                {localPlayer.hand.map((card) => {
+                {localPlayer.hand.map((card, cardIdx) => {
                   const isSelected = selectedHandCardId === card.id;
 
                   return (
-                    <div key={card.id} className="relative shrink-0">
+                    <div key={card.id} className="relative shrink-0 fx-deal-in" style={{ animationDelay: `${Math.min(cardIdx, 7) * 45}ms` }}>
                       <DealCardView
                         card={card}
                         isSelected={isSelected}
