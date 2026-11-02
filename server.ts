@@ -9,7 +9,8 @@ import { processAITurn } from './src/engine/ai.js';
 import { evaluateTradeForAI } from './src/engine/trade.js';
 import { GamePhase, PlayerType } from './src/types.js';
 
-const PORT = 3000;
+// Render (and most PaaS hosts) assign the port via $PORT; 3000 is the local default.
+const PORT = Number(process.env.PORT) || 3000;
 
 async function startServer() {
   const app = express();

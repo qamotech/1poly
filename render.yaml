@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ai-monopoly
+    name: 1poly
     env: node
     buildCommand: npm install && npm run build
     startCommand: npm start
