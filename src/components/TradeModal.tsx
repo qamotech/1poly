@@ -114,14 +114,14 @@ export const TradeModal: React.FC<TradeModalProps> = ({ gameState, currentPlayer
   };
 
   return (
-    <div id="trade-modal-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <motion.div 
+    <div id="trade-modal-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+      <motion.div
         id="trade-modal-card"
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl max-w-2xl w-full flex flex-col gap-5 text-white"
+        className="bg-slate-900 border border-slate-700 rounded-3xl p-4 sm:p-6 shadow-2xl max-w-2xl w-full flex flex-col gap-4 sm:gap-5 text-white max-h-[92dvh]"
       >
-        <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div className="flex justify-between items-center border-b border-slate-800 pb-3 shrink-0">
           <h2 className="text-2xl font-black text-white flex items-center gap-2">
             <span>🤝</span> Propose a Trade
           </h2>
@@ -134,6 +134,11 @@ export const TradeModal: React.FC<TradeModalProps> = ({ gameState, currentPlayer
           </button>
         </div>
 
+        {/* Scrollable middle: partner picker + both offer columns. The header
+            above and the Cancel / Send Trade Offer footer below stay pinned,
+            so the submit button can never be pushed off-screen (it was, once
+            both players owned properties — the card grew past the viewport). */}
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col gap-4 sm:gap-5 pr-0.5">
         <div className="flex flex-col gap-1.5">
           <label className="text-slate-400 font-bold text-xs uppercase tracking-wider">Select Trading Partner:</label>
           <select 
@@ -227,8 +232,9 @@ export const TradeModal: React.FC<TradeModalProps> = ({ gameState, currentPlayer
             </div>
           </div>
         )}
+        </div>
 
-        <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
+        <div className="flex justify-end gap-3 pt-2 border-t border-slate-800 shrink-0">
           <button 
             id="trade-cancel-btn"
             onClick={onCancel}
