@@ -87,6 +87,7 @@ interface LobbyProps {
   dealActive?: boolean;
   onWatchDealMatch?: () => void;
   onStartRoomDealMatch?: () => void;
+  onAddCpuAndStartDeal?: (name: string, token: string) => void;
 }
 
 export const Lobby: React.FC<LobbyProps> = ({
@@ -108,6 +109,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   onLeaveRoom,
   dealActive = false,
   onWatchDealMatch,
+  onAddCpuAndStartDeal,
   onStartRoomDealMatch
 }) => {
   const [codeCopied, setCodeCopied] = useState(false);
@@ -139,6 +141,18 @@ export const Lobby: React.FC<LobbyProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myPlayer?.id]);
+
+  // Streamline: never let the token be the reason Join stays greyed out —
+  // preselect the first free token (still fully changeable in the grid).
+  React.useEffect(() => {
+    if (!roomCode) return;
+    const taken = new Set(gameState.players.filter(p => p.id !== myPlayerId).map(p => p.token));
+    if (!joinToken || taken.has(joinToken)) {
+      const free = TOKENS.find(t => !taken.has(t));
+      if (free && free !== joinToken) setJoinToken(free);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomCode, gameState.players, myPlayerId]);
 
   // Player being edited inline
   const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
@@ -318,6 +332,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   // the game (picked a name + token) can tap START GAME.
   const inRoom = !!roomCode;
   const canStart = !inRoom || isHost || !!myPlayerId;
+  const scrollToJoin = () => document.getElementById('self-join-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen space-y-6 md:space-y-8 p-4 md:p-8 overflow-y-auto pb-20">
@@ -378,17 +393,27 @@ export const Lobby: React.FC<LobbyProps> = ({
 
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
           <button
-            onClick={() => handleStartDealWithCurrentPlayers()}
-            className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+            onClick={() => {
+              if (roomCode) {
+                if (!canStart) { scrollToJoin(); return; }
+                if (gameState.players.length >= 2) { audio.playUiClick(); onStartRoomDealMatch?.(); }
+                return;
+              }
+              handleStartDealWithCurrentPlayers();
+            }}
+            disabled={!!roomCode && canStart && gameState.players.length < 2}
+            className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-xs rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <Sparkles size={15} /> Play 1poly Cards
+            <Sparkles size={15} /> {roomCode ? (canStart ? (gameState.players.length >= 2 ? 'Start Room Cards Match' : 'Cards — need 2 players') : 'Join to Play Cards') : 'Play 1poly Cards'}
           </button>
+          {!roomCode && (
           <button
             onClick={() => handleQuickDeal(1)}
             className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap"
           >
             <Zap size={14} /> Quick 1v1 Cards
           </button>
+          )}
         </div>
       </div>
       
@@ -453,9 +478,53 @@ export const Lobby: React.FC<LobbyProps> = ({
         </div>
       )}
 
+      {/* SETUP CHECKLIST: everyone can see exactly what's missing */}
+      {roomCode && !dealActive && (
+        <div className="w-full max-w-2xl flex flex-wrap items-center justify-center gap-1.5 text-[11px] font-bold">
+          <span className="px-2.5 py-1 rounded-full bg-slate-800/90 border border-slate-600 text-slate-200">✅ 1. In the room</span>
+          <span className={`px-2.5 py-1 rounded-full border ${myPlayer ? 'bg-emerald-950/80 border-emerald-600 text-emerald-300' : 'bg-amber-950/70 border-amber-600 text-amber-300'}`}>{myPlayer ? `✅ 2. In the game as ${myPlayer.name}` : '👉 2. Join the game below'}</span>
+          <span className={`px-2.5 py-1 rounded-full border ${gameState.players.length >= 2 ? 'bg-emerald-950/80 border-emerald-600 text-emerald-300' : 'bg-slate-800/90 border-slate-600 text-slate-300'}`}>{gameState.players.length >= 2 ? '✅' : '⏳'} 3. {gameState.players.length}/2 players in</span>
+        </div>
+      )}
+
+      {/* STICKY START BAR (room mode): the way in + START are always one tap away */}
+      {roomCode && (
+        <div className="fixed bottom-20 inset-x-0 z-40 flex justify-center px-3 pointer-events-none">
+          <div className="pointer-events-auto w-full max-w-2xl bg-slate-900/95 backdrop-blur-md border border-slate-600 rounded-2xl shadow-2xl px-3 py-2.5 flex items-center gap-2">
+            {dealActive && onWatchDealMatch ? (
+              <button onClick={() => { audio.playUiClick(); onWatchDealMatch(); }} className="fx-neon-btn-blue flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer">
+                🃏 Cards match live — Jump in 👀
+              </button>
+            ) : !myPlayer ? (
+              <button onClick={scrollToJoin} className="fx-neon-btn flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer">
+                👆 Join the game to play — tap here
+              </button>
+            ) : gameState.players.length >= 2 ? (
+              <>
+                <span className="text-[11px] font-black text-emerald-300 whitespace-nowrap">{gameState.players.length} in 🎮</span>
+                <button onClick={() => { audio.playUiClick(); onStartGame(); }} className="fx-neon-btn flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer">▶ Classic</button>
+                <button onClick={() => { audio.playUiClick(); onStartRoomDealMatch?.(); }} className="fx-neon-btn-blue flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer">🃏 Cards</button>
+              </>
+            ) : isHost && onAddCpuAndStartDeal ? (
+              <>
+                <span className="text-[11px] font-bold text-slate-300 whitespace-nowrap">Just you so far</span>
+                <button
+                  onClick={() => { audio.playUiClick(); const free = TOKENS.find(t => !gameState.players.some(p => p.token === t)) ?? TOKENS[0]; onAddCpuAndStartDeal('CPU Buddy', free); }}
+                  className="fx-neon-btn-blue flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer"
+                >
+                  🤖 Add CPU & Start Cards
+                </button>
+              </>
+            ) : (
+              <span className="flex-1 text-center text-[11px] font-bold text-slate-300 py-1">⏳ Waiting for 1 more player to join the game…</span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* SELF-JOIN: everyone picks their own name + character token */}
       {roomCode && onJoinGame && (
-        <div className="w-full max-w-2xl bg-slate-900/90 border-2 border-emerald-500/50 rounded-3xl p-4 md:p-5 shadow-xl backdrop-blur-md space-y-3">
+        <div id="self-join-panel" className="w-full max-w-2xl bg-slate-900/90 border-2 border-emerald-500/50 rounded-3xl p-4 md:p-5 shadow-xl backdrop-blur-md space-y-3">
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-sm font-black uppercase tracking-widest text-emerald-300">
               {myPlayer ? `✅ You're in as ${myPlayer.name}` : '🎮 Join this game'}
@@ -487,7 +556,7 @@ export const Lobby: React.FC<LobbyProps> = ({
               disabled={!joinName.trim() || !joinToken}
               className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black rounded-lg shadow transition-colors cursor-pointer whitespace-nowrap"
             >
-              {myPlayer ? '💾 Update' : '🎮 Join Game'}
+              {myPlayer ? '💾 Update' : !joinName.trim() ? '✍️ Type your name first' : '🎮 Join Game'}
             </button>
           </div>
           <div>
@@ -875,7 +944,8 @@ export const Lobby: React.FC<LobbyProps> = ({
                   handleStartDealWithCurrentPlayers();
                 }
               }}
-              className="flex items-center justify-center gap-3 fx-neon-btn-blue font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer"
+              disabled={!!roomCode && gameState.players.length < 2}
+              className="flex items-center justify-center gap-3 fx-neon-btn-blue disabled:opacity-50 disabled:cursor-not-allowed font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer"
             >
               <Sparkles size={20} /> {roomCode ? 'Start 1poly Cards — Room Match 🌐' : 'Start 1poly Cards'}
             </button>

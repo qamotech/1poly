@@ -192,6 +192,10 @@ export default function App() {
 
     // Cards match lifecycle: the server pushes a fresh (redacted) view after
     // every move; deal_started pulls everyone in the room into the match.
+    socket.on('game_starting', ({ by, mode }: { by: string; mode: string }) => {
+      setToast(mode === 'deal' ? `🃏 ${by} started a Cards match!` : `🎮 ${by} started the game!`);
+    });
+
     socket.on('deal_started', () => {
       setDealActive(true);
       setDealRemote(true);
@@ -259,9 +263,12 @@ export default function App() {
   // Deep link (also the PWA shortcut target): onepoly.onrender.com/#cards
   // jumps straight into 1poly Cards, which runs locally — no server wait.
   useEffect(() => {
-    if (window.location.hash === '#cards') {
-      setGameMode('deal');
-    }
+    const goCards = () => {
+      if (window.location.hash === '#cards') setGameMode('deal');
+    };
+    goCards();
+    window.addEventListener('hashchange', goCards);
+    return () => window.removeEventListener('hashchange', goCards);
   }, []);
 
   // If the server takes a while to answer it's almost always the free host
@@ -301,6 +308,13 @@ export default function App() {
   // -- Room Cards match actions ----------------------------------------------
   const handleStartRoomDealMatch = () => {
     socket.emit('start_deal_match');
+  };
+
+  // One-tap solo start: add a CPU bot, then start the Cards match once the
+  // server has registered the bot (host-only path; add_player is host-gated).
+  const handleAddCpuAndStartDeal = (name: string, token: string) => {
+    socket.emit('add_player', { name, type: PlayerType.CPU, token });
+    setTimeout(() => socket.emit('start_deal_match'), 500);
   };
 
   const handleDealAction = (action: DealRemoteAction) => {
@@ -457,10 +471,18 @@ export default function App() {
   };
 
   // If currently playing 1poly Cards game
+  const toastEl = toast ? (
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[320] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none whitespace-nowrap">
+      {toast}
+    </div>
+  ) : null;
+
   if (gameMode === 'deal') {
     // Room match: server-hosted, my view is redacted to my own hand.
     if (dealRemote && dealView) {
       return (
+        <>
+        {toastEl}
         <Suspense fallback={
           <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
             <p className="text-xl animate-pulse">Loading 1poly Cards...</p>
@@ -483,6 +505,7 @@ export default function App() {
             onSwitchToClassic={() => setGameMode('classic')}
           />
         </Suspense>
+        </>
       );
     }
     if (dealRemote && !dealView) {
@@ -494,6 +517,8 @@ export default function App() {
     }
     // Solo Cards vs local AI (unchanged).
     return (
+      <>
+      {toastEl}
       <Suspense fallback={
         <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
           <p className="text-xl animate-pulse">Loading 1poly Cards...</p>
@@ -505,6 +530,7 @@ export default function App() {
           onSwitchToClassic={() => setGameMode('classic')}
         />
       </Suspense>
+      </>
     );
   }
 
@@ -615,6 +641,7 @@ export default function App() {
           dealActive={dealActive}
           onWatchDealMatch={handleEnterDealMatch}
           onStartRoomDealMatch={handleStartRoomDealMatch}
+          onAddCpuAndStartDeal={handleAddCpuAndStartDeal}
         />
       ) : (
         <div className="flex flex-col min-h-screen lg:h-screen max-w-[1600px] mx-auto overflow-hidden">

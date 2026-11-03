@@ -449,6 +449,8 @@ async function startServer() {
       // Anyone IN the game (or the host) can start it — no host bottleneck.
       if (!c.isHost && !c.myId) return deny(socket, 'Join the game first — then you can start it');
       c.room.state = startGame(c.room.state);
+      const starter = c.myId ? c.room.state.players.find((p) => p.id === c.myId)?.name : 'The host';
+      io.to(c.room.code).emit('game_starting', { by: starter || 'The host', mode: 'classic' });
       broadcastState(c.room);
       checkAITurn(c.room);
     });
@@ -680,6 +682,8 @@ async function startServer() {
         gen: (c.room.deal?.gen ?? 0) + 1,
         aiPending: false,
       };
+      const dealStarter = c.myId ? c.room.state.players.find((p) => p.id === c.myId)?.name : 'The host';
+      io.to(c.room.code).emit('game_starting', { by: dealStarter || 'The host', mode: 'deal' });
       io.to(c.room.code).emit('deal_started', {});
       sendDealViews(c.room);
       scheduleDealAI(c.room);
