@@ -35,7 +35,7 @@ export default function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [gameMode, setGameMode] = useState<'classic' | 'deal'>('classic');
   const [dealInitialPlayers, setDealInitialPlayers] = useState<Array<{ id: string; name: string; type: 'USER' | 'CPU'; token: string }>>([
-    { id: 'p1', name: 'N8', type: 'USER', token: '🥷🏾' },
+    { id: 'p1', name: 'Player 1', type: 'USER', token: '🥷🏾' },
     { id: 'p2', name: 'The Tycoon', type: 'CPU', token: '🎩' }
   ]);
   const [showRulesModal, setShowRulesModal] = useState(false);
@@ -292,6 +292,12 @@ export default function App() {
     socket.emit('claim_seat', { playerId });
   };
 
+  // Self-join: I add MYSELF to the game with my own name + token (the
+  // server creates my player and binds my seat). Calling again renames me.
+  const handleJoinGame = (name: string, token: string) => {
+    socket.emit('join_game', { name, token });
+  };
+
   // -- Room Cards match actions ----------------------------------------------
   const handleStartRoomDealMatch = () => {
     socket.emit('start_deal_match');
@@ -357,7 +363,7 @@ export default function App() {
       );
     } else {
       setDealInitialPlayers([
-        { id: 'p1', name: 'N8', type: 'USER', token: '🥷🏾' },
+        { id: 'p1', name: 'Player 1', type: 'USER', token: '🥷🏾' },
         { id: 'p2', name: 'The Tycoon', type: 'CPU', token: '🎩' },
       ]);
     }
@@ -603,6 +609,7 @@ export default function App() {
               .map(([pid]) => pid)
           )}
           onClaimSeat={handleClaimSeat}
+          onJoinGame={handleJoinGame}
           onCloseRoom={handleCloseRoom}
           onLeaveRoom={handleLeaveRoom}
           dealActive={dealActive}

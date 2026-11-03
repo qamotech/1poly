@@ -80,6 +80,7 @@ interface LobbyProps {
   myPlayerId?: string | null;
   takenSeats?: Set<string>;
   onClaimSeat?: (playerId: string) => void;
+  onJoinGame?: (name: string, token: string) => void;
   onCloseRoom?: () => void;
   onLeaveRoom?: () => void;
   // Room Cards match (server-hosted Deal game in this room)
@@ -102,6 +103,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   myPlayerId = null,
   takenSeats,
   onClaimSeat,
+  onJoinGame,
   onCloseRoom,
   onLeaveRoom,
   dealActive = false,
@@ -119,9 +121,24 @@ export const Lobby: React.FC<LobbyProps> = ({
     setCodeCopied(true);
     setTimeout(() => setCodeCopied(false), 2000);
   };
-  const [name, setName] = useState('N8');
+  // Nobody is pre-named: the name field starts blank and every player
+  // picks their own name + token (see the self-join panel below).
+  const [name, setName] = useState('');
   const [type, setType] = useState<PlayerType>(PlayerType.USER);
   const [token, setToken] = useState(TOKENS[0]);
+
+  // Self-join panel state (room mode): my own name + character token.
+  const myPlayer = myPlayerId ? gameState.players.find(p => p.id === myPlayerId) ?? null : null;
+  const [joinName, setJoinName] = useState('');
+  const [joinToken, setJoinToken] = useState<string>('');
+  React.useEffect(() => {
+    // Once I'm in, the panel mirrors my player so I can rename / re-pick.
+    if (myPlayer) {
+      setJoinName(myPlayer.name);
+      setJoinToken(myPlayer.token);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myPlayer?.id]);
 
   // Player being edited inline
   const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
@@ -132,14 +149,6 @@ export const Lobby: React.FC<LobbyProps> = ({
   // Confirmation state for deleting a player
   const [playerToDelete, setPlayerToDelete] = useState<typeof gameState.players[0] | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // Set initial random name if empty
-  React.useEffect(() => {
-    if (!name) {
-      const usedNames = gameState.players.map(p => p.name);
-      setName(getRandomName(usedNames));
-    }
-  }, [gameState.players.length]);
 
   const handleStartEdit = (player: typeof gameState.players[0]) => {
     audio.playUiClick();
@@ -244,7 +253,7 @@ export const Lobby: React.FC<LobbyProps> = ({
     const usedTokens = [...gameState.players.map(p => p.token)];
 
     // Add Human
-    const humanName = name.trim() || 'N8';
+    const humanName = name.trim() || 'Player 1';
     const humanToken = token || TOKENS[0];
     dealPlayers.push({
       id: 'player_human_1',
@@ -304,6 +313,11 @@ export const Lobby: React.FC<LobbyProps> = ({
   };
 
   const availableTokens = TOKENS.filter(t => !gameState.players.some(p => p.token === t));
+
+  // In a room, starting is not the host's privilege: anyone who has joined
+  // the game (picked a name + token) can tap START GAME.
+  const inRoom = !!roomCode;
+  const canStart = !inRoom || isHost || !!myPlayerId;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen space-y-6 md:space-y-8 p-4 md:p-8 overflow-y-auto pb-20">
@@ -403,8 +417,8 @@ export const Lobby: React.FC<LobbyProps> = ({
             <div className="flex flex-col items-center sm:items-end gap-2">
               <p className="text-xs text-slate-400 text-center sm:text-right max-w-[240px]">
                 {isHost
-                  ? 'Family opens 1poly, taps Join Game, enters the code, then taps "I am …" on their player.'
-                  : 'Tap "I am …" on your player below — your phone will only control you.'}
+                  ? 'Family opens 1poly, taps Join a game, enters the code — then everyone picks their own name + token below.'
+                  : 'Pick your name + character token in the green box below to join — anyone in the game can start it.'}
               </p>
               {dealActive && onWatchDealMatch && (
                 <button
@@ -439,11 +453,84 @@ export const Lobby: React.FC<LobbyProps> = ({
         </div>
       )}
 
+      {/* SELF-JOIN: everyone picks their own name + character token */}
+      {roomCode && onJoinGame && (
+        <div className="w-full max-w-2xl bg-slate-900/90 border-2 border-emerald-500/50 rounded-3xl p-4 md:p-5 shadow-xl backdrop-blur-md space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-black uppercase tracking-widest text-emerald-300">
+              {myPlayer ? `✅ You're in as ${myPlayer.name}` : '🎮 Join this game'}
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 text-right">
+              Anyone in the game can tap START GAME
+            </span>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={joinName}
+              onChange={(e) => setJoinName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && joinName.trim() && joinToken) {
+                  audio.playUiClick();
+                  onJoinGame(joinName.trim(), joinToken);
+                }
+              }}
+              placeholder="Your name"
+              maxLength={24}
+              className="flex-1 min-w-0 bg-slate-800 text-white px-4 py-2.5 rounded-lg border-2 border-slate-600 focus:border-emerald-400 outline-none font-bold placeholder:text-slate-500"
+            />
+            <button
+              onClick={() => {
+                audio.playUiClick();
+                onJoinGame(joinName.trim(), joinToken);
+              }}
+              disabled={!joinName.trim() || !joinToken}
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black rounded-lg shadow transition-colors cursor-pointer whitespace-nowrap"
+            >
+              {myPlayer ? '💾 Update' : '🎮 Join Game'}
+            </button>
+          </div>
+          <div>
+            <p className="text-[11px] text-slate-400 mb-1.5 font-semibold">Pick your character token:</p>
+            <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto custom-scrollbar p-0.5">
+              {TOKENS.map(t => {
+                const takenByOther = gameState.players.some(p => p.id !== myPlayerId && p.token === t);
+                return (
+                  <button
+                    key={t}
+                    disabled={takenByOther}
+                    onClick={() => {
+                      audio.playUiClick();
+                      setJoinToken(t);
+                    }}
+                    title={takenByOther ? 'Already taken' : t}
+                    className={`text-2xl p-1.5 rounded-lg border-2 transition-all ${
+                      takenByOther
+                        ? 'opacity-25 cursor-not-allowed border-transparent'
+                        : joinToken === t
+                          ? 'border-emerald-400 bg-emerald-400/20 scale-110 shadow-[0_0_12px_rgba(52,211,153,0.45)]'
+                          : 'border-transparent hover:bg-slate-700 hover:scale-105'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {!myPlayer && (
+            <p className="text-[11px] text-slate-500">
+              Nobody is added for you — your name and token are yours to pick. The host can still add 🤖 CPU bots for everyone.
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="bg-slate-800/80 p-4 md:p-8 rounded-3xl shadow-2xl border border-slate-700 w-full max-w-2xl backdrop-blur-sm">
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h2 className="text-xl md:text-2xl text-white font-semibold flex items-center gap-2">
             <Users className="text-blue-400" />
-            Classic Match Players ({gameState.players.length}/8)
+            Game Players ({gameState.players.length}/8)
           </h2>
           {gameState.players.length >= 2 && (
             <span className="text-xs font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/60 px-3 py-1 rounded-full">
@@ -581,7 +668,7 @@ export const Lobby: React.FC<LobbyProps> = ({
           {gameState.players.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 text-slate-400 space-y-2 border-2 border-dashed border-slate-600 rounded-xl">
               <Users size={32} className="opacity-50" />
-              <p className="italic">{isHost ? 'No players added yet. Add players below or pick Quick Play!' : 'No players yet — the host is setting up the game…'}</p>
+              <p className="italic">{roomCode ? 'No players yet — be the first to join in the green box above!' : 'No players added yet. Add players below or pick Quick Play!'}</p>
             </div>
           )}
         </div>
@@ -755,12 +842,14 @@ export const Lobby: React.FC<LobbyProps> = ({
            </div>
         </div>
 
-        {isHost ? (
+        {canStart ? (
         <div className="flex flex-col gap-4 mt-6">
           {gameState.players.length < 2 && (
             <div className="p-3 bg-amber-950/40 border border-amber-500/40 rounded-xl text-center">
               <p className="text-xs text-amber-300 font-semibold">
-                ⚠️ Need at least 2 players to start a Classic 1poly match. Add another player above or choose a Quick Play option below.
+                {inRoom
+                  ? '⚠️ Need at least 2 players in the game to start. Once 2+ players have joined, anyone can tap START GAME.'
+                  : '⚠️ Need at least 2 players to start a Classic 1poly match. Add another player above or choose a Quick Play option below.'}
               </p>
             </div>
           )}
@@ -792,7 +881,14 @@ export const Lobby: React.FC<LobbyProps> = ({
             </button>
           </div>
 
-          {/* Quick Play Section */}
+          {inRoom && gameState.players.length >= 2 && (
+            <p className="text-center text-[11px] font-bold text-emerald-300/90 -mb-1">
+              ✋ Everyone's in? Anyone in the game can tap START — no waiting on the host.
+            </p>
+          )}
+
+          {/* Quick Play Section (host / local only) */}
+          {isHost && (
           <div className="w-full flex flex-col items-center mt-2 border-t border-slate-700 pt-5">
             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-3">Quick Play vs AI Bots</p>
             <div className="grid grid-cols-3 gap-2 w-full">
@@ -819,14 +915,14 @@ export const Lobby: React.FC<LobbyProps> = ({
               (Auto-fills remaining slots with AI bots and starts immediately)
             </p>
           </div>
+          )}
         </div>
         ) : (
           <div className="mt-6 p-4 md:p-5 bg-slate-900/60 border border-slate-700 rounded-xl text-center space-y-2">
-            <p className="text-sm font-bold text-slate-200">⏳ Waiting for the host to start the game…</p>
+            <p className="text-sm font-bold text-slate-200">👆 Join the game first — then YOU can start it</p>
             <p className="text-xs text-slate-400">
-              {myPlayerId
-                ? "✅ Your seat is claimed — you're ready when the game starts!"
-                : 'Tap "📱 I am …" on your player above so your phone controls you when the game starts.'}
+              Pick your name + character token in the green box above and tap Join Game. Once you're in,
+              the START GAME buttons appear for you too — nobody has to wait for the host.
             </p>
             {dealActive && onWatchDealMatch && (
               <button

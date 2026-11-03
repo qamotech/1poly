@@ -47,7 +47,7 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
             <Crown size={15} /> Host a game
           </div>
           <p className="text-sm text-slate-300">
-            Create a private room, set up the players, then share the 4-letter code with your family.
+            Create a private room and share the 4-letter code — everyone joins with their own name and character token, and anyone can start the game.
           </p>
           <button
             onClick={() => {
@@ -90,7 +90,8 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
             </div>
           )}
           <p className="text-xs text-slate-400">
-            After joining, tap <strong className="text-slate-200">"I am …"</strong> next to your name so your phone controls only your player.
+            After joining, enter <strong className="text-slate-200">your own name</strong>, pick your{' '}
+            <strong className="text-slate-200">character token</strong>, and tap Join Game — then anyone in the game can tap START GAME.
           </p>
         </div>
 

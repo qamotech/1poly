@@ -5,6 +5,7 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 
 import { createInitialGameState, addPlayer, updatePlayer, removePlayer, startGame, rollDice, endTurn, buyProperty, proposeTrade, resolveTrade, buildHouse, sellHouse, useGetOutOfJailCard, takeLoan, repayLoan, updateHouseRules, mortgageProperty, unmortgageProperty, payBail, dismissRecentBankruptcy, startAuction, placeBid, passAuction, declineProperty, setGameSpeed } from './src/engine/engine.js';
+import { GAME_TOKENS } from './src/engine/board.js';
 import { processAITurn } from './src/engine/ai.js';
 import { evaluateTradeForAI } from './src/engine/trade.js';
 import { GamePhase, PlayerType } from './src/types.js';
@@ -354,6 +355,52 @@ async function startServer() {
       broadcastSeats(c.room);
     });
 
+    // -- Self-join: everyone picks their OWN name + character token --------
+    // Nobody is pre-seeded into the roster (and nobody starts as "N8"): each
+    // person in the room adds themselves here, which creates their player
+    // and binds their seat in one step. Calling it again while seated just
+    // updates your own name/token. Starting the game is NOT host-only —
+    // see start_game / start_deal_match below.
+    socket.on('join_game', ({ name, token }: { name?: string; token?: string } = {}) => {
+      const c = ctxOf(socket);
+      if (!c) return;
+      const reject = (message: string) => socket.emit('seat_rejected', { message });
+      if (c.room.state.phase !== GamePhase.LOBBY) {
+        return reject('The game already started — you can join the next one.');
+      }
+      if (c.room.deal && c.room.deal.state.phase !== DealGamePhase.GAME_OVER) {
+        return reject('A Cards match is running — you can join the next one.');
+      }
+      const cleanName = typeof name === 'string' ? name.trim().slice(0, 24) : '';
+      if (!cleanName) return reject('Type your name first.');
+      if (typeof token !== 'string' || !GAME_TOKENS.includes(token)) {
+        return reject('Pick a character token.');
+      }
+      const others = c.room.state.players.filter((p) => p.id !== c.myId);
+      if (others.some((p) => p.name.toLowerCase() === cleanName.toLowerCase())) {
+        return reject(`The name "${cleanName}" is already taken — pick another.`);
+      }
+      if (others.some((p) => p.token === token)) {
+        return reject('That character token is already taken — pick another.');
+      }
+      if (c.myId) {
+        // Already in the game: this is a rename / re-pick, not a new seat.
+        c.room.state = updatePlayer(c.room.state, c.myId, { name: cleanName, token });
+        socket.emit('seat_claimed', { playerId: c.myId });
+      } else {
+        if (c.room.state.players.length >= 8) return reject('This game is full (8 players).');
+        const before = new Set(c.room.state.players.map((p) => p.id));
+        c.room.state = addPlayer(c.room.state, cleanName, PlayerType.USER, token);
+        const me = c.room.state.players.find((p) => !before.has(p.id));
+        if (!me) return reject('Could not join the game.');
+        c.room.seats.set(c.token, me.id);
+        c.room.seatOwners.set(me.id, c.token);
+        socket.emit('seat_claimed', { playerId: me.id });
+      }
+      broadcastState(c.room);
+      broadcastSeats(c.room);
+    });
+
     // Clients ask for state on (re)connect: covers the race where an emit
     // fires before the client attached its listener. Scoped to their room.
     socket.on('request_state', () => {
@@ -399,7 +446,8 @@ async function startServer() {
     socket.on('start_game', () => {
       const c = ctxOf(socket);
       if (!c) return;
-      if (!c.isHost) return deny(socket, 'Only the host can start the game');
+      // Anyone IN the game (or the host) can start it — no host bottleneck.
+      if (!c.isHost && !c.myId) return deny(socket, 'Join the game first — then you can start it');
       c.room.state = startGame(c.room.state);
       broadcastState(c.room);
       checkAITurn(c.room);
@@ -615,7 +663,8 @@ async function startServer() {
     socket.on('start_deal_match', () => {
       const c = ctxOf(socket);
       if (!c) return;
-      if (!c.isHost) return deny(socket, 'Only the host can start a Cards match');
+      // Anyone IN the game (or the host) can start the Cards match.
+      if (!c.isHost && !c.myId) return deny(socket, 'Join the game first — then you can start it');
       if (c.room.state.players.length < 2) return deny(socket, 'Add at least 2 players first');
       if (c.room.deal && c.room.deal.state.phase !== DealGamePhase.GAME_OVER) {
         return deny(socket, 'A Cards match is already running');
@@ -647,7 +696,11 @@ async function startServer() {
       try {
         switch (action.type) {
           case 'restart': {
-            if (!c.isHost) return deny(socket, 'Only the host can restart the match');
+            // Once a match is over, anyone who played in it can run it back;
+            // mid-match restarts stay host-only so a game can't be wiped.
+            if (!c.isHost && !(c.myId && st.phase === DealGamePhase.GAME_OVER)) {
+              return deny(socket, 'Only the host can restart mid-match');
+            }
             const roster = st.players.map((p) => ({
               id: p.id,
               name: p.name,
@@ -665,7 +718,9 @@ async function startServer() {
             return;
           }
           case 'end_match': {
-            if (!c.isHost) return deny(socket, 'Only the host can end the match');
+            if (!c.isHost && !(c.myId && st.phase === DealGamePhase.GAME_OVER)) {
+              return deny(socket, 'Only the host can end the match mid-game');
+            }
             room.deal = null;
             io.to(room.code).emit('deal_ended', {});
             return;
