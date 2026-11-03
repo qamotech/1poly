@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, type ComponentType } from 'react';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'motion/react';
 import { GamePhase, PlayerType, GameState, TradeOffer, BankruptcyRecord, GameSpeed } from './types';
@@ -20,7 +20,32 @@ import { OpeningSequence } from './components/OpeningSequence';
 import { RulesModal } from './components/RulesModal';
 // Lazy-loaded: the 1poly Cards mode ships as its own chunk so the classic
 // board game loads fast without paying for the card game up front.
-const DealGame = lazy(() => import('./components/deal/DealGame').then(m => ({ default: m.DealGame })));
+// The Cards game code loads on demand the moment a match starts. If that
+// one fetch hiccups (tablet wifi, sleepy server), retry once — then do
+// exactly what a manual refresh does, automatically, at most once per
+// 15s so it can never loop. Without this, a failed chunk = white screen.
+function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch {
+      await new Promise((r) => setTimeout(r, 800));
+      try {
+        return await factory();
+      } catch (err) {
+        const KEY = '1poly-chunk-reload-at';
+        const last = Number(sessionStorage.getItem(KEY) || 0);
+        if (Date.now() - last > 15000) {
+          sessionStorage.setItem(KEY, String(Date.now()));
+          window.location.reload();
+        }
+        throw err;
+      }
+    }
+  });
+}
+
+const DealGame = lazyWithRetry(() => import('./components/deal/DealGame').then(m => ({ default: m.DealGame })));
 import { ViewNavigationTabs } from './components/ViewNavigationTabs';
 import { InstallButton } from './components/InstallButton';
 import { HeaderPlayerStatus } from './components/HeaderPlayerStatus';

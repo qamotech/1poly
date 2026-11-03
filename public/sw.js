@@ -1,7 +1,7 @@
 // 1poly service worker — static asset caching for fast loads + installability.
 // Game state lives on the server over socket.io, so multiplayer traffic is
 // NEVER intercepted or cached here.
-const CACHE = '1poly-v1';
+const CACHE = '1poly-v2';
 const PRECACHE = ['/', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png', '/favicon.svg'];
 
 self.addEventListener('install', (e) => {
