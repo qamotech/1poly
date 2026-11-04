@@ -1,14 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="d20" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ef4444"/>
-      <stop offset="100%" stop-color="#991b1b"/>
+    <linearGradient id="space" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14224d"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="gem" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#065f46"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="#450a0a"/>
-  <polygon points="32,10 50,22 32,30 14,22" fill="#f87171" stroke="#f59e0b" stroke-width="2"/>
-  <polygon points="32,30 50,22 44,46 32,54" fill="url(#d20)" stroke="#f59e0b" stroke-width="2"/>
-  <polygon points="32,30 14,22 20,46 32,54" fill="#b91c1c" stroke="#f59e0b" stroke-width="2"/>
+  <rect width="64" height="64" rx="16" fill="url(#space)"/>
+  <circle cx="10" cy="12" r="1.1" fill="#ffffff" opacity="0.5"/>
+  <circle cx="54" cy="9" r="0.9" fill="#ffffff" opacity="0.4"/>
+  <circle cx="57" cy="52" r="1.1" fill="#ffffff" opacity="0.35"/>
+  <circle cx="8" cy="55" r="0.9" fill="#ffffff" opacity="0.3"/>
+  <polygon points="32,10 50,22 32,30 14,22" fill="#6ee7b7" stroke="#f59e0b" stroke-width="2"/>
+  <polygon points="32,30 50,22 44,46 32,54" fill="url(#gem)" stroke="#f59e0b" stroke-width="2"/>
+  <polygon points="32,30 14,22 20,46 32,54" fill="#059669" stroke="#f59e0b" stroke-width="2"/>
   <circle cx="32" cy="20" r="2.5" fill="#fef08a"/>
   <circle cx="26" cy="40" r="2.5" fill="#fef08a"/>
   <circle cx="38" cy="40" r="2.5" fill="#fef08a"/>
