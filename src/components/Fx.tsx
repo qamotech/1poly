@@ -26,11 +26,60 @@ export function useAnimatedNumber(value: number, duration = 650): number {
   return display;
 }
 
-/** Money that counts up/down to its real value. */
+/**
+ * Money that counts up/down to its real value.
+ * R3-4/R3-5 — on change it flashes green (gain) or red (loss) and floats a
+ * small "+$200" / "-$50" delta chip that drifts up and fades.
+ */
 export const AnimatedMoney: React.FC<{ value: number; prefix?: string }> = ({ value, prefix = '$' }) => {
   const display = useAnimatedNumber(value);
-  return <>{prefix}{display}</>;
+  const prevRef = useRef<number | null>(null);
+  const [flash, setFlash] = useState<{ key: number; dir: 'up' | 'down' } | null>(null);
+  const [floats, setFloats] = useState<Array<{ key: number; delta: number }>>([]);
+  useEffect(() => {
+    if (prevRef.current !== null && value !== prevRef.current) {
+      const delta = value - prevRef.current;
+      const key = Date.now() + Math.random();
+      setFlash({ key, dir: delta > 0 ? 'up' : 'down' });
+      setFloats((f) => [...f, { key, delta }]);
+      const timer = setTimeout(() => {
+        setFloats((f) => f.filter((x) => x.key !== key));
+      }, 1200);
+      prevRef.current = value;
+      return () => clearTimeout(timer);
+    }
+    prevRef.current = value;
+  }, [value]);
+  return (
+    <span className="relative inline-block">
+      <span key={flash?.key ?? 'base'} className={flash ? (flash.dir === 'up' ? 'fx-money-up' : 'fx-money-down') : undefined}>
+        {prefix}{display}
+      </span>
+      {floats.map((f) => (
+        <span key={f.key} className={`fx-money-float ${f.delta > 0 ? 'up' : 'down'}`} aria-hidden="true">
+          {f.delta > 0 ? `+${prefix}${f.delta}` : `-${prefix}${Math.abs(f.delta)}`}
+        </span>
+      ))}
+    </span>
+  );
 };
+
+/** R3-9 — CSS confetti falling inside a (position:relative, overflow:hidden) card. */
+export const Confetti: React.FC = () => (
+  <span className="fx-confetti" aria-hidden="true">
+    {Array.from({ length: 14 }, (_, i) => (
+      <i
+        key={i}
+        style={{
+          ['--cxl' as string]: `${(i * 71) % 100}%`,
+          ['--cd' as string]: `${3 + ((i * 37) % 22) / 10}s`,
+          ['--cdel' as string]: `${((i * 53) % 30) / 10}s`,
+          ['--csx' as string]: `${((i * 29) % 41) - 20}px`,
+        }}
+      />
+    ))}
+  </span>
+);
 
 const BURST_COINS = ['🪙', '💵', '🪙', '✨', '🪙'];
 

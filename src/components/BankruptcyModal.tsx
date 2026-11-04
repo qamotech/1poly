@@ -18,7 +18,7 @@ export const BankruptcyModal: React.FC<BankruptcyModalProps> = ({ bankruptcy, on
     <AnimatePresence>
       <div 
         id="bankruptcy-modal-overlay"
-        className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+        className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md fx-backdrop-in"
         onClick={onClose}
       >
         <motion.div 
@@ -27,7 +27,7 @@ export const BankruptcyModal: React.FC<BankruptcyModalProps> = ({ bankruptcy, on
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.85, opacity: 0, y: 30 }}
           transition={{ type: "spring", stiffness: 350, damping: 25 }}
-          className="bg-slate-900 border-2 border-red-800/80 rounded-3xl shadow-[0_0_50px_rgba(220,38,38,0.35)] max-w-lg w-full overflow-hidden text-white flex flex-col pointer-events-auto fx-modal-pop"
+          className="bg-slate-900 border-2 border-red-800/80 rounded-3xl shadow-[0_0_50px_rgba(220,38,38,0.35)] max-w-lg w-full overflow-hidden text-white flex flex-col pointer-events-auto fx-modal-pop fx-modal-frame-red"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header Banner */}

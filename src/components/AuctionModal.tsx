@@ -41,12 +41,12 @@ export const AuctionModal: React.FC<AuctionModalProps> = ({
   const hasPassed = currentHuman && auction.passedBidderIds.includes(currentHuman.id);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md fx-backdrop-in">
       <motion.div 
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="bg-slate-900 border-2 border-amber-500/80 rounded-3xl shadow-2xl max-w-xl w-full flex flex-col overflow-hidden fx-modal-pop fx-modal-frame"
+        className="bg-slate-900 border-2 border-amber-500/80 rounded-3xl shadow-2xl max-w-xl w-full flex flex-col overflow-hidden fx-modal-pop fx-modal-frame-gold"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-amber-900/60 to-yellow-900/60 p-4 border-b border-amber-500/40 flex items-center justify-between">

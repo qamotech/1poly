@@ -31,7 +31,7 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
   const shownError = localError || error;
 
   return (
-    <div className="min-h-screen bg-slate-950 fx-aura-bg text-slate-50 flex flex-col items-center justify-center p-4 space-y-6">
+    <div className="min-h-screen bg-slate-950 fx-aura-bg fx-view-in text-slate-50 flex flex-col items-center justify-center p-4 space-y-6">
       <h1 className="text-5xl sm:text-6xl font-black fx-shimmer-text tracking-wider uppercase text-center flex items-center gap-3">
         <span className="text-4xl sm:text-5xl -scale-x-100 inline-block select-none fx-float-bob">🏃🏾‍♂️</span>
         1poly
@@ -42,7 +42,7 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
 
       <div className="w-full max-w-md space-y-4">
         {/* Create */}
-        <div className="bg-slate-900 border-2 border-amber-500/50 rounded-3xl p-5 space-y-3 shadow-2xl">
+        <div className="bg-slate-900 border-2 border-amber-500/50 rounded-3xl p-5 space-y-3 shadow-2xl fx-glass">
           <div className="flex items-center gap-2 text-amber-300 font-black uppercase tracking-widest text-xs">
             <Crown size={15} /> Host a game
           </div>
@@ -61,7 +61,7 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
         </div>
 
         {/* Join */}
-        <div className="bg-slate-900 border border-slate-700 rounded-3xl p-5 space-y-3 shadow-2xl">
+        <div className="bg-slate-900 border border-slate-700 rounded-3xl p-5 space-y-3 shadow-2xl fx-glass">
           <div className="flex items-center gap-2 text-blue-300 font-black uppercase tracking-widest text-xs">
             <LogIn size={15} /> Join a game
           </div>

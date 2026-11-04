@@ -114,7 +114,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({ gameState, currentPlayer
   };
 
   return (
-    <div id="trade-modal-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+    <div id="trade-modal-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto fx-backdrop-in">
       <motion.div
         id="trade-modal-card"
         initial={{ scale: 0.9, opacity: 0, y: 20 }}

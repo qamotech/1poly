@@ -497,7 +497,7 @@ export default function App() {
 
   // If currently playing 1poly Cards game
   const toastEl = toast ? (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[320] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none whitespace-nowrap">
+    <div key={toast} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[320] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none whitespace-nowrap fx-toast-in">
       {toast}
     </div>
   ) : null;
@@ -628,11 +628,11 @@ export default function App() {
     : false;
 
   return (
-    <div className="min-h-screen bg-slate-950 fx-aura-bg text-slate-50 font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-slate-950 fx-aura-bg fx-view-in text-slate-50 font-sans selection:bg-blue-500/30">
       <InstallButton />
       {/* Soft notice from the server when an action isn't this phone's to make */}
       {toast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[120] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none">
+        <div key={toast} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[120] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none fx-toast-in">
           {toast}
         </div>
       )}

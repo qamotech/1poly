@@ -123,7 +123,7 @@ export function InstallButton() {
       <div className="fixed bottom-4 right-4 z-[9999]">
         <button
           onClick={handleClick}
-          className="flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-red-950/50 transition hover:bg-red-500 active:scale-95"
+          className="flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-red-950/50 transition hover:bg-red-500 active:scale-95 fx-install-pulse"
           type="button"
         >
           ⚡ INSTALL APP

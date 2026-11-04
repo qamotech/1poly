@@ -504,6 +504,9 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                 {freshBuys[space.id] && (
                   <span key={freshBuys[space.id]} className="fx-sparkles" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
                 )}
+                {freshBuys[space.id] && (
+                  <span key={`rise-${freshBuys[space.id]}`} className="fx-buy-sparkles" aria-hidden="true"><i /><i /><i /><i /></span>
+                )}
                 {/* Subtle Framer Motion Pulsing Border Overlay for High-Visibility Navigation */}
                 {shouldHighlight && (
                   <motion.div
@@ -599,7 +602,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
           <div className="col-start-2 col-end-11 row-start-2 row-end-11 bg-[#c5e1c8] flex flex-col items-center justify-center pointer-events-none z-10">
              
              {/* Center Rotation Container */}
-             <div className="transform -rotate-45 flex flex-col items-center justify-center gap-5 w-full h-full pointer-events-none">
+             <div className="transform -rotate-45 flex flex-col items-center justify-center gap-5 w-full h-full pointer-events-none fx-center-halo">
 
                {/* Center Logo graphic */}
                <div className="flex flex-col items-center pointer-events-none select-none -mb-2">
@@ -650,7 +653,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                             ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-blue-400 cursor-pointer animate-pulse' 
                             : 'fx-neon-btn border-fuchsia-300/70 cursor-pointer animate-pulse')
                         : !isCpuTurn && !isRolling && gameState.phase === GamePhase.POST_ROLL
-                        ? (gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'bg-red-900 hover:bg-red-800 text-red-100 border-red-700 cursor-pointer animate-pulse' : 'bg-red-600 hover:bg-red-500 text-white border-red-400 cursor-pointer animate-pulse')
+                        ? (gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'bg-red-900 hover:bg-red-800 text-red-100 border-red-700 cursor-pointer animate-pulse' : 'bg-red-600 hover:bg-red-500 text-white border-red-400 cursor-pointer animate-pulse fx-idle-pulse')
                         : 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed opacity-80'
                       }
                     `}
@@ -679,10 +682,12 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                               : 'bg-slate-800/90 text-slate-300 border-slate-700'
                           }`}
                         >
-                          {gameState.lastDiceRoll[0] === gameState.lastDiceRoll[1] 
-                            ? `🎲 DOUBLES! (${gameState.lastDiceRoll[0]} & ${gameState.lastDiceRoll[1]})` 
-                            : `🎲 Total: ${gameState.lastDiceRoll[0] + gameState.lastDiceRoll[1]} (${gameState.lastDiceRoll[0]} & ${gameState.lastDiceRoll[1]})`
-                          }
+                          <span key={`${gameState.lastDiceRoll[0]}-${gameState.lastDiceRoll[1]}-${gameState.currentPlayerIndex}-${gameState.phase}`} className="fx-roll-pop">
+                            {gameState.lastDiceRoll[0] === gameState.lastDiceRoll[1]
+                              ? <span className="fx-shimmer-text font-black">{`🎲 DOUBLES! (${gameState.lastDiceRoll[0]} & ${gameState.lastDiceRoll[1]})`}</span>
+                              : `🎲 Total: ${gameState.lastDiceRoll[0] + gameState.lastDiceRoll[1]} (${gameState.lastDiceRoll[0]} & ${gameState.lastDiceRoll[1]})`
+                            }
+                          </span>
                         </div>
                       )}
                     </div>
@@ -813,11 +818,19 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       }}
                       className="flex items-center justify-center pointer-events-none"
                     >
-                      <div className="text-3xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] filter">
+                      <div className={`relative text-3xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] filter ${player.id === currentPlayer?.id ? 'fx-token-halo' : ''}`}>
                         <span key={currentVisualPos} className="fx-hop">{player.token}</span>
+                        {player.inJail && <span className="fx-jail-bars" aria-hidden="true" />}
                       </div>
                       {goBursts[player.id] && (
                         <span key={goBursts[player.id]} className="fx-go-badge">+$200 GO! 💸</span>
+                      )}
+                      {goBursts[player.id] && (
+                        <span key={`coins-${goBursts[player.id]}`} className="fx-coin-burst" aria-hidden="true">
+                          {['🪙', '💵', '🪙', '✨', '🪙'].map((coin, ci) => (
+                            <i key={ci} style={{ ['--cx' as string]: `${(ci - 2) * 13}px`, animationDelay: `${ci * 70}ms` }}>{coin}</i>
+                          ))}
+                        </span>
                       )}
                     </motion.div>
                   );

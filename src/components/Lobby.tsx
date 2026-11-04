@@ -433,7 +433,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                 </span>
                 <button
                   onClick={handleCopyCode}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg border border-slate-600 transition-colors cursor-pointer"
+                  className={`px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg border border-slate-600 transition-all cursor-pointer ${codeCopied ? 'fx-copied-glow' : ''}`}
                 >
                   {codeCopied ? '✓ Copied!' : '📋 Copy'}
                 </button>
@@ -482,8 +482,8 @@ export const Lobby: React.FC<LobbyProps> = ({
       {roomCode && !dealActive && (
         <div className="w-full max-w-2xl flex flex-wrap items-center justify-center gap-1.5 text-[11px] font-bold">
           <span className="px-2.5 py-1 rounded-full bg-slate-800/90 border border-slate-600 text-slate-200">✅ 1. In the room</span>
-          <span className={`px-2.5 py-1 rounded-full border ${myPlayer ? 'bg-emerald-950/80 border-emerald-600 text-emerald-300' : 'bg-amber-950/70 border-amber-600 text-amber-300'}`}>{myPlayer ? `✅ 2. In the game as ${myPlayer.name}` : '👉 2. Join the game below'}</span>
-          <span className={`px-2.5 py-1 rounded-full border ${gameState.players.length >= 2 ? 'bg-emerald-950/80 border-emerald-600 text-emerald-300' : 'bg-slate-800/90 border-slate-600 text-slate-300'}`}>{gameState.players.length >= 2 ? '✅' : '⏳'} 3. {gameState.players.length}/2 players in</span>
+          <span key={myPlayer ? 'joined' : 'not-joined'} className={`px-2.5 py-1 rounded-full border fx-check-pop ${myPlayer ? 'bg-emerald-950/80 border-emerald-600 text-emerald-300' : 'bg-amber-950/70 border-amber-600 text-amber-300'}`}>{myPlayer ? `✅ 2. In the game as ${myPlayer.name}` : '👉 2. Join the game below'}</span>
+          <span key={gameState.players.length >= 2 ? 'ready' : 'waiting'} className={`px-2.5 py-1 rounded-full border fx-check-pop ${gameState.players.length >= 2 ? 'bg-emerald-950/80 border-emerald-600 text-emerald-300' : 'bg-slate-800/90 border-slate-600 text-slate-300'}`}>{gameState.players.length >= 2 ? '✅' : '⏳'} 3. {gameState.players.length}/2 players in{gameState.players.length < 2 && (<span className="fx-dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span>)}</span>
         </div>
       )}
 
@@ -577,7 +577,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                       takenByOther
                         ? 'opacity-25 cursor-not-allowed border-transparent'
                         : joinToken === t
-                          ? 'border-emerald-400 bg-emerald-400/20 scale-110 shadow-[0_0_12px_rgba(52,211,153,0.45)]'
+                          ? 'border-emerald-400 bg-emerald-400/20 scale-110 shadow-[0_0_12px_rgba(52,211,153,0.45)] fx-token-selected'
                           : 'border-transparent hover:bg-slate-700 hover:scale-105'
                     }`}
                   >
@@ -595,7 +595,7 @@ export const Lobby: React.FC<LobbyProps> = ({
         </div>
       )}
 
-      <div className="bg-slate-800/80 p-4 md:p-8 rounded-3xl shadow-2xl border border-slate-700 w-full max-w-2xl backdrop-blur-sm">
+      <div className="bg-slate-800/80 p-4 md:p-8 rounded-3xl shadow-2xl border border-slate-700 w-full max-w-2xl backdrop-blur-sm fx-glass">
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h2 className="text-xl md:text-2xl text-white font-semibold flex items-center gap-2">
             <Users className="text-blue-400" />
@@ -610,7 +610,7 @@ export const Lobby: React.FC<LobbyProps> = ({
         
         {/* Players List */}
         <div className="space-y-3 md:space-y-4 mb-6 md:mb-8 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-          {gameState.players.map((p) => {
+          {gameState.players.map((p, idx) => {
             const isEditing = editingPlayerId === p.id;
 
             if (isEditing) {
@@ -675,7 +675,7 @@ export const Lobby: React.FC<LobbyProps> = ({
             }
 
             return (
-              <div key={p.id} className="flex items-center justify-between bg-slate-700/50 p-3 md:p-4 rounded-xl border border-slate-600/50 group hover:border-slate-500 transition-all" style={{ boxShadow: `0 0 14px ${p.color}2e, inset 0 0 0 1px ${p.color}38` }}>
+              <div key={p.id} className="flex items-center justify-between bg-slate-700/50 p-3 md:p-4 rounded-xl border border-slate-600/50 group hover:border-slate-500 transition-all fx-join-pop" style={{ boxShadow: `0 0 14px ${p.color}2e, inset 0 0 0 1px ${p.color}38`, animationDelay: `${Math.min(idx, 7) * 60}ms` }}>
                 <div className="flex items-center gap-3">
                   {p.type === PlayerType.USER ? <User className="text-green-400" /> : <Bot className="text-blue-400" />}
                   <span className="text-white font-medium text-base md:text-lg">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 
 export const Dice3D: React.FC<{ rolling: boolean, face: number }> = ({ rolling, face }) => {
@@ -14,8 +14,24 @@ export const Dice3D: React.FC<{ rolling: boolean, face: number }> = ({ rolling, 
 
   const rot = faceRotations[face] || faceRotations[1];
 
+  // R3-22 — one soft bounce right after a roll lands.
+  const wasRollingRef = useRef(false);
+  const [settling, setSettling] = useState(false);
+  useEffect(() => {
+    if (rolling) {
+      wasRollingRef.current = true;
+      return;
+    }
+    if (wasRollingRef.current) {
+      wasRollingRef.current = false;
+      setSettling(true);
+      const t = setTimeout(() => setSettling(false), 480);
+      return () => clearTimeout(t);
+    }
+  }, [rolling]);
+
   return (
-    <div className={`w-16 h-16 relative ${rolling ? 'fx-dice-shake' : ''}`} style={{ perspective: '1000px' }}>
+    <div className={`w-16 h-16 relative ${rolling ? 'fx-dice-shake fx-dice-glow' : settling ? 'fx-settle' : ''}`} style={{ perspective: '1000px' }}>
       {rolling && (
         <span className="fx-sparkles" aria-hidden="true">
           <i /><i /><i /><i /><i /><i /><i /><i />

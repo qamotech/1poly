@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 import { DealPlayer } from '../../deal/dealTypes';
 import { Trophy, Sparkles, RefreshCw, Home, DollarSign, Swords } from 'lucide-react';
 import { audio } from '../../audio';
-import { WaveText } from '../Fx';
+import { WaveText, Confetti } from '../Fx';
 
 interface DealGameOverProps {
   winner: DealPlayer | null;
@@ -109,6 +109,8 @@ export const DealGameOver: React.FC<DealGameOverProps> = ({
         animate={{ scale: 1, opacity: 1, y: 0 }}
         className="bg-slate-900 border-2 border-amber-400 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center shadow-2xl space-y-6 relative overflow-hidden fx-chase-frame"
       >
+        <span className="fx-rays" aria-hidden="true" />
+        <Confetti />
         {/* Glow effect */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
 

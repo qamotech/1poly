@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { GameState, GamePhase, BankruptcyRecord, GameSpeed } from '../types';
 import { audio } from '../audio';
 import { AnimatedMoney, CoinBurst } from './Fx';
+import { SPACES } from '../engine/board';
 import { RotateCcw, Key, ShieldCheck, Zap, UserX, Trash2 } from 'lucide-react';
 
 const getLogStyle = (log: string) => {
@@ -245,7 +246,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* Players Roster & Bankrupt Visual Indicators */}
-      <div className="bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-700/60 shadow-lg flex flex-col gap-2">
+      <div className="bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-700/60 shadow-lg flex flex-col gap-2 fx-glass">
         <div className="flex items-center justify-between">
           <h3 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
             <span>👥</span> Players ({gameState.players.length})
@@ -253,6 +254,34 @@ export const HUD: React.FC<HUDProps> = ({
           <span className="text-[10px] text-slate-500">
             {gameState.players.filter(p => !p.isBankrupt).length} Active
           </span>
+        </div>
+
+        {/* R3-23 — live standings ranked by net worth (cash + property + houses) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 custom-scrollbar">
+          <span className="text-[9px] font-black uppercase tracking-wider text-amber-300/90 shrink-0">🏆 Standings</span>
+          {[...gameState.players]
+            .map((p) => {
+              const worth = p.money + p.properties.reduce((sum, pid) => {
+                const space = SPACES.find((sp) => sp.id === pid);
+                if (!space) return sum;
+                const st = gameState.propertyStates?.[pid];
+                const houses = st ? st.houses + (st.hasHotel ? 5 : 0) : 0;
+                return sum + (space.price || 0) + houses * (space.houseCost || 0);
+              }, 0);
+              return { p, worth };
+            })
+            .sort((a, b) => b.worth - a.worth)
+            .map(({ p, worth }, i) => (
+              <span
+                key={p.id}
+                className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${p.isBankrupt || p.money < 0 ? 'opacity-50 line-through' : ''}`}
+                style={{ borderColor: `${p.color}55`, background: `${p.color}18` }}
+              >
+                <span>{['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'][i] || `${i + 1}.`}</span>
+                <span>{p.token}</span>
+                <span className="font-mono">${worth}</span>
+              </span>
+            ))}
         </div>
 
         <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1 custom-scrollbar">
@@ -266,7 +295,7 @@ export const HUD: React.FC<HUDProps> = ({
                 <div
                   key={p.id}
                   id={`hud-player-${p.id}`}
-                  className="p-2 rounded-xl bg-slate-950/80 border border-red-900/40 opacity-55 hover:opacity-100 transition-all flex items-center justify-between gap-2 shadow-inner group"
+                  className="p-2 rounded-xl bg-slate-950/80 border border-red-900/40 opacity-55 hover:opacity-100 transition-all flex items-center justify-between gap-2 shadow-inner group fx-bankrupt-in"
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div className="w-7 h-7 rounded-full bg-slate-900 border border-red-900/80 flex items-center justify-center text-sm filter grayscale shrink-0 relative">
@@ -314,7 +343,7 @@ export const HUD: React.FC<HUDProps> = ({
                     : p.inJail
                     ? 'bg-amber-950/30 border-amber-500/60 ring-2 ring-amber-400/80 shadow-[0_0_8px_rgba(251,191,36,0.2)]'
                     : 'bg-slate-800/60 border-slate-700/50 hover:bg-slate-800'
-                }`}
+                } ${isTurn ? 'fx-turn-ring' : ''}`}
                 style={isTurn || p.inJail ? undefined : { boxShadow: `0 0 14px ${p.color}30, inset 0 0 0 1px ${p.color}40` }}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1">

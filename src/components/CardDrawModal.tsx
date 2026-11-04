@@ -32,7 +32,7 @@ export const CardDrawModal: React.FC<CardDrawModalProps> = ({ gameState, onClose
     : { bg: 'bg-blue-500', icon: '🎁', title: 'Community Chest' };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md fx-backdrop-in" onClick={onClose}>
       <div className="relative w-full max-w-sm fx-modal-pop" onClick={e => e.stopPropagation()} style={{ perspective: '1200px' }}>
         
         {/* The Card Container */}

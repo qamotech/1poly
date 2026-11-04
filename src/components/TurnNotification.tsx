@@ -35,7 +35,7 @@ export const TurnNotification: React.FC<TurnNotificationProps> = ({ currentPlaye
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           className="fixed top-0 left-1/2 -translate-x-1/2 z-[150] pointer-events-none"
         >
-          <div className="fx-rainbow-ring backdrop-blur-md rounded-2xl px-8 py-4 flex items-center gap-6 overflow-hidden relative">
+          <div className="fx-rainbow-ring fx-banner-streak backdrop-blur-md rounded-2xl px-8 py-4 flex items-center gap-6 overflow-hidden relative">
             
             {/* Color accent bar reflecting the player token color if applicable, or generic emerald */}
             <div className={`absolute top-0 left-0 w-2 h-full ${currentPlayer.token === '🚗' ? 'bg-red-500' : currentPlayer.token === '🎩' ? 'bg-indigo-500' : 'bg-emerald-500'}`} />
