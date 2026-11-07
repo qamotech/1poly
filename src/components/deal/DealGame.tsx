@@ -381,11 +381,11 @@ export const DealGame: React.FC<DealGameProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                <span>Turn <span key={gameState.turnNumber} className="fx-turn-num">{gameState.turnNumber}</span></span>
+                <span className="fx-turn-label">Turn <span key={gameState.turnNumber} className="fx-turn-num">{gameState.turnNumber}</span></span>
                 <span>•</span>
                 <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-emerald-950/40 border border-emerald-500/60 ring-1 ring-emerald-400/70 shadow-[0_0_6px_rgba(52,211,153,0.3)]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs">{currentPlayer.token}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse fx-turn-dot" />
+                  <span className="text-xs fx-turn-token">{currentPlayer.token}</span>
                   <strong className="text-emerald-200 font-bold fx-turn-name">{currentPlayer.name}</strong>
                   <span className="text-[10px] font-mono text-emerald-400 font-bold fx-turn-bank">${currentPlayer.bankValue}M</span>
                 </div>
@@ -402,7 +402,7 @@ export const DealGame: React.FC<DealGameProps> = ({
               : 'bg-slate-950/80 border-slate-800 text-slate-400'
           }`}
         >
-          <span className={`text-xs font-bold ${turnsAreUp ? 'text-red-400 font-black' : 'text-slate-400'}`}>
+          <span className={`text-xs font-bold fx-plays-pill ${turnsAreUp ? 'text-red-400 font-black' : 'text-slate-400'}`}>
             {turnsAreUp ? 'Turns Up!' : 'Plays Left:'}
           </span>
           <div key={gameState.playsRemaining} className="flex gap-1.5">
@@ -470,7 +470,7 @@ export const DealGame: React.FC<DealGameProps> = ({
               className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 text-xs font-bold transition-colors cursor-pointer"
               title="Restart Deal Match"
             >
-              <RefreshCw size={16} />
+              <RefreshCw size={16} className="fx-restart-glow" />
             </button>
           )}
 
@@ -766,7 +766,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                     style={hasCards ? { boxShadow: `0 0 ${set.isComplete ? 15 : 9}px ${config.hex}${set.isComplete ? 'aa' : '55'}` } : undefined}
                   >
                     <div className="flex items-center justify-between gap-1">
-                      <span className={`text-[10px] font-black uppercase truncate ${config.textClass}`}>
+                      <span className={`text-[10px] font-black uppercase truncate fx-set-name ${config.textClass}`}>
                         {config.name}
                       </span>
                       <span className="text-[10px] font-bold text-white font-mono fx-set-count">

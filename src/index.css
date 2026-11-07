@@ -2556,3 +2556,159 @@ html, body { overscroll-behavior: none; }
   50% { filter: drop-shadow(0 0 5px rgba(252, 211, 77, 0.9)); }
 }
 .fx-classic-glow { animation: fx-classic-glow-pulse 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 58
+   ============================================================ */
+
+/* C58-1 — HUD: Active count label gets a soft emerald glow pulse
+   (fx-active-glow on the Active count span in HUD's roster card).
+   Text-shadow swell only, so the label quietly gleams in place
+   without shifting the Players heading beside it. */
+@keyframes fx-active-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  50% { text-shadow: 0 0 6px rgba(52, 211, 153, 0.85); }
+}
+.fx-active-glow { animation: fx-active-glow 2.8s ease-in-out infinite; }
+
+/* C58-2 — Cards: Restart button RefreshCw icon gets a soft rose
+   glow pulse (fx-restart-glow on the RefreshCw icon in DealGame's
+   header). Drop-shadow swell only, so the icon quietly glows in
+   place without shifting the header buttons beside it. */
+@keyframes fx-restart-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(251, 113, 133, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(251, 113, 133, 0.9)); }
+}
+.fx-restart-glow { animation: fx-restart-glow-pulse 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 59
+   ============================================================ */
+
+/* C59-1 — HUD: Speed label gets a soft amber glow pulse
+   (fx-speed-label on the Speed: span in HUD's speed control
+   row). Text-shadow swell only, so the label quietly gleams
+   in place without shifting the speed buttons beside it, and
+   stays distinct from the Zap icon's fx-speed-zap flicker. */
+@keyframes fx-speed-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+  50% { text-shadow: 0 0 6px rgba(251, 191, 36, 0.85); }
+}
+.fx-speed-label { animation: fx-speed-label-glow 2.8s ease-in-out infinite; }
+
+/* C59-2 — Cards: header turn token gets a soft emerald bob
+   (fx-turn-token on the token span in DealGame's header turn
+   chip). Bob via the CSS translate property so it composes
+   with the chip layout and never shifts the player name or
+   bank value beside it. */
+@keyframes fx-turn-token-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -2px; }
+}
+.fx-turn-token { display: inline-block; animation: fx-turn-token-bob 2.4s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 60
+   ============================================================ */
+
+/* C60-1 — HUD: Current Turn money amount gets a soft emerald
+   glow pulse (fx-turn-money on the money <p> in HUD's current
+   turn card). Text-shadow swell only, so the amount quietly
+   gleams in place without shifting the loan label beside it. */
+@keyframes fx-turn-money-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  50% { text-shadow: 0 0 7px rgba(52, 211, 153, 0.8); }
+}
+.fx-turn-money { animation: fx-turn-money-glow 2.9s ease-in-out infinite; }
+
+/* C60-2 — Cards: header "Turn" label gets a soft sky glow pulse
+   (fx-turn-label on the Turn span in DealGame's header). Text-
+   shadow swell only, so the label quietly gleams in place
+   without shifting the turn number or turn chip beside it, and
+   stays distinct from the turn number's fx-turn-num pop. */
+@keyframes fx-turn-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(56, 189, 248, 0); }
+  50% { text-shadow: 0 0 6px rgba(56, 189, 248, 0.85); }
+}
+.fx-turn-label { animation: fx-turn-label-glow 2.6s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 61
+   ============================================================ */
+
+/* C61-1 — HUD: turn timer countdown gets a soft sky glow pulse
+   (fx-timer-glow on the timeLeft span in HUD's Current Turn
+   card). Text-shadow swell only, so the countdown quietly
+   gleams in place without shifting the Reset button beside
+   it, and stays distinct from the red animate-pulse urgency
+   state under 5 seconds. */
+@keyframes fx-timer-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(56, 189, 248, 0); }
+  50% { text-shadow: 0 0 6px rgba(56, 189, 248, 0.85); }
+}
+.fx-timer-glow { animation: fx-timer-glow 2.5s ease-in-out infinite; }
+
+/* C61-2 — Cards: header center "Plays Left:" label gets a soft
+   amber glow pulse (fx-plays-pill on the Plays Left span in
+   DealGame's header plays pill). Text-shadow swell only, so
+   the label quietly gleams in place without shifting the
+   play pips beside it, and stays distinct from the hand-zone
+   counter's fx-plays-label pulse. */
+@keyframes fx-plays-pill-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+  50% { text-shadow: 0 0 6px rgba(251, 191, 36, 0.85); }
+}
+.fx-plays-pill { animation: fx-plays-pill-glow 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 62
+   ============================================================ */
+
+/* C62-1 — HUD: Live Activity pulsing dot gets a soft blue halo
+   pulse (fx-live-dot on the blue dot span in HUD's Live
+   Activity heading). The keyframes carry the dot's existing
+   animate-pulse opacity beat (1 → .55) as well as the new
+   box-shadow halo swell, so the familiar pulse is preserved
+   while a soft blue halo blooms around the dot; box-shadow
+   only swells outward, so the heading text beside it never
+   shifts. */
+@keyframes fx-live-dot-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
+  50% { opacity: .55; box-shadow: 0 0 7px 2px rgba(59, 130, 246, .75); }
+}
+.fx-live-dot { animation: fx-live-dot-pulse 2.4s ease-in-out infinite; }
+
+/* C62-2 — Cards: local property-set color names get a soft
+   glow pulse (fx-set-name on the color-name span in DealGame's
+   local property sets grid). Text-shadow swell in currentColor
+   only, so each set name quietly gleams in its own group
+   colour without shifting the set-count beside it, and stays
+   distinct from the count's fx-set-count pulse. */
+@keyframes fx-set-name-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+  50% { text-shadow: 0 0 6px currentColor; }
+}
+.fx-set-name { animation: fx-set-name-glow 2.8s ease-in-out infinite; }
+
+/* C63-1 — HUD: Current Turn player name gets a soft white
+   glow pulse (fx-turn-player on the truncate name span in
+   HUD's Current Turn card). Text-shadow swell only, so the
+   name quietly gleams without shifting the CPU / In Jail
+   badges beside it. */
+@keyframes fx-turn-player-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 7px rgba(255, 255, 255, .55); }
+}
+.fx-turn-player { animation: fx-turn-player-glow 2.6s ease-in-out infinite; }
+
+/* C63-2 — Cards: header turn chip live dot gets a soft
+   emerald halo pulse (fx-turn-dot on the emerald dot span in
+   DealGame's header turn chip). The keyframes also carry
+   the dot's existing animate-pulse opacity beat, so the
+   familiar pulse is preserved inside the halo swell and
+   the chip layout never shifts. */
+@keyframes fx-turn-dot-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  50% { opacity: .55; box-shadow: 0 0 7px 2px rgba(52, 211, 153, .75); }
+}
+.fx-turn-dot { animation: fx-turn-dot-pulse 2.4s ease-in-out infinite; }

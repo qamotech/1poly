@@ -113,7 +113,7 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Game Speed Switcher */}
         {onSetGameSpeed && (
           <div className="bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 flex items-center justify-between gap-1 shadow-inner">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider pl-1.5 flex items-center gap-1">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider pl-1.5 flex items-center gap-1 fx-speed-label">
               <Zap size={11} className="text-yellow-400 fx-speed-zap" /> Speed:
             </span>
             <div className="flex gap-1">
@@ -164,7 +164,7 @@ export const HUD: React.FC<HUDProps> = ({
             <h3 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider fx-turn-heading">Current Turn</h3>
             <div className="flex items-center gap-2">
               {!isCpuTurn && timeLeft > 0 && (
-                <span className={`text-xs font-bold font-mono ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-slate-400'}`}>
+                <span className={`text-xs font-bold font-mono fx-timer-glow ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-slate-400'}`}>
                   {timeLeft}s
                 </span>
               )}
@@ -189,12 +189,12 @@ export const HUD: React.FC<HUDProps> = ({
             <span key={currentPlayer?.id || 'waiting'} className="text-2xl bg-slate-700 p-2 rounded-full shrink-0 drop-shadow fx-turn-avatar">{currentPlayer?.token || '🎲'}</span>
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-bold text-white flex items-center gap-2 whitespace-nowrap">
-                <span className="truncate">{currentPlayer?.name || 'Waiting...'}</span>
+                <span className="truncate fx-turn-player">{currentPlayer?.name || 'Waiting...'}</span>
                 {isCpuTurn && <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded font-bold shrink-0">CPU</span>}
                 {currentPlayer?.inJail && <span className="text-[10px] bg-orange-600 text-white px-1.5 py-0.5 rounded font-bold shrink-0">In Jail</span>}
               </h2>
               <div className="flex items-center gap-3">
-                <p className="relative text-green-400 font-mono text-base font-bold"><AnimatedMoney value={currentPlayer?.money || 0} /><CoinBurst amount={currentPlayer?.money || 0} /></p>
+                <p className="relative text-green-400 font-mono text-base font-bold fx-turn-money"><AnimatedMoney value={currentPlayer?.money || 0} /><CoinBurst amount={currentPlayer?.money || 0} /></p>
                 {currentPlayer?.loan ? (
                   <span className="text-[10px] text-red-400 font-medium">Loan: ${currentPlayer.loan}</span>
                 ) : null}
@@ -251,7 +251,7 @@ export const HUD: React.FC<HUDProps> = ({
           <h3 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 fx-players-heading">
             <span>👥</span> Players ({gameState.players.length})
           </h3>
-          <span className="text-[10px] text-slate-500">
+          <span className="text-[10px] text-slate-500 fx-active-glow">
             {gameState.players.filter(p => !p.isBankrupt).length} Active
           </span>
         </div>
@@ -460,7 +460,7 @@ export const HUD: React.FC<HUDProps> = ({
       {/* Activity Log */}
       <div className="bg-slate-900/80 backdrop-blur-md p-3.5 rounded-2xl border border-slate-700/50 flex-1 overflow-hidden flex flex-col min-h-[160px] shadow-inner relative">
         <h3 className="text-slate-400 font-bold text-xs uppercase tracking-wider mb-2.5 flex items-center gap-2 fx-live-heading">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse fx-live-dot"></span>
           Live Activity
         </h3>
         
