@@ -529,7 +529,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                   key={opponent.id}
                   className={`bg-slate-900/90 rounded-xl p-2 sm:p-3 border transition-all ${
                     isOpponentTurn
-                      ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                      ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-[0_0_15px_rgba(245,158,11,0.2)] fx-thinking-breathe'
                       : 'border-slate-800'
                   }`}
                   style={isOpponentTurn ? undefined : { boxShadow: `0 0 16px ${FX_PLAYER_HUES[opponentIdx % FX_PLAYER_HUES.length]}33, inset 0 0 0 1px ${FX_PLAYER_HUES[opponentIdx % FX_PLAYER_HUES.length]}44` }}
@@ -908,7 +908,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                   const isSelected = selectedHandCardId === card.id;
 
                   return (
-                    <div key={card.id} className={`relative shrink-0 rounded-xl fx-holo ${card.id === freshCardId ? 'fx-flip-in' : 'fx-deal-in'}`} style={{ animationDelay: `${Math.min(cardIdx, 7) * 45}ms` }}>
+                    <div key={card.id} className={`relative shrink-0 rounded-xl fx-holo ${isSelected ? 'fx-selected-lift' : ''} ${card.id === freshCardId ? 'fx-flip-in' : 'fx-deal-in'}`} style={{ animationDelay: `${Math.min(cardIdx, 7) * 45}ms` }}>
                       {card.id === freshCardId && (
                         <span className="fx-new-ribbon" aria-hidden="true">✨ NEW</span>
                       )}

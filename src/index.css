@@ -1081,3 +1081,190 @@ html, body { overscroll-behavior: none; }
   border-color: rgba(52, 211, 153, 0.95) !important;
   box-shadow: 0 0 18px rgba(16, 185, 129, 0.65), 0 4px 10px rgba(0, 0, 0, 0.4) !important;
 }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 8
+   ============================================================ */
+
+/* C8-1 — Board center: 1POLY banner gets the shimmer-text
+   treatment. Same background-clip technique as fx-shimmer-text,
+   but the gradient stays in the banner's own world: white and
+   gold sweeping across the red banner, so the wordmark shimmers
+   without turning rainbow or losing contrast on red. Reuses the
+   shared fx-shimmer keyframes (background-position sweep). */
+.fx-banner-shimmer {
+  background-image: linear-gradient(90deg, #ffffff 0%, #fef08a 28%, #f59e0b 50%, #ffffff 72%, #fef08a 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fx-shimmer 3.4s linear infinite;
+}
+
+/* C8-2 — HUD: newest action-log entry slides in highlighted.
+   The entry's motion.div already slides it in (with a deeper
+   slide for the newest entry); this class adds the highlight:
+   a bright gold glow that pulses in on arrival, then settles
+   to a steady inset gold accent bar + soft glow so the newest
+   entry stays easy to spot at the top of the log. Glow/filter
+   only — no transform, so it never fights the motion slide. */
+@keyframes fx-log-newest-glow {
+  0% { box-shadow: inset 3px 0 0 rgba(251, 191, 36, 0.95), 0 0 0 rgba(251, 191, 36, 0); filter: brightness(1); }
+  35% { box-shadow: inset 3px 0 0 rgba(251, 191, 36, 1), 0 0 18px rgba(251, 191, 36, 0.55); filter: brightness(1.35); }
+  70% { box-shadow: inset 3px 0 0 rgba(251, 191, 36, 0.95), 0 0 8px rgba(251, 191, 36, 0.3); filter: brightness(1.12); }
+  100% { box-shadow: inset 3px 0 0 rgba(251, 191, 36, 0.9), 0 0 6px rgba(251, 191, 36, 0.22); filter: brightness(1.08); }
+}
+.fx-log-newest {
+  animation: fx-log-newest-glow 1.6s ease-out both;
+  border-color: rgba(251, 191, 36, 0.65) !important;
+}
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 9
+   ============================================================ */
+
+/* C9-1 — Cards: selected hand card lifts higher with an emerald
+   glow ring. fx-selected-lift goes on the hand-card wrapper in
+   DealGame (raises the whole card above its neighbours);
+   fx-selected-ring goes on the card itself in DealCardView,
+   replacing the flat yellow ring shadow with a pulsing emerald
+   halo so the pick reads instantly against the dark felt. */
+@keyframes fx-selected-ring-glow {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.95), 0 0 16px rgba(16, 185, 129, 0.55), 0 14px 24px rgba(0, 0, 0, 0.45); }
+  50% { box-shadow: 0 0 0 3px rgba(110, 231, 183, 1), 0 0 28px rgba(16, 185, 129, 0.9), 0 18px 28px rgba(0, 0, 0, 0.5); }
+}
+.fx-selected-ring {
+  animation: fx-selected-ring-glow 1.6s ease-in-out infinite;
+  border-color: rgba(52, 211, 153, 0.95) !important;
+}
+.fx-selected-lift {
+  transform: translateY(-12px);
+  transition: transform 0.18s ease-out;
+  z-index: 20;
+}
+
+/* C9-2 — Dice: DOUBLES readout gets a star burst. StarBurst
+   (Fx.tsx) renders 8 star glyphs inside .fx-star-burst over the
+   readout pill; each star flies outward along its --sx/--sy
+   vector, spinning and fading, then the cycle repeats so a
+   doubles result keeps celebrating while it stays on screen. */
+.fx-doubles-wrap { position: relative; display: inline-flex; align-items: center; }
+.fx-star-burst { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.fx-star-burst i {
+  position: absolute; left: 50%; top: 50%;
+  font-style: normal; font-size: 11px; line-height: 1;
+  color: #fbbf24; text-shadow: 0 0 8px rgba(251, 191, 36, 0.95);
+  animation: fx-star-burst-fly 1.5s ease-out infinite;
+}
+@keyframes fx-star-burst-fly {
+  0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.3); opacity: 0; }
+  18% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--sx, 0px)), calc(-50% + var(--sy, -18px))) rotate(160deg) scale(1.05); opacity: 0; }
+}
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 10
+   ============================================================ */
+
+/* C10-1 — Gate: join-code letters flip in as they're typed.
+   RoomGate renders a 4-slot preview above the code input; each
+   filled slot is keyed by index+letter, so typing (or replacing)
+   a letter remounts that tile and replays this flip: the letter
+   rotates in on the X axis with a small overshoot and a blue
+   glow flash, then settles. Empty slots stay as quiet dashes. */
+.fx-join-preview { perspective: 420px; }
+@keyframes fx-join-flip {
+  0% { opacity: 0; transform: rotateX(92deg) translateY(7px) scale(0.82); box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
+  55% { opacity: 1; transform: rotateX(-14deg) translateY(-2px) scale(1.08); box-shadow: 0 0 22px rgba(59, 130, 246, 0.85), 0 4px 10px rgba(0, 0, 0, 0.4); }
+  100% { opacity: 1; transform: rotateX(0deg) translateY(0) scale(1); box-shadow: 0 0 12px rgba(59, 130, 246, 0.35), 0 4px 10px rgba(0, 0, 0, 0.4); }
+}
+.fx-join-letter {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.6rem; height: 2.9rem; border-radius: 0.75rem;
+  background: linear-gradient(180deg, rgba(30, 58, 138, 0.95), rgba(15, 23, 42, 0.97));
+  border: 1px solid rgba(96, 165, 250, 0.75);
+  color: #dbeafe; font-size: 1.35rem; font-weight: 900;
+  transform-origin: center bottom;
+  animation: fx-join-flip 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+.fx-join-slot {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.6rem; height: 2.9rem; border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px dashed rgba(100, 116, 139, 0.55);
+  color: rgba(100, 116, 139, 0.8); font-size: 1.1rem; font-weight: 900;
+}
+
+/* C10-2 — PropertyManager modal: property (house) rows build
+   up with a stagger. Each property card gets fx-house-row plus
+   an inline animationDelay of index*90ms within its group, so
+   the rows rise and settle one after another like houses going
+   up along a street when the Portfolio tab opens. Opacity and
+   transform only — layout and controls are untouched. */
+@keyframes fx-house-build {
+  0% { opacity: 0; transform: translateY(16px) scale(0.95); }
+  60% { opacity: 1; transform: translateY(-2px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.fx-house-row { animation: fx-house-build 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+
+/* C11-1 — Auction modal: current bid counts up (AnimatedMoney).
+   The bid amount in AuctionModal now renders through AnimatedMoney
+   (Fx.tsx), so every new bid eases/counts to its value and flashes
+   via fx-money-up. This wrapper adds a steady amber glow pulse
+   around the big bid figure so the live price draws the eye. */
+@keyframes fx-auction-bid-glow {
+  0%, 100% { text-shadow: 0 0 6px rgba(251, 191, 36, 0.35), 0 2px 4px rgba(0, 0, 0, 0.45); }
+  50% { text-shadow: 0 0 18px rgba(251, 191, 36, 0.85), 0 2px 4px rgba(0, 0, 0, 0.45); }
+}
+.fx-auction-bid { display: inline-block; animation: fx-auction-bid-glow 1.8s ease-in-out infinite; }
+
+/* C11-2 — Board: utility tiles (Electric/Water) get an animated glow.
+   Both UTILITY tiles get fx-utility; Electric keeps the default
+   amber glow and Water swaps in cyan via fx-utility-water (the
+   --utility-glow variables). The pulse is an inset ring + soft
+   halo so it stays visible inside the tile's overflow:hidden. */
+@keyframes fx-utility-glow {
+  0%, 100% { box-shadow: inset 0 0 0 1px var(--utility-glow), inset 0 0 8px var(--utility-glow), 0 0 5px var(--utility-glow); }
+  50% { box-shadow: inset 0 0 0 2px var(--utility-glow-strong), inset 0 0 14px var(--utility-glow), 0 0 12px var(--utility-glow-strong); }
+}
+.fx-utility {
+  --utility-glow: rgba(245, 158, 11, 0.5);
+  --utility-glow-strong: rgba(245, 158, 11, 0.9);
+  animation: fx-utility-glow 2.4s ease-in-out infinite;
+}
+.fx-utility-water {
+  --utility-glow: rgba(34, 211, 238, 0.5);
+  --utility-glow-strong: rgba(34, 211, 238, 0.9);
+}
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 12
+   ============================================================ */
+
+/* C12-1 — Cards: the thinking opponent's bar breathes while it's
+   their turn. Applied to the opponent row in DealGame only when
+   isOpponentTurn; a slow scale + amber halo swell (like a held
+   breath) so the active thinker reads at a glance without
+   distracting motion on idle rows. */
+@keyframes fx-thinking-breathe {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(245, 158, 11, 0.18), inset 0 0 0 1px rgba(245, 158, 11, 0.12); }
+  50% { transform: scale(1.012); box-shadow: 0 0 26px rgba(245, 158, 11, 0.42), inset 0 0 0 1px rgba(245, 158, 11, 0.28); }
+}
+.fx-thinking-breathe { animation: fx-thinking-breathe 2.2s ease-in-out infinite; }
+
+/* C12-2 — Board center: Free Parking pot pulses rainbow at $500+.
+   Applied to the pot card in Board only when pot >= 500; the
+   border and outer halo cycle through the rainbow while the card
+   gently swells, so a fat pot feels like a jackpot. Below $500
+   the pot keeps its plain purple/amber styling. */
+@keyframes fx-pot-rainbow-pulse {
+  0% { transform: scale(1); border-color: #f87171; box-shadow: 0 0 28px rgba(239, 68, 68, 0.65), 0 0 10px rgba(239, 68, 68, 0.5); }
+  20% { border-color: #fb923c; box-shadow: 0 0 32px rgba(249, 115, 22, 0.7), 0 0 12px rgba(249, 115, 22, 0.5); }
+  40% { transform: scale(1.03); border-color: #facc15; box-shadow: 0 0 36px rgba(250, 204, 21, 0.75), 0 0 14px rgba(250, 204, 21, 0.55); }
+  60% { border-color: #34d399; box-shadow: 0 0 32px rgba(16, 185, 129, 0.7), 0 0 12px rgba(16, 185, 129, 0.5); }
+  80% { border-color: #60a5fa; box-shadow: 0 0 32px rgba(59, 130, 246, 0.7), 0 0 12px rgba(217, 70, 239, 0.5); }
+  100% { transform: scale(1); border-color: #e879f9; box-shadow: 0 0 28px rgba(217, 70, 239, 0.65), 0 0 10px rgba(217, 70, 239, 0.5); }
+}
+.fx-pot-rainbow { animation: fx-pot-rainbow-pulse 2.8s ease-in-out infinite; }

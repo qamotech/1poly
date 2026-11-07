@@ -4,7 +4,7 @@ import { GameState, GamePhase, SpaceType } from '../types';
 import { SPACES } from '../engine/board';
 import { audio } from '../audio';
 import { Dice3D } from './Dice3D';
-import { CoinBurst } from './Fx';
+import { CoinBurst, StarBurst } from './Fx';
 import { 
   Train, 
   Lightbulb, 
@@ -507,7 +507,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                 }}
                 transition={shouldHighlight ? { duration: 1.4, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
                 onClick={() => setSelectedSpaceId(space.id)}
-                className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}${freshBuys[space.id] ? ' fx-buy-pop' : ''}${space.type === SpaceType.RAILROAD ? ' fx-railroad' : ''}`}
+                className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}${freshBuys[space.id] ? ' fx-buy-pop' : ''}${space.type === SpaceType.RAILROAD ? ' fx-railroad' : ''}${space.type === SpaceType.UTILITY ? (space.name.includes('Water') ? ' fx-utility fx-utility-water' : ' fx-utility fx-utility-electric') : ''}`}
               >
                 {freshBuys[space.id] && (
                   <span key={freshBuys[space.id]} className="fx-sparkles" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
@@ -615,7 +615,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                {/* Center Logo graphic */}
                <div className="flex flex-col items-center pointer-events-none select-none -mb-2">
                  <div className="px-6 py-2 bg-red-600 border-4 border-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] rounded-lg transform -rotate-2">
-                   <h1 className="text-3xl font-black text-white uppercase tracking-widest drop-shadow-md">
+                   <h1 className="fx-banner-shimmer text-3xl font-black text-white uppercase tracking-widest drop-shadow-md">
                      1POLY
                    </h1>
                  </div>
@@ -626,7 +626,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                  <motion.div 
                    initial={{ scale: 0.9, opacity: 0 }}
                    animate={{ scale: 1, opacity: 1 }}
-                   className="fx-pot-wrap bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-700 p-3 rounded-2xl shadow-[0_0_35px_rgba(168,85,247,0.6)] border-3 border-amber-400 flex flex-col items-center justify-center relative overflow-hidden pointer-events-auto min-w-[180px]"
+                   className={`fx-pot-wrap bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-700 p-3 rounded-2xl shadow-[0_0_35px_rgba(168,85,247,0.6)] border-3 border-amber-400 flex flex-col items-center justify-center relative overflow-hidden pointer-events-auto min-w-[180px]${gameState.pot >= 500 ? ' fx-pot-rainbow' : ''}`}
                  >
                    <CoinBurst amount={gameState.pot} />
                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
@@ -693,7 +693,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                         >
                           <span key={`${gameState.lastDiceRoll[0]}-${gameState.lastDiceRoll[1]}-${gameState.currentPlayerIndex}-${gameState.phase}`} className="fx-roll-pop">
                             {gameState.lastDiceRoll[0] === gameState.lastDiceRoll[1]
-                              ? <span className="fx-shimmer-text font-black">{`🎲 DOUBLES! (${gameState.lastDiceRoll[0]} & ${gameState.lastDiceRoll[1]})`}</span>
+                              ? <span className="fx-doubles-wrap"><StarBurst /><span className="fx-shimmer-text font-black">{`🎲 DOUBLES! (${gameState.lastDiceRoll[0]} & ${gameState.lastDiceRoll[1]})`}</span></span>
                               : `🎲 Total: ${gameState.lastDiceRoll[0] + gameState.lastDiceRoll[1]} (${gameState.lastDiceRoll[0]} & ${gameState.lastDiceRoll[1]})`
                             }
                           </span>

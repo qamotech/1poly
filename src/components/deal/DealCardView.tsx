@@ -85,7 +85,7 @@ export const DealCardView: React.FC<DealCardViewProps> = ({
       className={`relative ${sizeClasses} rounded-xl border-2 fx-tilt ${cardBorder} ${cardBg} shadow-lg flex flex-col justify-between overflow-hidden select-none cursor-pointer transition-shadow ${
         card.type === DealCardType.ACTION ? 'fx-holo-orange' : ''
       } ${
-        isSelected ? 'ring-4 ring-yellow-400 scale-105 z-20 shadow-[0_0_20px_rgba(250,204,21,0.6)]' : ''
+        isSelected ? 'ring-4 ring-emerald-400 scale-105 z-20 fx-selected-ring' : ''
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {/* Top Value and Color Bar */}

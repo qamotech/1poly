@@ -162,7 +162,7 @@ export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                          {spaces.map(space => {
+                          {spaces.map((space, spaceIdx) => {
                             const propState = gameState.propertyStates[space.id] || { houses: 0, hasHotel: false, isMortgaged: false };
                             const currentLevel = propState.hasHotel ? 5 : propState.houses;
                             const canAfford = Boolean(space.houseCost && currentPlayer.money >= space.houseCost);
@@ -180,7 +180,7 @@ export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({
                             const canUnmortgage = propState.isMortgaged && currentPlayer.money >= unmortgageCost && onUnmortgage;
 
                             return (
-                              <div key={space.id} className={`bg-slate-900/90 border rounded-xl p-3.5 flex flex-col gap-3 relative transition-all ${
+                              <div key={space.id} style={{ animationDelay: `${spaceIdx * 90}ms` }} className={`fx-house-row bg-slate-900/90 border rounded-xl p-3.5 flex flex-col gap-3 relative transition-all ${
                                 propState.isMortgaged ? 'border-red-900/50 bg-red-950/10' : 'border-slate-800 hover:border-slate-700'
                               }`}>
                                 <div className="flex justify-between items-start">

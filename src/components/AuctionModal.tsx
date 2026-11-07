@@ -4,6 +4,7 @@ import { GameState, Player, PlayerType } from '../types';
 import { SPACES } from '../engine/board';
 import { audio } from '../audio';
 import { Gavel, Check, X, Flame, ShieldAlert, Award } from 'lucide-react';
+import { AnimatedMoney } from './Fx';
 
 interface AuctionModalProps {
   gameState: GameState;
@@ -95,8 +96,8 @@ export const AuctionModal: React.FC<AuctionModalProps> = ({
               <div>
                 <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">Current Highest Bid</p>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-4xl font-black text-amber-400 font-mono">
-                    ${currentBid}
+                  <span className="text-4xl font-black text-amber-400 font-mono fx-auction-bid">
+                    <AnimatedMoney value={currentBid} />
                   </span>
                   {currentBid === 0 && (
                     <span className="text-xs text-slate-500 font-medium">(Starting bid $10)</span>

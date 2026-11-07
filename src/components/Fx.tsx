@@ -130,6 +130,33 @@ export const OrbitSparkles: React.FC = () => (
   </span>
 );
 
+/**
+ * C9-2 — star burst for the DOUBLES dice readout.
+ * Render inside an .fx-doubles-wrap element (position:relative);
+ * 8 stars fly outward along per-star --sx/--sy vectors via
+ * .fx-star-burst in index.css. Pure decoration.
+ */
+const STAR_VECTORS: Array<[number, number]> = [
+  [-34, -16], [-18, -24], [0, -28], [18, -24],
+  [34, -16], [-26, 10], [0, 16], [26, 10],
+];
+export const StarBurst: React.FC = () => (
+  <span className="fx-star-burst" aria-hidden="true">
+    {STAR_VECTORS.map(([x, y], i) => (
+      <i
+        key={i}
+        style={{
+          ['--sx' as string]: `${x}px`,
+          ['--sy' as string]: `${y}px`,
+          animationDelay: `${i * 90}ms`,
+        }}
+      >
+        {i % 2 === 0 ? '✦' : '⭐'}
+      </i>
+    ))}
+  </span>
+);
+
 /** A8 — renders text with each letter waving in sequence. */
 export const WaveText: React.FC<{ text: string }> = ({ text }) => (
   <>

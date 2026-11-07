@@ -65,6 +65,19 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
           <div className="flex items-center gap-2 text-blue-300 font-black uppercase tracking-widest text-xs">
             <LogIn size={15} /> Join a game
           </div>
+          <div className="flex justify-center gap-2 fx-join-preview" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) =>
+              code[i] ? (
+                <span key={`${i}-${code[i]}`} className="fx-join-letter">
+                  {code[i]}
+                </span>
+              ) : (
+                <span key={`empty-${i}`} className="fx-join-slot">
+                  –
+                </span>
+              ),
+            )}
+          </div>
           <div className="flex gap-2">
             <input
               value={code}

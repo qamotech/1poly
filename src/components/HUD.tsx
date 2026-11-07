@@ -473,10 +473,10 @@ export const HUD: React.FC<HUDProps> = ({
             return (
               <motion.div 
                 key={gameState.logs.length - 1 - id} 
-                initial={{ opacity: 0, x: -15, scale: 0.96 }}
+                initial={{ opacity: 0, x: id === 0 ? -28 : -15, scale: 0.96 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 transition={{ duration: 0.25, type: "spring", bounce: 0.3 }}
-                className={`text-xs p-2.5 rounded-xl flex gap-2.5 items-start border ${style.bg} ${style.color} ${style.border} shadow-sm backdrop-blur-sm`}
+                className={`text-xs p-2.5 rounded-xl flex gap-2.5 items-start border ${style.bg} ${style.color} ${style.border} shadow-sm backdrop-blur-sm${id === 0 ? ' fx-log-newest' : ''}`}
               >
                 <span className="text-base shrink-0 drop-shadow-md leading-none mt-0.5">{style.icon}</span>
                 <span className="leading-snug font-medium">{log}</span>
