@@ -1379,3 +1379,1180 @@ html, body { overscroll-behavior: none; }
   100% { opacity: 1; transform: translateX(0) scale(1); }
 }
 .fx-install-step { animation: fx-install-step-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 16
+   ============================================================ */
+
+/* C16-1 — Cards: discard pile top card gets a golden landing
+   ring flash. The discard wrapper in DealGame is already keyed
+   by the top card's id, so every new discard remounts it and
+   replays this ::after ring: a gold outline blooms outward
+   from the card and fades. Ring lives on ::after so it never
+   fights the wrapper's own fx-slap / fx-action-zoom transform
+   animations. Pointer-events none — purely decorative. */
+@keyframes fx-discard-ring {
+  0% { opacity: 0.95; transform: scale(0.94); box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.9), 0 0 18px rgba(251, 191, 36, 0.65); }
+  55% { opacity: 0.7; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.55), 0 0 26px rgba(245, 158, 11, 0.5); }
+  100% { opacity: 0; transform: scale(1.09); box-shadow: 0 0 0 4px rgba(251, 191, 36, 0), 0 0 30px rgba(245, 158, 11, 0); }
+}
+.fx-discard-flash::after {
+  content: ""; position: absolute; inset: -3px; z-index: 30; pointer-events: none;
+  border-radius: 14px;
+  animation: fx-discard-ring 0.9s ease-out both;
+}
+
+/* C16-2 — Board: Jail tile gets shimmering jail bars. Applied
+   to the JAIL tile (position 10) in Board: a steel-blue inset
+   pulse on the tile itself, vertical bars via ::before, and a
+   pale sheen sweeping across the bars via ::after (shared
+   fx-shimmer keyframes, clipped by the tile's overflow:hidden)
+   so Jail reads as locked steel instead of a plain corner. */
+@keyframes fx-jail-glow {
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(100, 116, 139, 0.55), inset 0 0 9px rgba(71, 85, 105, 0.4), 0 0 5px rgba(100, 116, 139, 0.3); }
+  50% { box-shadow: inset 0 0 0 2px rgba(148, 163, 184, 0.85), inset 0 0 15px rgba(71, 85, 105, 0.6), 0 0 12px rgba(100, 116, 139, 0.5); }
+}
+.fx-jail-shimmer { animation: fx-jail-glow 2.8s ease-in-out infinite; }
+.fx-jail-shimmer::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 9px, rgba(15, 23, 42, 0.26) 9px 12px, rgba(226, 232, 240, 0.14) 12px 13px);
+}
+.fx-jail-shimmer::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(110deg, transparent 25%, rgba(226, 232, 240, 0.5) 50%, transparent 75%);
+  background-size: 230% 100%;
+  animation: fx-shimmer 3.2s linear infinite;
+  mix-blend-mode: screen;
+}
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 17
+   ============================================================ */
+
+/* C17-1 — Board: Chance and Community Chest tiles get a
+   twinkling mystery glow. Both tile types get fx-mystery-glow;
+   Chance keeps the default warm orange glow and Community
+   Chest swaps in blue via fx-mystery-chest (the --mystery-glow
+   variables). A soft sheen sweeps across via ::after (shared
+   fx-shimmer keyframes, clipped by the tile's overflow:hidden)
+   so the mystery tiles sparkle without touching layout. */
+@keyframes fx-mystery-twinkle {
+  0%, 100% { box-shadow: inset 0 0 0 1px var(--mystery-glow), inset 0 0 8px var(--mystery-glow), 0 0 5px var(--mystery-glow); }
+  50% { box-shadow: inset 0 0 0 2px var(--mystery-glow-strong), inset 0 0 15px var(--mystery-glow), 0 0 13px var(--mystery-glow-strong); }
+}
+.fx-mystery-glow {
+  --mystery-glow: rgba(249, 115, 22, 0.5);
+  --mystery-glow-strong: rgba(249, 115, 22, 0.9);
+  animation: fx-mystery-twinkle 2.6s ease-in-out infinite;
+}
+.fx-mystery-chest {
+  --mystery-glow: rgba(59, 130, 246, 0.5);
+  --mystery-glow-strong: rgba(59, 130, 246, 0.9);
+}
+.fx-mystery-glow::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.55) 50%, transparent 75%);
+  background-size: 230% 100%;
+  animation: fx-shimmer 3.4s linear infinite;
+  mix-blend-mode: screen;
+}
+
+/* C17-2 — HUD: standings leader pill gets a golden champion
+   glow. Applied only to the first-place standings pill in HUD
+   (and only while that player is not bankrupt); a warm gold
+   halo pulses around the pill so the current leader reads at
+   a glance. Other standings pills keep their plain styling. */
+@keyframes fx-leader-glow-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(251, 191, 36, 0.45), 0 0 2px rgba(251, 191, 36, 0.4), inset 0 0 6px rgba(251, 191, 36, 0.18); }
+  50% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.8), 0 0 6px rgba(245, 158, 11, 0.6), inset 0 0 9px rgba(251, 191, 36, 0.3); }
+}
+.fx-leader-glow { animation: fx-leader-glow-pulse 2s ease-in-out infinite; border-color: rgba(251, 191, 36, 0.85) !important; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 18
+   ============================================================ */
+
+/* C18-1 — Board: Tax tiles get a vault-gold glint. Both TAX
+   tiles get fx-tax-glint; Income Tax keeps the default rose-gold
+   glow and Luxury Tax swaps in violet via fx-tax-luxury (the
+   --tax-glow variables). A pale sheen sweeps across via ::after
+   (shared fx-shimmer keyframes, clipped by overflow:hidden)
+   so the tax tiles read as costly at a glance. */
+@keyframes fx-tax-twinkle {
+  0%, 100% { box-shadow: inset 0 0 0 1px var(--tax-glow), inset 0 0 8px var(--tax-glow), 0 0 5px var(--tax-glow); }
+  50% { box-shadow: inset 0 0 0 2px var(--tax-glow-strong), inset 0 0 15px var(--tax-glow), 0 0 13px var(--tax-glow-strong); }
+}
+.fx-tax-glint {
+  --tax-glow: rgba(244, 63, 94, 0.5);
+  --tax-glow-strong: rgba(244, 63, 94, 0.9);
+  animation: fx-tax-twinkle 2.6s ease-in-out infinite;
+}
+.fx-tax-luxury {
+  --tax-glow: rgba(168, 85, 247, 0.5);
+  --tax-glow-strong: rgba(168, 85, 247, 0.9);
+}
+.fx-tax-glint::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.55) 50%, transparent 75%);
+  background-size: 230% 100%;
+  animation: fx-shimmer 3.6s linear infinite;
+  mix-blend-mode: screen;
+}
+
+/* C18-2 — Cards: sets race-bar finish flag waves. The flag at
+   the end of the fx-race track in DealGame gets fx-flag-wave:
+   a gentle skew/rotate flutter from its left edge, like a
+   chequered flag rippling at the finish line, so the race
+   goal stays eye-catching while sets are collected. */
+@keyframes fx-flag-wave-anim {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  30% { transform: rotate(-9deg) scale(1.14); }
+  60% { transform: rotate(7deg) scale(1.08); }
+}
+.fx-flag-wave { display: inline-block; transform-origin: left center; animation: fx-flag-wave-anim 1.8s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 19
+   ============================================================ */
+
+/* C19-1 — Board: Free Parking tile gets a relaxing emerald
+   rest glow. The FREE_PARKING tile gets fx-parking-glow:
+   a calm emerald inset pulse plus a pale sheen sweep via
+   ::after (shared fx-shimmer keyframes, clipped by the
+   tile's overflow:hidden), so the rest corner reads as a
+   safe breather at a glance. */
+@keyframes fx-parking-twinkle {
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.5), inset 0 0 8px rgba(52, 211, 153, 0.45), 0 0 5px rgba(52, 211, 153, 0.4); }
+  50% { box-shadow: inset 0 0 0 2px rgba(52, 211, 153, 0.9), inset 0 0 15px rgba(52, 211, 153, 0.55), 0 0 13px rgba(52, 211, 153, 0.75); }
+}
+.fx-parking-glow { animation: fx-parking-twinkle 3s ease-in-out infinite; }
+.fx-parking-glow::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.5) 50%, transparent 75%);
+  background-size: 230% 100%;
+  animation: fx-shimmer 3.8s linear infinite;
+  mix-blend-mode: screen;
+}
+
+/* C19-2 — Cards: draw-pile card icon gets a gentle floating
+   bob. The 🎴 glyph in the draw pile gets fx-deck-bob: a
+   slow rise-and-settle float, so the pile feels alive and
+   tappable while waiting for the next draw. */
+@keyframes fx-deck-bob-anim {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-4px) rotate(3deg); }
+}
+.fx-deck-bob { display: inline-block; animation: fx-deck-bob-anim 2.4s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 20
+   ============================================================ */
+
+/* C20-1 — Board: Go To Jail tile gets a flashing red alert
+   glow. The GO_TO_JAIL tile gets fx-siren-glow: an urgent
+   red inset pulse plus a pale sheen sweep via ::after
+   (shared fx-shimmer keyframes, clipped by the tile's
+   overflow:hidden), so the danger corner reads instantly. */
+@keyframes fx-siren-twinkle {
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.55), inset 0 0 8px rgba(239, 68, 68, 0.45), 0 0 5px rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.95), inset 0 0 16px rgba(239, 68, 68, 0.6), 0 0 14px rgba(239, 68, 68, 0.8); }
+}
+.fx-siren-glow { animation: fx-siren-twinkle 1.6s ease-in-out infinite; }
+.fx-siren-glow::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.5) 50%, transparent 75%);
+  background-size: 230% 100%;
+  animation: fx-shimmer 2.6s linear infinite;
+  mix-blend-mode: screen;
+}
+
+/* C20-2 — Cards: sets race-bar player markers bob gently.
+   Each fx-race-marker token gets fx-race-marker-bob: a
+   small rise-and-settle bob whose keyframes preserve the
+   marker's translate(-50%,-50%) centering, so racers feel
+   alive on the track without drifting off it. */
+@keyframes fx-race-marker-bob-anim {
+  0%, 100% { transform: translate(-50%, -50%); }
+  50% { transform: translate(-50%, -68%); }
+}
+.fx-race-marker-bob { animation: fx-race-marker-bob-anim 1.9s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 21
+   ============================================================ */
+
+/* C21-1 — Board: property price badges get a soft coin glint.
+   Every priced non-corner tile's price pill in Board gets
+   fx-price-glint: a gentle golden halo pulse, staggered
+   around the board via an inline animationDelay based on
+   the tile's position, so prices twinkle like coins without
+   changing the badge's layout or colours at rest. */
+@keyframes fx-price-glint {
+  0%, 100% { box-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+  50% { box-shadow: 0 0 7px rgba(251, 191, 36, 0.65), 0 0 2px rgba(245, 158, 11, 0.5); }
+}
+.fx-price-glint { animation: fx-price-glint 2.8s ease-in-out infinite; }
+
+/* C21-2 — Cards: opponent hand fan cards sway gently.
+   Each tiny card back in an opponent's fx-fan gets
+   fx-fan-sway: a small sway via the CSS `rotate` property
+   (so it composes with the card's inline fanned rotation
+   instead of fighting it), staggered by nth-child delay,
+   so opponent hands feel held and alive at a glance. */
+@keyframes fx-fan-sway-anim {
+  0%, 100% { rotate: -3deg; }
+  50% { rotate: 3deg; }
+}
+.fx-fan-sway { animation: fx-fan-sway-anim 2.2s ease-in-out infinite; }
+.fx-fan .fx-fan-sway:nth-child(2) { animation-delay: 0.18s; }
+.fx-fan .fx-fan-sway:nth-child(3) { animation-delay: 0.36s; }
+.fx-fan .fx-fan-sway:nth-child(4) { animation-delay: 0.54s; }
+.fx-fan .fx-fan-sway:nth-child(5) { animation-delay: 0.72s; }
+
+/* C22-1 — Board: the ROLL DICE button gets a golden ready halo
+   while it is the local player's roll (fx-roll-ready, applied
+   only in the button's primary TURN_START branch in Board).
+   The keyframes swell the fx-neon-btn fuchsia glow outward
+   with a warm gold ring at the peak, so the call to action
+   breathes without changing the button's gradient or layout. */
+@keyframes fx-roll-ready-glow {
+  0%, 100% { box-shadow: 0 0 22px rgba(217, 70, 239, 0.45), 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 0 0 rgba(251, 191, 36, 0); }
+  50% { box-shadow: 0 0 34px rgba(217, 70, 239, 0.65), 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 18px 3px rgba(251, 191, 36, 0.55); }
+}
+.fx-roll-ready { animation: fx-roll-ready-glow 1.9s ease-in-out infinite; }
+
+/* C22-2 — Cards: the Empty Discard placeholder gets a soft
+   breathing dashed glow (fx-empty-discard on the placeholder
+   box in DealGame, rendered only while the discard pile is
+   empty). A slow slate-to-blue inset pulse on the dashed
+   frame makes the waiting slot feel alive without competing
+   with a real discarded card once one lands. */
+@keyframes fx-empty-discard-breathe {
+  0%, 100% { box-shadow: inset 0 0 0 rgba(96, 165, 250, 0), 0 0 0 rgba(96, 165, 250, 0); border-color: rgba(51, 65, 85, 1); }
+  50% { box-shadow: inset 0 0 18px rgba(96, 165, 250, 0.22), 0 0 10px rgba(96, 165, 250, 0.18); border-color: rgba(96, 165, 250, 0.55); }
+}
+.fx-empty-discard { animation: fx-empty-discard-breathe 2.6s ease-in-out infinite; }
+
+/* C23-1 — Board: Trade and Manage secondary action icons bob
+   gently (fx-action-icon on the 🤝 and 🏘️/💰 glyph spans in
+   Board's secondary actions row). A small rise-and-tilt float
+   via the CSS rotate property + transform, staggered on the
+   second button, so the row feels alive without moving the
+   buttons themselves. */
+@keyframes fx-action-icon-bob {
+  0%, 100% { transform: translateY(0); rotate: -4deg; }
+  50% { transform: translateY(-3px); rotate: 4deg; }
+}
+.fx-action-icon { display: inline-block; animation: fx-action-icon-bob 2s ease-in-out infinite; }
+
+/* C23-2 — Cards: the Action Log sparkle icon twinkles
+   (fx-sparkle-twinkle on the Sparkles icon in DealGame's
+   Action Log header). A scale/rotate twinkle with an amber
+   drop-shadow swell, so the latest-action label shimmers
+   without changing the log text or layout. */
+@keyframes fx-sparkle-twinkle-anim {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); }
+  50% { transform: scale(1.25) rotate(18deg); filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.8)); }
+}
+.fx-sparkle-twinkle { display: inline-block; animation: fx-sparkle-twinkle-anim 1.7s ease-in-out infinite; }
+
+/* C24-1 — Board: player tokens standing on the board get a soft
+   idle bob (fx-token-idle on the token wrapper div in Board's
+   players overlay). The bob animates the CSS `translate`
+   property only, so it composes with the wrapper's drop-shadow,
+   the current player's fx-token-halo, and the inner span's
+   fx-hop step animation without fighting any transform. */
+@keyframes fx-token-idle-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -3px; }
+}
+.fx-token-idle { animation: fx-token-idle-bob 2.3s ease-in-out infinite; }
+
+/* C24-2 — Cards: the End Turn button's arrow nudges forward
+   while it's your turn (fx-endturn-arrow on the ArrowRight icon
+   in DealGame's main End Turn button, only in the non-Turns-Up
+   state where the arrow does not already animate-bounce). A
+   small forward slide with an amber drop-shadow swell, inviting
+   the tap to pass play on. */
+@keyframes fx-endturn-arrow-nudge {
+  0%, 100% { transform: translateX(0); filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); }
+  50% { transform: translateX(3px); filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.75)); }
+}
+.fx-endturn-arrow { animation: fx-endturn-arrow-nudge 1.6s ease-in-out infinite; }
+
+/* C25-1 — Board: house markers on owned properties get an
+   emerald glow pulse and the hotel marker gets a red glow
+   pulse (fx-house-glow on each house square in the property
+   color bar in Board, staggered by an inline i*0.25s delay;
+   fx-hotel-glow on the H badge). Box-shadow only, so the tiny
+   markers swell with light without shifting the tile layout. */
+@keyframes fx-house-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(16, 185, 129, 0); }
+  50% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.95); }
+}
+.fx-house-glow { animation: fx-house-glow-pulse 2s ease-in-out infinite; }
+@keyframes fx-hotel-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
+  50% { box-shadow: 0 0 6px rgba(239, 68, 68, 0.9); }
+}
+.fx-hotel-glow { animation: fx-hotel-glow-pulse 1.8s ease-in-out infinite; }
+
+/* C25-2 — Cards: the hand-count in the hand dock header pops
+   whenever the hand size changes (fx-hand-count on a span
+   keyed by hand length in DealGame, so drawing or playing a
+   card remounts it and replays the pop). A quick scale pop
+   with an emerald drop-shadow swell. */
+@keyframes fx-hand-count-pop {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(52, 211, 153, 0)); }
+  40% { transform: scale(1.3); filter: drop-shadow(0 0 5px rgba(52, 211, 153, 0.85)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(52, 211, 153, 0)); }
+}
+.fx-hand-count { display: inline-block; animation: fx-hand-count-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 26
+   ============================================================ */
+
+/* C26-1 — Board: center 1POLY logo plaque gets a warm pulsing
+   glow (fx-logo-glow on the red plaque wrapping the wordmark
+   in Board). Box-shadow only, swelling from the plaque's rest
+   shadow to a warm red/white halo, so it composes with the
+   plaque's -rotate-2 tilt and never shifts the layout. */
+@keyframes fx-logo-glow-pulse {
+  0%, 100% { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), 0 0 0 rgba(239, 68, 68, 0); }
+  50% { box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4), 0 0 18px rgba(239, 68, 68, 0.65), 0 0 6px rgba(255, 255, 255, 0.45); }
+}
+.fx-logo-glow { animation: fx-logo-glow-pulse 2.4s ease-in-out infinite; }
+
+/* C26-2 — Cards: header joker icon gets a playful wobble
+   (fx-joker-wobble on the 🃏 span in DealGame's header).
+   A small rotate/scale wobble with an amber drop-shadow
+   swell at the peak, so the Cards brand mark feels alive
+   without moving the header layout. */
+@keyframes fx-joker-wobble-anim {
+  0%, 100% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); }
+  30% { transform: rotate(-10deg) scale(1.12); filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.8)); }
+  60% { transform: rotate(8deg) scale(1.08); filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.6)); }
+}
+.fx-joker-wobble { display: inline-block; animation: fx-joker-wobble-anim 2.1s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 27
+   ============================================================ */
+
+/* C27-1 — Board: zoom percentage indicator gets a soft cyan
+   glow pulse (fx-zoom-glow on the % span in Board's zoom
+   toolbar). Box-shadow only, swelling to a cyan halo at the
+   peak, so the current zoom level feels alive without
+   shifting the toolbar layout. */
+@keyframes fx-zoom-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(34, 211, 238, 0); }
+  50% { box-shadow: 0 0 8px rgba(34, 211, 238, 0.75), 0 0 3px rgba(34, 211, 238, 0.5); }
+}
+.fx-zoom-glow { animation: fx-zoom-glow-pulse 2s ease-in-out infinite; }
+
+/* C27-2 — Cards: Your Bank pill gets a soft emerald glow
+   pulse (fx-bank-glow on the local-player bank summary pill
+   in DealGame). Animates the filter drop-shadow only, so it
+   composes with the pill's border/shadow and with the
+   conditional fx-bank-milestone box-shadow at $10M+. */
+@keyframes fx-bank-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(52, 211, 153, 0)); }
+  50% { filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.8)); }
+}
+.fx-bank-glow { animation: fx-bank-glow-pulse 2.6s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 28
+   ============================================================ */
+
+/* C28-1 — Board: Free Parking pot car icon gets a gentle
+   bounce (fx-pot-car on the Car icon in Board's pot header).
+   A small rise/settle bounce via transform, so the parked-car
+   mark feels playful without moving the pot header layout. */
+@keyframes fx-pot-car-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+.fx-pot-car { display: inline-block; animation: fx-pot-car-bounce 1.9s ease-in-out infinite; }
+
+/* C28-2 — Cards: local player avatar token gets a soft bob
+   (fx-you-token on the token span in DealGame's local player
+   header). Animates the CSS `translate` property only, so it
+   composes with the header layout without shifting siblings. */
+@keyframes fx-you-token-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -3px; }
+}
+.fx-you-token { display: inline-block; animation: fx-you-token-bob 2.2s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 29
+   ============================================================ */
+
+/* C29-1 — Cards: opponent avatar tokens get a soft staggered
+   bob (fx-opp-token on the opponent token span in DealGame's
+   opponent rows). Animates the CSS `translate` property only,
+   staggered per opponent, so rival tokens feel alive without
+   shifting the opponent header layout. */
+@keyframes fx-opp-token-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -3px; }
+}
+.fx-opp-token { display: inline-block; animation: fx-opp-token-bob 2.4s ease-in-out infinite; }
+
+/* C29-2 — Board: Reset View icon gets a slow amber spin-glow
+   when the view is zoomed or panned (fx-reset-spin on the
+   RotateCcw icon in Board's zoom toolbar, only while the view
+   differs from default). Animates the CSS `rotate` property
+   so it never fights the button's own transforms. */
+@keyframes fx-reset-spin-anim {
+  0% { rotate: 0deg; filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); }
+  50% { filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.9)); }
+  100% { rotate: -360deg; filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); }
+}
+.fx-reset-spin { animation: fx-reset-spin-anim 2.8s linear infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 30
+   ============================================================ */
+
+/* C30-1 — Cards: header Turn number pops whenever the turn
+   changes (fx-turn-num on a span keyed by turnNumber in
+   DealGame's header, so it remounts and replays each turn). */
+@keyframes fx-turn-num-pop {
+  0% { transform: scale(1.7); filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.95)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(52, 211, 153, 0)); }
+}
+.fx-turn-num { display: inline-block; animation: fx-turn-num-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+
+/* C30-2 — Board: Zoom In/Out toolbar icons get a soft cyan
+   pulse-glow (fx-zoom-icon on the ZoomIn/ZoomOut icons in
+   Board's zoom toolbar, staggered). Filter only, so it never
+   fights the buttons' own hover/disabled styling. */
+@keyframes fx-zoom-icon-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(34, 211, 238, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.95)); }
+}
+.fx-zoom-icon { animation: fx-zoom-icon-pulse 2.6s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 31
+   ============================================================ */
+
+/* C31-1 — Board: railroad Train icons get a gentle chug bob
+   (fx-train-bob on the Train icon in Board's tile icon set).
+   Animates the CSS `translate` property only, a small
+   rise/settle chug, so the locomotive mark feels alive
+   without shifting the tile layout. */
+@keyframes fx-train-bob-anim {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -2px; }
+}
+.fx-train-bob { animation: fx-train-bob-anim 1.8s ease-in-out infinite; }
+
+/* C31-2 — Cards: Draw Pile label gets a soft blue shimmer
+   pulse (fx-draw-label on the "Draw Pile" caption under the
+   deck count in DealGame). Filter drop-shadow only, swelling
+   to a blue halo at the peak, so the deck caption feels
+   alive without moving the pile layout. */
+@keyframes fx-draw-label-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(96, 165, 250, 0)); }
+  50% { filter: drop-shadow(0 0 4px rgba(96, 165, 250, 0.9)); }
+}
+.fx-draw-label { display: inline-block; animation: fx-draw-label-pulse 2.4s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 32
+   ============================================================ */
+
+/* C32-1 — Board: GO tile Flag icon gets a gentle waving
+   flutter (fx-go-flag on the Flag icon in Board's tile icon
+   set for GO). Animates the CSS `rotate` property only, a
+   small wave from the flagpole edge, so the start mark feels
+   alive without shifting the tile layout. */
+@keyframes fx-go-flag-wave {
+  0%, 100% { rotate: 0deg; }
+  50% { rotate: 7deg; }
+}
+.fx-go-flag { transform-origin: left bottom; animation: fx-go-flag-wave 1.9s ease-in-out infinite; }
+
+/* C32-2 — Cards: hand-dock "Pick a card to play!" prompt gets
+   a soft amber pulse-glow (fx-pick-prompt on the prompt span
+   in DealGame's hand dock, shown while it is the local
+   player's turn). Filter drop-shadow only, swelling to an
+   amber halo at the peak, so the call to action draws the eye
+   without moving the hand-dock layout. */
+@keyframes fx-pick-prompt-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.95)); }
+}
+.fx-pick-prompt { display: inline-block; animation: fx-pick-prompt-pulse 2.1s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 33
+   ============================================================ */
+
+/* C33-1 — Board: Chance tile question-mark icon gets a
+   twinkling tilt-glow (fx-chance-icon on the HelpCircle icon
+   in Board's tile icon set for CHANCE). Animates the CSS
+   `rotate` property plus an orange drop-shadow swell, so the
+   mystery mark teases without shifting the tile layout and
+   without fighting the tile's own fx-mystery-glow. */
+@keyframes fx-chance-icon-twinkle {
+  0%, 100% { rotate: 0deg; filter: drop-shadow(0 0 0 rgba(249, 115, 22, 0)); }
+  50% { rotate: 10deg; filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.9)); }
+}
+.fx-chance-icon { animation: fx-chance-icon-twinkle 2s ease-in-out infinite; }
+
+/* C33-2 — Cards: Empty Discard caption gets a soft fading
+   glow pulse (fx-empty-label on the "Empty Discard" caption
+   span in DealGame's discard placeholder). Opacity plus a
+   slate-blue drop-shadow swell, so the empty-state hint
+   breathes inside the fx-empty-discard frame without moving
+   the placeholder layout. */
+@keyframes fx-empty-label-pulse {
+  0%, 100% { opacity: 0.55; filter: drop-shadow(0 0 0 rgba(147, 197, 253, 0)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 4px rgba(147, 197, 253, 0.85)); }
+}
+.fx-empty-label { display: inline-block; animation: fx-empty-label-pulse 2.6s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 34
+   ============================================================ */
+
+/* C34-1 — Board: Community Chest briefcase icon gets a gentle
+   bounce-glow (fx-chest-icon on the Briefcase icon in Board's
+   tile icon set for COMMUNITY_CHEST). Animates the CSS
+   `translate` property plus a blue drop-shadow swell, so the
+   chest hints at treasure without shifting the tile layout. */
+@keyframes fx-chest-icon-bounce {
+  0%, 100% { translate: 0 0; filter: drop-shadow(0 0 0 rgba(59, 130, 246, 0)); }
+  50% { translate: 0 -2px; filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.9)); }
+}
+.fx-chest-icon { animation: fx-chest-icon-bounce 2.2s ease-in-out infinite; }
+
+/* C34-2 — Cards: "Your Bank:" label gets a soft emerald glow
+   pulse (fx-bank-label on the label span in DealGame's local
+   player header). Emerald drop-shadow swell only, so the bank
+   summary draws the eye without moving the header layout and
+   without fighting the pill's own fx-bank-glow. */
+@keyframes fx-bank-label-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(52, 211, 153, 0)); }
+  50% { filter: drop-shadow(0 0 4px rgba(52, 211, 153, 0.85)); }
+}
+.fx-bank-label { display: inline-block; animation: fx-bank-label-pulse 2.6s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 35
+   ============================================================ */
+
+/* C35-1 — Board: utility tile icons get a living glow
+   (fx-utility-icon on the Lightbulb/Droplet icons in Board's
+   tile icon set for UTILITY). Animates the CSS `translate`
+   property plus a drop-shadow swell driven by --fx-util, so
+   Electric flickers amber and Water (fx-utility-icon-water)
+   ripples cyan, without shifting the tile layout and without
+   fighting the tile's own fx-utility glow. */
+@keyframes fx-utility-icon-glow {
+  0%, 100% { translate: 0 0; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); }
+  50% { translate: 0 -1px; filter: drop-shadow(0 0 5px var(--fx-util, rgba(245, 158, 11, 0.9))); }
+}
+.fx-utility-icon { --fx-util: rgba(245, 158, 11, 0.9); animation: fx-utility-icon-glow 2.3s ease-in-out infinite; }
+.fx-utility-icon-water { --fx-util: rgba(34, 211, 238, 0.9); }
+
+/* C35-2 — Cards: Discard count badge gets a soft amber pulse
+   (fx-discard-badge on the Discard (N) pill in DealGame).
+   Box-shadow swell only, swelling to an amber halo at the
+   peak, so the live discard count draws the eye without
+   moving the discard pile layout. */
+@keyframes fx-discard-badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+  50% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.65); }
+}
+.fx-discard-badge { animation: fx-discard-badge-pulse 2.2s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 36
+   ============================================================ */
+
+/* C36-1 — Board: Tax tile icons get a glinting shine
+   (fx-tax-icon on the Gem/Receipt icons in Board's tile icon
+   set for TAX). Animates the CSS `translate` property plus a
+   drop-shadow swell driven by --fx-tax, so Luxury (Gem)
+   glints purple and Income (Receipt, fx-tax-icon-income)
+   glints rose, without shifting the tile layout and without
+   fighting the tile's own fx-tax-glint. */
+@keyframes fx-tax-icon-glint {
+  0%, 100% { translate: 0 0; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); }
+  50% { translate: 0 -1px; filter: drop-shadow(0 0 5px var(--fx-tax, rgba(168, 85, 247, 0.9))); }
+}
+.fx-tax-icon { --fx-tax: rgba(168, 85, 247, 0.9); animation: fx-tax-icon-glint 2.4s ease-in-out infinite; }
+.fx-tax-icon-income { --fx-tax: rgba(244, 63, 94, 0.9); }
+
+/* C36-2 — Cards: "Your Hand" heading gets a soft glow pulse
+   (fx-hand-label on the hand-dock heading span in DealGame).
+   Emerald-tinted drop-shadow swell only, so the hand heading
+   draws the eye without moving the hand-dock layout and
+   without fighting the count's own fx-hand-count pop. */
+@keyframes fx-hand-label-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(148, 163, 184, 0)); }
+  50% { filter: drop-shadow(0 0 4px rgba(148, 163, 184, 0.85)); }
+}
+.fx-hand-label { display: inline-block; animation: fx-hand-label-pulse 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 37
+   ============================================================ */
+
+/* C37-1 — Board: Jail tile icons get a warning rattle-glow
+   (fx-jail-icon on the ShieldAlert icons in Board's tile icon
+   set for Jail / Go To Jail). Animates the CSS `rotate`
+   property plus a drop-shadow swell driven by --fx-jail, so
+   Jail rattles orange and Go To Jail (fx-jail-icon-go) rattles
+   red, without shifting the tile layout. */
+@keyframes fx-jail-icon-rattle {
+  0%, 100% { rotate: 0deg; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); }
+  25% { rotate: -4deg; }
+  50% { rotate: 0deg; filter: drop-shadow(0 0 5px var(--fx-jail, rgba(249, 115, 22, 0.9))); }
+  75% { rotate: 4deg; }
+}
+.fx-jail-icon { --fx-jail: rgba(249, 115, 22, 0.9); animation: fx-jail-icon-rattle 2.3s ease-in-out infinite; }
+.fx-jail-icon-go { --fx-jail: rgba(239, 68, 68, 0.95); }
+
+/* C37-2 — Cards: Hand value briefcase gets a gentle bob
+   (fx-briefcase-bob on the 💼 glyph in DealGame's hand-value
+   pill). Translate-only bob via the CSS `translate` property,
+   so the pill's total still pops cleanly beside it without
+   moving the hand-dock layout. */
+@keyframes fx-briefcase-bob-anim {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -1.5px; }
+}
+.fx-briefcase-bob { display: inline-block; animation: fx-briefcase-bob-anim 2.1s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 38
+   ============================================================ */
+
+/* C38-1 — Board: Free Parking car icon gets a gentle cruise-glow
+   (fx-parking-car on the Car icon in Board's tile icon set for
+   Free Parking). Animates the CSS `translate` property plus an
+   emerald drop-shadow swell, so the car feels parked-and-idling
+   without shifting the tile layout, and distinct from the pot
+   header car's fx-pot-car bounce in the board center. */
+@keyframes fx-parking-car-cruise {
+  0%, 100% { translate: 0 0; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); }
+  50% { translate: 0 -1.5px; filter: drop-shadow(0 0 5px rgba(52, 211, 153, 0.9)); }
+}
+.fx-parking-car { animation: fx-parking-car-cruise 2.6s ease-in-out infinite; }
+
+/* C38-2 — Cards: Plays Left status dot gets a warm breathing glow
+   (fx-plays-dot on the amber status dot in DealGame's hand-zone
+   turn banner, shown while plays remain). Box-shadow swell only,
+   so the banner text and pips stay perfectly still while the dot
+   quietly signals the turn is live. */
+@keyframes fx-plays-dot-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+  50% { box-shadow: 0 0 6px 2px rgba(251, 191, 36, 0.55); }
+}
+.fx-plays-dot { animation: fx-plays-dot-breathe 2.2s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 39
+   ============================================================ */
+
+/* C39-1 — Board: MORTGAGED badge gets an amber warning pulse
+   (fx-mortgage-glow on the MORTGAGED span in Board's mortgaged
+   overlay). Box-shadow swell only, so the badge stays perfectly
+   centred over the dimmed tile while its amber halo quietly
+   warns that the property is mortgaged. */
+@keyframes fx-mortgage-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+  50% { box-shadow: 0 0 7px 2px rgba(245, 158, 11, 0.6); }
+}
+.fx-mortgage-glow { animation: fx-mortgage-glow-pulse 2.4s ease-in-out infinite; }
+
+/* C39-2 — Cards: opponent type icons get a soft pulse-glow
+   (fx-opp-type on the Bot/User icons in DealGame's opponent
+   rows). Animates a drop-shadow swell driven by --fx-type, so
+   CPU opponents glow blue and human opponents
+   (fx-opp-type-human) glow emerald, without shifting the
+   opponent header layout. */
+@keyframes fx-opp-type-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); }
+  50% { filter: drop-shadow(0 0 4px var(--fx-type, rgba(96, 165, 250, 0.9))); }
+}
+.fx-opp-type { --fx-type: rgba(96, 165, 250, 0.9); animation: fx-opp-type-pulse 2.5s ease-in-out infinite; }
+.fx-opp-type-human { --fx-type: rgba(52, 211, 153, 0.9); }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 40
+   ============================================================ */
+
+/* C40-1 — Board: ownership ribbon token gets a gentle bob
+   (fx-owner-token on the owner token span in Board's ownership
+   ribbon). Animates the CSS `translate` property only, so the
+   token bobs inside its owner-coloured ribbon without shifting
+   the ribbon or the tile layout. */
+@keyframes fx-owner-token-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -1px; }
+}
+.fx-owner-token { display: inline-block; animation: fx-owner-token-bob 2s ease-in-out infinite; }
+
+/* C40-2 — Cards: local property-set count gets a soft glow pulse
+   (fx-set-count on the set count span in DealGame's local
+   property sets grid). Text-shadow swell only, so the count
+   quietly glows in place without moving the set grid layout. */
+@keyframes fx-set-count-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 6px rgba(255, 255, 255, 0.75); }
+}
+.fx-set-count { animation: fx-set-count-glow 2.6s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 41
+   ============================================================ */
+
+/* C41-1 — Board: Free Parking Pot amount gets a golden glow pulse
+   (fx-pot-amount on the pot $ amount in Board's centre pot).
+   Text-shadow swell only, so the jackpot total glows in place
+   without moving the pot card or the centre layout, and stays
+   distinct from the pot car's fx-pot-car bounce above it. */
+@keyframes fx-pot-amount-glow {
+  0%, 100% { text-shadow: 0 3px 3px rgba(0, 0, 0, 0.7), 0 0 0 rgba(251, 191, 36, 0); }
+  50% { text-shadow: 0 3px 3px rgba(0, 0, 0, 0.7), 0 0 14px rgba(251, 191, 36, 0.85); }
+}
+.fx-pot-amount { animation: fx-pot-amount-glow 2.8s ease-in-out infinite; }
+
+/* C41-2 — Cards: header current-player bank value gets a soft
+   emerald glow pulse (fx-turn-bank on the $bankValue span in
+   DealGame's header turn chip). Text-shadow swell only, so the
+   active player's bank quietly glows in the header without
+   shifting the turn chip or the header layout. */
+@keyframes fx-turn-bank-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  50% { text-shadow: 0 0 6px rgba(52, 211, 153, 0.8); }
+}
+.fx-turn-bank { animation: fx-turn-bank-glow 2.4s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 42
+   ============================================================ */
+
+/* C42-1 — Board: tile space names get a soft glow pulse
+   (fx-space-name on the space-name span in Board's tiles).
+   Text-shadow swell only, so every tile name quietly glows in
+   place without shifting the tile layout or its icon/price. */
+@keyframes fx-space-name-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.8); }
+}
+.fx-space-name { animation: fx-space-name-glow 3s ease-in-out infinite; }
+
+/* C42-2 — Cards: "Fast Cards" header badge gets a soft blue pulse
+   (fx-fast-badge on the Fast Cards pill in DealGame's header).
+   Box-shadow swell only, so the badge quietly pulses in the
+   header without shifting the title or the turn chip layout. */
+@keyframes fx-fast-badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
+  50% { box-shadow: 0 0 7px 2px rgba(59, 130, 246, 0.55); }
+}
+.fx-fast-badge { animation: fx-fast-badge-pulse 2.5s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 43
+   ============================================================ */
+
+/* C43-1 — Board: Trade and Manage action labels get a soft glow pulse
+   (fx-action-label on the Trade and Manage/Take Loan label spans in
+   Board's secondary actions row). Text-shadow swell only, so the
+   labels quietly glow in place without shifting the buttons or
+   the action-icon bob beside them. */
+@keyframes fx-action-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 6px rgba(255, 255, 255, 0.85); }
+}
+.fx-action-label { animation: fx-action-label-glow 2.7s ease-in-out infinite; }
+
+/* C43-2 — Cards: "Action Log" heading gets a soft amber glow pulse
+   (fx-actionlog-glow on the Action Log heading span in DealGame's
+   center table arena). Text-shadow swell only, so the heading
+   quietly glows beside its twinkling sparkle without shifting
+   the arena layout. */
+@keyframes fx-actionlog-glow-pulse {
+  0%, 100% { text-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+  50% { text-shadow: 0 0 6px rgba(251, 191, 36, 0.8); }
+}
+.fx-actionlog-glow { animation: fx-actionlog-glow-pulse 2.4s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 44
+   ============================================================ */
+
+/* C44-1 — Board: Reset View label gets a soft glow pulse
+   (fx-reset-label on the Reset View span in Board's view
+   controls). Text-shadow swell only, so the label quietly
+   glows in place without shifting the reset button or the
+   zoom controls beside it. */
+@keyframes fx-reset-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(226, 232, 240, 0); }
+  50% { text-shadow: 0 0 6px rgba(226, 232, 240, 0.85); }
+}
+.fx-reset-label { animation: fx-reset-label-glow 2.6s ease-in-out infinite; }
+
+/* C44-2 — Cards: local player's Full Sets progress text gets a
+   soft glow pulse (fx-sets-progress on the sets progress span
+   in DealGame's local player header). Text-shadow swell only,
+   so the progress quietly glows beside the player name without
+   shifting the header or the bank summary layout. */
+@keyframes fx-sets-progress-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(148, 163, 184, 0); }
+  50% { text-shadow: 0 0 6px rgba(148, 163, 184, 0.9); }
+}
+.fx-sets-progress { animation: fx-sets-progress-glow 2.8s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 45
+   ============================================================ */
+
+/* C45-1 — Board: Free Parking Pot heading gets a golden glow pulse
+   (fx-pot-label on the FREE PARKING POT heading in Board's centre
+   pot). Text-shadow swell only, so the heading quietly glows in
+   place without shifting the pot card, and stays distinct from
+   the pot amount's fx-pot-amount glow and the car icon's
+   fx-pot-car bounce beside it. */
+@keyframes fx-pot-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+  50% { text-shadow: 0 0 7px rgba(251, 191, 36, 0.85); }
+}
+.fx-pot-label { animation: fx-pot-label-glow 2.5s ease-in-out infinite; }
+
+/* C45-2 — Cards: header current-player name gets a soft emerald
+   glow pulse (fx-turn-name on the current-player name in
+   DealGame's header turn chip). Text-shadow swell only, so the
+   active player's name quietly glows in the header without
+   shifting the turn chip, and stays distinct from the bank
+   value's fx-turn-bank glow beside it. */
+@keyframes fx-turn-name-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  50% { text-shadow: 0 0 6px rgba(52, 211, 153, 0.85); }
+}
+.fx-turn-name { animation: fx-turn-name-glow 2.6s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 46
+   ============================================================ */
+
+/* C46-1 — Board: dice total readout pill gets a soft glow pulse
+   (fx-dice-total on the pill wrapping the fx-roll-pop readout in
+   Board, shown after a roll). Box-shadow swell only, so the pill
+   quietly glows in place without shifting the dice visual or the
+   readout text inside it. */
+@keyframes fx-dice-total-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+  50% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.45); }
+}
+.fx-dice-total { animation: fx-dice-total-glow 2.4s ease-in-out infinite; }
+
+/* C46-2 — Cards: Action spotlight message heading gets a soft
+   white glow pulse (fx-action-msg on the h3 carrying
+   lastActionMessage in DealGame's Action Spotlight banner).
+   Text-shadow swell only, so the latest action message quietly
+   glows beside the Action Log heading without shifting the
+   arena layout. */
+@keyframes fx-action-msg-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 7px rgba(255, 255, 255, 0.7); }
+}
+.fx-action-msg { animation: fx-action-msg-glow 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 47
+   ============================================================ */
+
+/* C47-1 — Board: BUY button property label gets a soft white
+   glow pulse (fx-buy-label on the BUY {name} span in Board's
+   buy action). Text-shadow swell only, so the label quietly
+   glows in place without shifting the buy button or the price
+   line beneath it. */
+@keyframes fx-buy-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 7px rgba(255, 255, 255, 0.85); }
+}
+.fx-buy-label { animation: fx-buy-label-glow 2.5s ease-in-out infinite; }
+
+/* C47-2 — Cards: opponent player name gets a soft white glow
+   pulse (fx-opp-name on the opponent name span in DealGame's
+   opponent card header). Text-shadow swell only, so the name
+   quietly glows beside the opponent token without shifting
+   the opponent card header or the hand count beneath it. */
+@keyframes fx-opp-name-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 6px rgba(255, 255, 255, 0.8); }
+}
+.fx-opp-name { animation: fx-opp-name-glow 2.8s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 48
+   ============================================================ */
+
+/* C48-1 — Board: main ROLL DICE / END TURN button label gets a
+   soft white glow pulse (fx-roll-label on the span wrapping the
+   main action button's label in Board). Text-shadow swell only,
+   so the label quietly glows in place without shifting the
+   button or the dice visual beneath it. */
+@keyframes fx-roll-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.85); }
+}
+.fx-roll-label { animation: fx-roll-label-glow 2.4s ease-in-out infinite; }
+
+/* C48-2 — Cards: local player name gets a soft emerald glow
+   pulse (fx-you-name on the local player name span in
+   DealGame's local player header). Text-shadow swell only, so
+   the name quietly glows beside the player token without
+   shifting the header, and stays distinct from the opponent
+   name's fx-opp-name white glow. */
+@keyframes fx-you-name-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  50% { text-shadow: 0 0 6px rgba(52, 211, 153, 0.85); }
+}
+.fx-you-name { animation: fx-you-name-glow 2.8s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 49
+   ============================================================ */
+
+/* C49-1 — Board: BUY price gets a soft emerald glow pulse
+   (fx-buy-price on the $price span under the BUY label in
+   Board's buy action). Text-shadow swell only, so the price
+   quietly glows in place without shifting the BUY button or
+   the auction button beneath it. */
+@keyframes fx-buy-price-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(110, 231, 183, 0); }
+  50% { text-shadow: 0 0 6px rgba(110, 231, 183, 0.9); }
+}
+.fx-buy-price { animation: fx-buy-price-glow 2.5s ease-in-out infinite; }
+
+/* C49-2 — Cards: End Turn button label gets a soft white glow
+   pulse (fx-endturn-label on the End Turn span in DealGame's
+   turn-status End Turn button). Text-shadow swell only, so
+   the label quietly glows in place without shifting the
+   button or the arrow icon beside it. */
+@keyframes fx-endturn-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 7px rgba(255, 255, 255, 0.85); }
+}
+.fx-endturn-label { animation: fx-endturn-label-glow 2.6s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 50
+   ============================================================ */
+
+/* C50-1 — Board: Pass to Auction button label gets a soft amber
+   glow pulse (fx-auction-label on the "Pass to Auction (Bidding
+   for All)" label span in Board's buy/auction actions).
+   Text-shadow swell only, so the label quietly glows in place
+   without shifting the auction button or the hammer glyph
+   beside it, and stays distinct from the BUY label's white
+   fx-buy-label glow above it. */
+@keyframes fx-auction-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+  50% { text-shadow: 0 0 7px rgba(251, 191, 36, 0.9); }
+}
+.fx-auction-label { animation: fx-auction-label-glow 2.5s ease-in-out infinite; }
+
+/* C50-2 — Cards: hand-zone "Plays Left" counter text gets a soft
+   amber glow pulse (fx-plays-label on the "Plays Left: N/3" span
+   in DealGame's hand-dock turn banner, non-Turns-Up state only).
+   Text-shadow swell only, so the counter quietly glows beside
+   the fx-plays-dot status dot without shifting the banner, the
+   pip row, or the hand dock beneath it. */
+@keyframes fx-plays-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+  50% { text-shadow: 0 0 6px rgba(251, 191, 36, 0.85); }
+}
+.fx-plays-label { animation: fx-plays-label-glow 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 51
+   ============================================================ */
+
+/* C51-1 — Board: auction hammer glyph gets a gentle swing
+   (fx-hammer-swing on the 🔨 span in Board's Pass to Auction
+   button). Rotate-only swing via the standalone rotate
+   property, so the hammer rocks in place beside the label
+   without shifting the auction button or its fx-auction-label
+   glow. */
+@keyframes fx-hammer-swing {
+  0%, 100% { rotate: 0deg; }
+  30% { rotate: -16deg; }
+  60% { rotate: 9deg; }
+}
+.fx-hammer-swing { display: inline-block; animation: fx-hammer-swing 2.2s ease-in-out infinite; }
+
+/* C51-2 — Cards: opponent sets-count badge gets a soft amber
+   glow pulse (fx-opp-sets on the N/3 Full Sets badge in
+   DealGame's opponent rows). Text-shadow swell only, so the
+   badge quietly glows in place without shifting the opponent
+   header, the bank pill, or the fan beside it. */
+@keyframes fx-opp-sets-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(252, 211, 77, 0); }
+  50% { text-shadow: 0 0 6px rgba(252, 211, 77, 0.85); }
+}
+.fx-opp-sets { animation: fx-opp-sets-glow 2.6s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 52
+   ============================================================ */
+
+/* C52-1 — HUD: Speed label Zap icon gets a flickering amber glow
+   (fx-speed-zap on the Zap icon in HUD's speed control row).
+   Drop-shadow flicker + a tiny scale swell via the standalone
+   scale property, so the bolt crackles in place beside the
+   Speed label without shifting the speed buttons beside it. */
+@keyframes fx-speed-zap-flicker {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(250, 204, 21, 0)); scale: 1; }
+  35% { filter: drop-shadow(0 0 5px rgba(250, 204, 21, 0.9)); scale: 1.18; }
+  55% { filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.45)); scale: 1.05; }
+  75% { filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.95)); scale: 1.22; }
+}
+.fx-speed-zap { animation: fx-speed-zap-flicker 2.3s ease-in-out infinite; }
+
+/* C52-2 — Cards: opponent "cards in hand" label gets a soft slate
+   glow pulse (fx-opp-hand on the hand-count span in DealGame's
+   opponent header). Text-shadow swell only, so the label quietly
+   glows under the opponent name without shifting the header, the
+   fan beside it, or the fx-count-pop number inside it. */
+@keyframes fx-opp-hand-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(148, 163, 184, 0); }
+  50% { text-shadow: 0 0 6px rgba(148, 163, 184, 0.85); }
+}
+.fx-opp-hand { animation: fx-opp-hand-glow 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 53
+   ============================================================ */
+
+/* C53-1 — HUD: Standings trophy label gets a soft gold glow pulse
+   (fx-standings-glow on the 🏆 Standings label in HUD's standings
+   row). Text-shadow swell only, so the label quietly gleams in
+   place without shifting the ranked player pills beside it. */
+@keyframes fx-standings-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(252, 211, 77, 0); }
+  50% { text-shadow: 0 0 7px rgba(252, 211, 77, 0.9); }
+}
+.fx-standings-glow { animation: fx-standings-glow 2.8s ease-in-out infinite; }
+
+/* C53-2 — Cards: opponent bank pill gets a soft emerald glow pulse
+   (fx-opp-bank on the bank pill in DealGame's opponent header).
+   Box-shadow swell only, so the pill quietly glows in place
+   without shifting the opponent header, the sets badge, or the
+   CoinBurst inside it. */
+@keyframes fx-opp-bank-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  50% { box-shadow: 0 0 9px rgba(52, 211, 153, 0.55); }
+}
+.fx-opp-bank { animation: fx-opp-bank-glow 2.9s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 54
+   ============================================================ */
+
+/* C54-1 — HUD: Current Turn heading gets a soft slate glow pulse
+   (fx-turn-heading on the Current Turn h3 in HUD's active-player
+   card). Text-shadow swell only, so the heading quietly gleams in
+   place without shifting the timer or Reset control beside it. */
+@keyframes fx-turn-heading-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(148, 163, 184, 0); }
+  50% { text-shadow: 0 0 6px rgba(148, 163, 184, 0.85); }
+}
+.fx-turn-heading { animation: fx-turn-heading-glow 2.8s ease-in-out infinite; }
+
+/* C54-2 — Cards: Rules button BookOpen icon gets a soft blue glow
+   pulse (fx-rules-glow on the BookOpen icon in DealGame's header).
+   Drop-shadow swell only, so the icon quietly glows in place
+   without shifting the header buttons beside it. */
+@keyframes fx-rules-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(96, 165, 250, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.9)); }
+}
+.fx-rules-glow { animation: fx-rules-glow-pulse 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 55
+   ============================================================ */
+
+/* C55-1 — HUD: Live Activity heading gets a soft blue glow pulse
+   (fx-live-heading on the Live Activity h3 in HUD's activity-log
+   card). Text-shadow swell only, so the heading quietly gleams in
+   place without shifting the log entries below it. */
+@keyframes fx-live-heading-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(96, 165, 250, 0); }
+  50% { text-shadow: 0 0 6px rgba(96, 165, 250, 0.85); }
+}
+.fx-live-heading { animation: fx-live-heading-glow 2.9s ease-in-out infinite; }
+
+/* C55-2 — Cards: Activity Logs button ScrollText icon gets a soft
+   violet glow pulse (fx-logs-glow on the ScrollText icon in
+   DealGame's header). Drop-shadow swell only, so the icon quietly
+   glows in place without shifting the header buttons beside it. */
+@keyframes fx-logs-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(167, 139, 250, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(167, 139, 250, 0.9)); }
+}
+.fx-logs-glow { animation: fx-logs-glow-pulse 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 56
+   ============================================================ */
+
+/* C56-1 — HUD: Reset button RotateCcw icon gets a soft slate
+   glow pulse (fx-hud-reset on the RotateCcw icon in HUD's
+   Current Turn card Reset button). Drop-shadow swell only, so
+   the icon quietly glows in place without shifting the Reset
+   label or the timer beside it, and stays distinct from Board's
+   fx-reset-spin view-reset icon. */
+@keyframes fx-hud-reset-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(148, 163, 184, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(148, 163, 184, 0.9)); }
+}
+.fx-hud-reset { animation: fx-hud-reset-glow 2.6s ease-in-out infinite; }
+
+/* C56-2 — Cards: mute button volume icon gets a soft cyan glow
+   pulse (fx-volume-glow on the Volume2/VolumeX icon in
+   DealGame's header mute button). Drop-shadow swell only, so
+   the icon quietly glows in place without shifting the header
+   buttons beside it. */
+@keyframes fx-volume-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(103, 232, 249, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(103, 232, 249, 0.9)); }
+}
+.fx-volume-glow { animation: fx-volume-glow-pulse 2.8s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 57
+   ============================================================ */
+
+/* C57-1 — HUD: Players heading gets a soft slate glow pulse
+   (fx-players-heading on the Players h3 in HUD's roster card).
+   Text-shadow swell only, so the heading quietly gleams in
+   place without shifting the standings row below it. */
+@keyframes fx-players-heading-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(148, 163, 184, 0); }
+  50% { text-shadow: 0 0 6px rgba(148, 163, 184, 0.85); }
+}
+.fx-players-heading { animation: fx-players-heading-glow 2.9s ease-in-out infinite; }
+
+/* C57-2 — Cards: Classic 1poly switch button Layers icon gets a
+   soft amber glow pulse (fx-classic-glow on the Layers icon in
+   DealGame's header). Drop-shadow swell only, so the icon
+   quietly glows in place without shifting the header buttons
+   beside it. */
+@keyframes fx-classic-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(252, 211, 77, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(252, 211, 77, 0.9)); }
+}
+.fx-classic-glow { animation: fx-classic-glow-pulse 2.7s ease-in-out infinite; }

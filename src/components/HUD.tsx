@@ -114,7 +114,7 @@ export const HUD: React.FC<HUDProps> = ({
         {onSetGameSpeed && (
           <div className="bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 flex items-center justify-between gap-1 shadow-inner">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider pl-1.5 flex items-center gap-1">
-              <Zap size={11} className="text-yellow-400" /> Speed:
+              <Zap size={11} className="text-yellow-400 fx-speed-zap" /> Speed:
             </span>
             <div className="flex gap-1">
               <button
@@ -161,7 +161,7 @@ export const HUD: React.FC<HUDProps> = ({
           className="bg-slate-800/95 p-3.5 rounded-2xl shadow-xl border-2 relative overflow-hidden"
         >
           <div className="flex justify-between items-center mb-1">
-            <h3 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Current Turn</h3>
+            <h3 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider fx-turn-heading">Current Turn</h3>
             <div className="flex items-center gap-2">
               {!isCpuTurn && timeLeft > 0 && (
                 <span className={`text-xs font-bold font-mono ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-slate-400'}`}>
@@ -179,7 +179,7 @@ export const HUD: React.FC<HUDProps> = ({
                   className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 text-[10px] flex items-center gap-1 transition-colors"
                   title="Reset Game"
                 >
-                  <RotateCcw size={12} /> Reset
+                  <RotateCcw size={12} className="fx-hud-reset" /> Reset
                 </button>
               )}
             </div>
@@ -248,7 +248,7 @@ export const HUD: React.FC<HUDProps> = ({
       {/* Players Roster & Bankrupt Visual Indicators */}
       <div className="bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-700/60 shadow-lg flex flex-col gap-2 fx-glass">
         <div className="flex items-center justify-between">
-          <h3 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+          <h3 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 fx-players-heading">
             <span>👥</span> Players ({gameState.players.length})
           </h3>
           <span className="text-[10px] text-slate-500">
@@ -258,7 +258,7 @@ export const HUD: React.FC<HUDProps> = ({
 
         {/* R3-23 — live standings ranked by net worth (cash + property + houses) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 custom-scrollbar">
-          <span className="text-[9px] font-black uppercase tracking-wider text-amber-300/90 shrink-0">🏆 Standings</span>
+          <span className="text-[9px] font-black uppercase tracking-wider text-amber-300/90 shrink-0 fx-standings-glow">🏆 Standings</span>
           {[...gameState.players]
             .map((p) => {
               const worth = p.money + p.properties.reduce((sum, pid) => {
@@ -274,7 +274,7 @@ export const HUD: React.FC<HUDProps> = ({
             .map(({ p, worth }, i) => (
               <span
                 key={p.id}
-                className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${p.isBankrupt || p.money < 0 ? 'opacity-50 line-through' : ''}`}
+                className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${p.isBankrupt || p.money < 0 ? 'opacity-50 line-through' : ''}${i === 0 && !(p.isBankrupt || p.money < 0) ? ' fx-leader-glow' : ''}`}
                 style={{ borderColor: `${p.color}55`, background: `${p.color}18` }}
               >
                 <span>{['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'][i] || `${i + 1}.`}</span>
@@ -459,7 +459,7 @@ export const HUD: React.FC<HUDProps> = ({
 
       {/* Activity Log */}
       <div className="bg-slate-900/80 backdrop-blur-md p-3.5 rounded-2xl border border-slate-700/50 flex-1 overflow-hidden flex flex-col min-h-[160px] shadow-inner relative">
-        <h3 className="text-slate-400 font-bold text-xs uppercase tracking-wider mb-2.5 flex items-center gap-2">
+        <h3 className="text-slate-400 font-bold text-xs uppercase tracking-wider mb-2.5 flex items-center gap-2 fx-live-heading">
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
           Live Activity
         </h3>

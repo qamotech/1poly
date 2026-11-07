@@ -370,24 +370,24 @@ export const DealGame: React.FC<DealGameProps> = ({
       <header className="shrink-0 z-40 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md px-3 py-2 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🃏</span>
+            <span className="text-2xl fx-joker-wobble">🃏</span>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-black tracking-wider fx-shimmer-text uppercase">
                   1poly Cards
                 </h1>
-                <span className="hidden sm:inline-block text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded-full bg-blue-900/80 text-blue-300 border border-blue-600">
+                <span className="hidden sm:inline-block text-[10px] uppercase tracking-widest font-black px-2 py-0.5 rounded-full bg-blue-900/80 text-blue-300 border border-blue-600 fx-fast-badge">
                   Fast Cards
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                <span>Turn {gameState.turnNumber}</span>
+                <span>Turn <span key={gameState.turnNumber} className="fx-turn-num">{gameState.turnNumber}</span></span>
                 <span>•</span>
                 <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-emerald-950/40 border border-emerald-500/60 ring-1 ring-emerald-400/70 shadow-[0_0_6px_rgba(52,211,153,0.3)]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-xs">{currentPlayer.token}</span>
-                  <strong className="text-emerald-200 font-bold">{currentPlayer.name}</strong>
-                  <span className="text-[10px] font-mono text-emerald-400 font-bold">${currentPlayer.bankValue}M</span>
+                  <strong className="text-emerald-200 font-bold fx-turn-name">{currentPlayer.name}</strong>
+                  <span className="text-[10px] font-mono text-emerald-400 font-bold fx-turn-bank">${currentPlayer.bankValue}M</span>
                 </div>
               </div>
             </div>
@@ -430,7 +430,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             className="p-2 sm:px-3 sm:py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             title={isMuted ? 'Unmute sounds' : 'Mute sounds'}
           >
-            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            {isMuted ? <VolumeX size={16} className="fx-volume-glow" /> : <Volume2 size={16} className="fx-volume-glow" />}
           </button>
           <button
             onClick={() => {
@@ -440,7 +440,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             className="p-2 sm:px-3 sm:py-1.5 bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 rounded-xl border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             title="Deal & Classic Rules"
           >
-            <BookOpen size={16} />
+            <BookOpen size={16} className="fx-rules-glow" />
             <span className="hidden sm:inline">Rules</span>
           </button>
 
@@ -452,7 +452,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 text-xs font-bold transition-colors cursor-pointer"
             title="Activity Logs"
           >
-            <ScrollText size={16} />
+            <ScrollText size={16} className="fx-logs-glow" />
           </button>
 
           <button
@@ -460,7 +460,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             className="p-2 sm:px-3 sm:py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 rounded-xl border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             title="Switch to Classic Board 1poly"
           >
-            <Layers size={16} />
+            <Layers size={16} className="fx-classic-glow" />
             <span className="hidden lg:inline">Classic 1poly</span>
           </button>
 
@@ -502,14 +502,14 @@ export const DealGame: React.FC<DealGameProps> = ({
         {gameState.players.map((p) => (
           <span
             key={p.id}
-            className="fx-race-marker"
+            className="fx-race-marker fx-race-marker-bob"
             style={{ left: `${2 + (p.completedSetsCount / 3) * 94}%` }}
             title={`${p.name}: ${p.completedSetsCount}/3 sets`}
           >
             {p.token}
           </span>
         ))}
-        <span className="absolute right-0 top-1/2 -translate-y-1/2 text-[11px] z-[1]">🏁</span>
+        <span className="absolute right-0 top-1/2 -translate-y-1/2 text-[11px] z-[1] fx-flag-wave">🏁</span>
       </div>
 
       {/* Main Playing Arena — the middle region scrolls internally only when it
@@ -537,24 +537,24 @@ export const DealGame: React.FC<DealGameProps> = ({
                   {/* Opponent Header */}
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{opponent.token}</span>
+                      <span className="text-xl fx-opp-token" style={{ animationDelay: `${opponentIdx * 0.35}s` }}>{opponent.token}</span>
                       <div>
                         <div className="flex items-center gap-1">
-                          <span className="font-bold text-white text-sm">{opponent.name}</span>
+                          <span className="font-bold text-white text-sm fx-opp-name">{opponent.name}</span>
                           {opponent.type === 'CPU' ? (
-                            <Bot size={13} className="text-blue-400" />
+                            <Bot size={13} className="text-blue-400 fx-opp-type" />
                           ) : (
-                            <User size={13} className="text-emerald-400" />
+                            <User size={13} className="text-emerald-400 fx-opp-type fx-opp-type-human" />
                           )}
                         </div>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-slate-400 fx-opp-hand">
                           <span key={opponent.hand.length} className="fx-count-pop">{opponent.hand.length}</span> cards in hand
                         </span>
                         <span className="fx-fan" aria-hidden="true">
                           {Array.from({ length: Math.min(opponent.hand.length, 5) }).map((_, i, arr) => (
                             <i
                               key={i}
-                              className="fx-fan-card"
+                              className="fx-fan-card fx-fan-sway"
                               style={{ transform: `rotate(${(i - (arr.length - 1) / 2) * 10}deg)` }}
                             />
                           ))}
@@ -565,7 +565,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                     <div className="flex items-center gap-2">
                       {/* Sets count badge */}
                       <span
-                        className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full border ${
+                        className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full border fx-opp-sets ${
                           opponent.completedSetsCount >= 2
                             ? 'bg-red-950 text-red-300 border-red-500 animate-pulse'
                             : 'bg-slate-800 text-amber-300 border-slate-700'
@@ -579,7 +579,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                       {opponent.completedSetsCount >= 2 && (
                         <span className="fx-crown-bounce" title="Match point — one more set wins!">👑</span>
                       )}
-                      <span className={`relative text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800${totalBank >= 10 ? ' fx-bank-milestone' : ''}`}><AnimatedMoney value={totalBank} />M<CoinBurst amount={totalBank} /></span>
+                      <span className={`relative text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800 fx-opp-bank${totalBank >= 10 ? ' fx-bank-milestone' : ''}`}><AnimatedMoney value={totalBank} />M<CoinBurst amount={totalBank} /></span>
                     </div>
                   </div>
 
@@ -638,11 +638,11 @@ export const DealGame: React.FC<DealGameProps> = ({
             {/* Draw Deck */}
             <div className="flex flex-col items-center">
               <div key={shuffleKey} className={`w-20 h-28 sm:w-24 sm:h-34 rounded-xl border-2 border-dashed border-blue-500/50 bg-gradient-to-br from-blue-950 to-indigo-950 flex flex-col items-center justify-center text-center shadow-lg relative fx-riffle ${gameState.deck.length <= 10 ? 'fx-deck-low' : ''}`}>
-                <span className="text-2xl mb-1">🎴</span>
+                <span className="text-2xl mb-1 fx-deck-bob">🎴</span>
                 <span key={gameState.deck.length} className={`text-xs font-mono font-bold fx-draw-pop ${gameState.deck.length <= 10 ? 'text-amber-300' : 'text-blue-300'}`}>
                   {gameState.deck.length}
                 </span>
-                <span className="text-[9px] uppercase font-bold text-slate-400">Draw Pile</span>
+                <span className="text-[9px] uppercase font-bold text-slate-400 fx-draw-label">Draw Pile</span>
                 {gameState.deck.length <= 10 && (
                   <span className="text-[8px] font-black text-amber-400 tracking-widest">LOW!</span>
                 )}
@@ -652,7 +652,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             {/* Discard / Action Center Pile */}
             <div className="flex flex-col items-center">
               {gameState.discardPile.length > 0 ? (
-                <div key={gameState.discardPile[gameState.discardPile.length - 1].id} className={`relative fx-slap ${gameState.discardPile[gameState.discardPile.length - 1].type === DealCardType.ACTION || gameState.discardPile[gameState.discardPile.length - 1].type === DealCardType.RENT ? 'fx-action-zoom' : ''}`}>
+                <div key={gameState.discardPile[gameState.discardPile.length - 1].id} className={`relative fx-slap fx-discard-flash ${gameState.discardPile[gameState.discardPile.length - 1].type === DealCardType.ACTION || gameState.discardPile[gameState.discardPile.length - 1].type === DealCardType.RENT ? 'fx-action-zoom' : ''}`}>
                   <span className="fx-stack-back" style={{ transform: 'translate(5px, 4px) rotate(2.5deg)' }} aria-hidden="true" />
                   <span className="fx-stack-back" style={{ transform: 'translate(2.5px, 2px) rotate(1.2deg)' }} aria-hidden="true" />
                   <DealCardView
@@ -660,13 +660,13 @@ export const DealGame: React.FC<DealGameProps> = ({
                     size="sm"
                     isPlayable={false}
                   />
-                  <div className="absolute -top-2 -right-2 px-1.5 py-0.5 bg-amber-500 text-slate-950 text-[9px] font-black rounded-full shadow">
+                  <div className="absolute -top-2 -right-2 px-1.5 py-0.5 bg-amber-500 text-slate-950 text-[9px] font-black rounded-full shadow fx-discard-badge">
                     Discard ({gameState.discardPile.length})
                   </div>
                 </div>
               ) : (
-                <div className="w-20 h-28 sm:w-24 sm:h-34 rounded-xl border-2 border-dashed border-slate-700 bg-slate-950/40 flex flex-col items-center justify-center text-center">
-                  <span className="text-slate-600 text-xs italic">Empty Discard</span>
+                <div className="w-20 h-28 sm:w-24 sm:h-34 rounded-xl border-2 border-dashed border-slate-700 bg-slate-950/40 flex flex-col items-center justify-center text-center fx-empty-discard">
+                  <span className="text-slate-600 text-xs italic fx-empty-label">Empty Discard</span>
                 </div>
               )}
             </div>
@@ -674,10 +674,10 @@ export const DealGame: React.FC<DealGameProps> = ({
 
           {/* Action Spotlight Banner */}
           <div className="flex-1 min-w-0 text-center sm:text-left px-1 sm:px-2">
-            <span className="text-[10px] uppercase font-extrabold tracking-widest text-amber-400 flex items-center justify-center sm:justify-start gap-1.5">
-              <Sparkles size={13} /> Action Log
+            <span className="text-[10px] uppercase font-extrabold tracking-widest text-amber-400 flex items-center justify-center sm:justify-start gap-1.5 fx-actionlog-glow">
+              <Sparkles size={13} className="fx-sparkle-twinkle" /> Action Log
             </span>
-            <h3 className="text-base sm:text-lg font-black text-white mt-0.5">
+            <h3 className="text-base sm:text-lg font-black text-white mt-0.5 fx-action-msg">
               {gameState.lastActionMessage || 'Game in progress'}
             </h3>
             <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">
@@ -702,8 +702,8 @@ export const DealGame: React.FC<DealGameProps> = ({
                     : 'fx-neon-btn'
                 }`}
               >
-                <span>{turnsAreUp ? 'Turns Up • End Turn' : 'End Turn'}</span>
-                <ArrowRight size={16} className={turnsAreUp ? 'animate-bounce' : ''} />
+                <span className="fx-endturn-label">{turnsAreUp ? 'Turns Up • End Turn' : 'End Turn'}</span>
+                <ArrowRight size={16} className={turnsAreUp ? 'animate-bounce' : 'fx-endturn-arrow'} />
               </button>
             ) : (
               <div className="px-4 py-2 bg-slate-800/80 rounded-xl border border-slate-700 text-xs font-bold text-slate-400 flex items-center gap-2">
@@ -720,11 +720,11 @@ export const DealGame: React.FC<DealGameProps> = ({
           <div className="bg-slate-900/90 rounded-2xl p-2.5 sm:p-4 border border-slate-800">
             <div className="flex items-center justify-between mb-2 border-b border-slate-800/80 pb-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">{localPlayer.token}</span>
+                <span className="text-2xl fx-you-token">{localPlayer.token}</span>
                 <div>
                   <h2 className="text-base font-black text-white flex items-center gap-1.5">
-                    <span>{localPlayer.name}{spectating ? '' : ' (You)'}</span>
-                    <span className="text-xs font-normal text-slate-400">
+                    <span className="fx-you-name">{localPlayer.name}{spectating ? '' : ' (You)'}</span>
+                    <span className="text-xs font-normal text-slate-400 fx-sets-progress">
                       • {localPlayer.completedSetsCount} / 3 Full Sets
                     </span>
                     {localPlayer.completedSetsCount > 0 && (
@@ -739,8 +739,8 @@ export const DealGame: React.FC<DealGameProps> = ({
 
               {/* Local Player Bank Summary */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-400">Your Bank:</span>
-                <span className={`relative text-base font-mono font-black text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-xl border border-emerald-700/60 shadow-sm${localPlayer.bank.reduce((sum, c) => sum + c.value, 0) >= 10 ? ' fx-bank-milestone' : ''}`}><AnimatedMoney value={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} />M ({localPlayer.bank.length} cards)<CoinBurst amount={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} /></span>
+                <span className="text-xs font-bold text-slate-400 fx-bank-label">Your Bank:</span>
+                <span className={`relative text-base font-mono font-black text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-xl border border-emerald-700/60 shadow-sm fx-bank-glow${localPlayer.bank.reduce((sum, c) => sum + c.value, 0) >= 10 ? ' fx-bank-milestone' : ''}`}><AnimatedMoney value={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} />M ({localPlayer.bank.length} cards)<CoinBurst amount={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} /></span>
               </div>
             </div>
 
@@ -769,7 +769,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                       <span className={`text-[10px] font-black uppercase truncate ${config.textClass}`}>
                         {config.name}
                       </span>
-                      <span className="text-[10px] font-bold text-white font-mono">
+                      <span className="text-[10px] font-bold text-white font-mono fx-set-count">
                         {set.cards.length}/{config.requiredCount}
                       </span>
                     </div>
@@ -833,14 +833,14 @@ export const DealGame: React.FC<DealGameProps> = ({
         <div className="shrink-0 bg-slate-900/90 rounded-2xl p-2.5 sm:p-3 border border-slate-800 space-y-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <span>{spectating ? '👀 Spectating — hands are hidden' : `Your Hand (${localPlayer.hand.length} cards)`}</span>
+                <span className="fx-hand-label">{spectating ? '👀 Spectating — hands are hidden' : <>Your Hand (<span key={localPlayer.hand.length} className="fx-hand-count">{localPlayer.hand.length} cards</span>)</>}</span>
                 {!spectating && localPlayer.hand.length > 0 && (
                   <span className="fx-hand-value text-[10px] font-black font-mono text-emerald-300 bg-emerald-950/70 border border-emerald-800/70 px-1.5 py-0.5 rounded-md">
-                    💼 <span key={localPlayer.hand.reduce((s, c) => s + c.value, 0)} className="fx-count-pop">${localPlayer.hand.reduce((s, c) => s + c.value, 0)}M</span>
+                    <span className="fx-briefcase-bob">💼</span> <span key={localPlayer.hand.reduce((s, c) => s + c.value, 0)} className="fx-count-pop">${localPlayer.hand.reduce((s, c) => s + c.value, 0)}M</span>
                   </span>
                 )}
                 {isMyTurn && !turnsAreUp && (
-                  <span className="text-amber-400 font-bold">• Pick a card to play!</span>
+                  <span className="text-amber-400 font-bold fx-pick-prompt">• Pick a card to play!</span>
                 )}
               </span>
 
@@ -863,8 +863,8 @@ export const DealGame: React.FC<DealGameProps> = ({
                       </>
                     ) : (
                       <>
-                        <span className="w-2 h-2 rounded-full bg-amber-400" />
-                        <span>Plays Left: {gameState.playsRemaining}/3</span>
+                        <span className="w-2 h-2 rounded-full bg-amber-400 fx-plays-dot" />
+                        <span className="fx-plays-label">Plays Left: {gameState.playsRemaining}/3</span>
                       </>
                     )}
                   </span>

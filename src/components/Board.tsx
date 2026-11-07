@@ -30,35 +30,35 @@ import {
 const renderSpaceIcon = (space: any, isCorner: boolean) => {
   const iconSize = isCorner ? 26 : 20;
   if (space.type === SpaceType.RAILROAD) {
-    return <Train size={iconSize} className="text-slate-800 drop-shadow-sm" />;
+    return <Train size={iconSize} className="text-slate-800 drop-shadow-sm fx-train-bob" />;
   }
   if (space.type === SpaceType.UTILITY) {
     return space.name.includes('Water') 
-      ? <Droplet size={iconSize} className="text-cyan-700 drop-shadow-sm fill-cyan-400/30" /> 
-      : <Lightbulb size={iconSize} className="text-amber-600 drop-shadow-sm fill-amber-300/40" />;
+      ? <Droplet size={iconSize} className="text-cyan-700 drop-shadow-sm fill-cyan-400/30 fx-utility-icon fx-utility-icon-water" /> 
+      : <Lightbulb size={iconSize} className="text-amber-600 drop-shadow-sm fill-amber-300/40 fx-utility-icon" />;
   }
   if (space.type === SpaceType.CHANCE) {
-    return <HelpCircle size={iconSize} className="text-orange-600 drop-shadow-sm stroke-[2.5]" />;
+    return <HelpCircle size={iconSize} className="text-orange-600 drop-shadow-sm stroke-[2.5] fx-chance-icon" />;
   }
   if (space.type === SpaceType.COMMUNITY_CHEST) {
-    return <Briefcase size={iconSize} className="text-blue-700 drop-shadow-sm" />;
+    return <Briefcase size={iconSize} className="text-blue-700 drop-shadow-sm fx-chest-icon" />;
   }
   if (space.type === SpaceType.TAX) {
     return space.name.includes('Luxury') 
-      ? <Gem size={iconSize} className="text-purple-700 drop-shadow-sm" /> 
-      : <Receipt size={iconSize} className="text-rose-700 drop-shadow-sm" />;
+      ? <Gem size={iconSize} className="text-purple-700 drop-shadow-sm fx-tax-icon" /> 
+      : <Receipt size={iconSize} className="text-rose-700 drop-shadow-sm fx-tax-icon fx-tax-icon-income" />;
   }
   if (space.name === 'Jail') {
-    return <ShieldAlert size={iconSize} className="text-orange-700 drop-shadow-sm" />;
+    return <ShieldAlert size={iconSize} className="text-orange-700 drop-shadow-sm fx-jail-icon" />;
   }
   if (space.name === 'Go To Jail') {
-    return <ShieldAlert size={iconSize} className="text-red-700 drop-shadow-sm animate-pulse" />;
+    return <ShieldAlert size={iconSize} className="text-red-700 drop-shadow-sm fx-jail-icon fx-jail-icon-go" />;
   }
   if (space.name === 'Free Parking') {
-    return <Car size={iconSize} className="text-emerald-700 drop-shadow-sm fill-emerald-400/30" />;
+    return <Car size={iconSize} className="text-emerald-700 drop-shadow-sm fill-emerald-400/30 fx-parking-car" />;
   }
   if (space.name === 'GO') {
-    return <Flag size={iconSize} className="text-red-600 drop-shadow-sm fill-red-500" />;
+    return <Flag size={iconSize} className="text-red-600 drop-shadow-sm fill-red-500 fx-go-flag" />;
   }
   return null;
 };
@@ -387,13 +387,13 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
           aria-label="Zoom Out"
           className="p-1.5 sm:p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-slate-300 transition-colors flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
         >
-          <ZoomOut size={15} />
+          <ZoomOut size={15} className="fx-zoom-icon" />
         </button>
 
         <span
           id="board-zoom-indicator"
           title="Current Zoom Level"
-          className="px-1.5 py-0.5 text-[11px] sm:text-xs font-mono font-bold text-emerald-400 bg-slate-950/60 rounded border border-slate-800 min-w-[40px] text-center select-none"
+          className="px-1.5 py-0.5 text-[11px] sm:text-xs font-mono font-bold text-emerald-400 bg-slate-950/60 rounded border border-slate-800 min-w-[40px] text-center select-none fx-zoom-glow"
         >
           {Math.round(zoomMultiplier * 100)}%
         </span>
@@ -407,7 +407,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
           aria-label="Zoom In"
           className="p-1.5 sm:p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-slate-300 transition-colors flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
         >
-          <ZoomIn size={15} />
+          <ZoomIn size={15} className="fx-zoom-icon" style={{ animationDelay: '0.4s' }} />
         </button>
 
         <div className="w-px h-4 bg-slate-700/80 mx-0.5" />
@@ -420,8 +420,8 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
           aria-label="Reset View"
           className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 transition-colors cursor-pointer active:scale-95"
         >
-          <RotateCcw size={12} className={zoomMultiplier !== 1 || panOffset.x !== 0 || panOffset.y !== 0 ? 'text-amber-400' : 'text-slate-400'} />
-          <span className="hidden xs:inline">Reset View</span>
+          <RotateCcw size={12} className={zoomMultiplier !== 1 || panOffset.x !== 0 || panOffset.y !== 0 ? 'text-amber-400 fx-reset-spin' : 'text-slate-400'} />
+          <span className="hidden xs:inline fx-reset-label">Reset View</span>
         </button>
       </div>
 
@@ -507,7 +507,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                 }}
                 transition={shouldHighlight ? { duration: 1.4, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
                 onClick={() => setSelectedSpaceId(space.id)}
-                className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}${freshBuys[space.id] ? ' fx-buy-pop' : ''}${isGo ? ' fx-go-shimmer' : ''}${space.type === SpaceType.RAILROAD ? ' fx-railroad' : ''}${space.type === SpaceType.UTILITY ? (space.name.includes('Water') ? ' fx-utility fx-utility-water' : ' fx-utility fx-utility-electric') : ''}`}
+                className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}${freshBuys[space.id] ? ' fx-buy-pop' : ''}${isGo ? ' fx-go-shimmer' : ''}${space.type === SpaceType.JAIL ? ' fx-jail-shimmer' : ''}${space.type === SpaceType.RAILROAD ? ' fx-railroad' : ''}${space.type === SpaceType.UTILITY ? (space.name.includes('Water') ? ' fx-utility fx-utility-water' : ' fx-utility fx-utility-electric') : ''}${space.type === SpaceType.CHANCE ? ' fx-mystery-glow' : ''}${space.type === SpaceType.COMMUNITY_CHEST ? ' fx-mystery-glow fx-mystery-chest' : ''}${space.type === SpaceType.TAX ? (space.name.includes('Luxury') ? ' fx-tax-glint fx-tax-luxury' : ' fx-tax-glint') : ''}${space.type === SpaceType.FREE_PARKING ? ' fx-parking-glow' : ''}${space.type === SpaceType.GO_TO_JAIL ? ' fx-siren-glow' : ''}`}
               >
                 {freshBuys[space.id] && (
                   <span key={freshBuys[space.id]} className="fx-sparkles" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
@@ -551,12 +551,12 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       style={{ backgroundColor: space.groupColor }}
                     >
                       {propState?.hasHotel ? (
-                        <div className="w-4 h-3 bg-red-600 border border-red-950 rounded-sm shadow-sm flex items-center justify-center text-[7px] text-white font-black">
+                        <div className="w-4 h-3 bg-red-600 border border-red-950 rounded-sm shadow-sm flex items-center justify-center text-[7px] text-white font-black fx-hotel-glow">
                           H
                         </div>
                       ) : propState?.houses > 0 ? (
                         Array.from({ length: propState.houses }).map((_, i) => (
-                          <div key={i} className="w-2.5 h-2.5 bg-emerald-500 border border-emerald-950 rounded-xs shadow-xs"></div>
+                          <div key={i} className="w-2.5 h-2.5 bg-emerald-500 border border-emerald-950 rounded-xs shadow-xs fx-house-glow" style={{ animationDelay: `${i * 0.25}s` }}></div>
                         ))
                       ) : null}
                     </div>
@@ -566,7 +566,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                   <div className={`flex-1 flex flex-col items-center justify-between p-1 text-center ${isCorner ? 'transform rotate-45 justify-center gap-1' : ''}`}>
                     <div className={`flex flex-col items-center justify-center gap-0.5 w-full ${contentRotClass}`}>
                       {/* Space Name */}
-                      <span className={`font-bold tracking-tight text-slate-900 leading-[1.05] ${isCorner ? 'text-[11px] uppercase font-black' : 'text-[8.5px]'}`}>
+                      <span className={`font-bold tracking-tight text-slate-900 leading-[1.05] fx-space-name ${isCorner ? 'text-[11px] uppercase font-black' : 'text-[8.5px]'}`}>
                         {space.name}
                       </span>
 
@@ -579,7 +579,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
 
                       {/* Price Badge */}
                       {space.price && !isCorner && (
-                        <span className="text-[8px] font-mono font-bold text-slate-700 bg-slate-200/80 px-1 py-0.2 rounded-xs">
+                        <span className="text-[8px] font-mono font-bold text-slate-700 bg-slate-200/80 px-1 py-0.2 rounded-xs fx-price-glint" style={{ animationDelay: `${(space.position % 8) * 0.35}s` }}>
                           ${space.price}
                         </span>
                       )}
@@ -590,7 +590,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                 {/* Mortgaged Visual Badge */}
                 {propState?.isMortgaged && (
                   <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[1px] flex items-center justify-center z-10">
-                    <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-300 bg-amber-950/90 px-1.5 py-0.5 rounded border border-amber-500/70 shadow-sm">
+                    <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-300 bg-amber-950/90 px-1.5 py-0.5 rounded border border-amber-500/70 shadow-sm fx-mortgage-glow">
                       MORTGAGED
                     </span>
                   </div>
@@ -599,7 +599,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                 {/* Ownership Ribbon Indicator */}
                 {owner && !propState?.isMortgaged && (
                   <div className="absolute bottom-0 inset-x-0 h-1.5 flex items-center justify-center z-5 border-t" style={{ backgroundColor: owner.color, borderColor: owner.color, boxShadow: `0 -2px 12px ${owner.color}` }}>
-                    <span className="text-[7px] leading-none select-none">{owner.token}</span>
+                    <span className="text-[7px] leading-none select-none fx-owner-token">{owner.token}</span>
                   </div>
                 )}
               </motion.div>
@@ -614,7 +614,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
 
                {/* Center Logo graphic */}
                <div className="flex flex-col items-center pointer-events-none select-none -mb-2">
-                 <div className="px-6 py-2 bg-red-600 border-4 border-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] rounded-lg transform -rotate-2">
+                 <div className="px-6 py-2 bg-red-600 border-4 border-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] rounded-lg transform -rotate-2 fx-logo-glow">
                    <h1 className="fx-banner-shimmer text-3xl font-black text-white uppercase tracking-widest drop-shadow-md">
                      1POLY
                    </h1>
@@ -630,10 +630,10 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                  >
                    <CoinBurst amount={gameState.pot} />
                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                   <h3 className="text-amber-200 text-[11px] uppercase tracking-widest mb-0.5 relative z-10 flex items-center gap-1.5 font-black drop-shadow-md">
-                     <Car size={13} className="text-amber-300 fill-amber-300" /> FREE PARKING POT
+                   <h3 className="text-amber-200 text-[11px] uppercase tracking-widest mb-0.5 relative z-10 flex items-center gap-1.5 font-black drop-shadow-md fx-pot-label">
+                     <Car size={13} className="text-amber-300 fill-amber-300 fx-pot-car" /> FREE PARKING POT
                    </h3>
-                   <p className="text-amber-300 font-mono text-4xl font-black drop-shadow-[0_3px_3px_rgba(0,0,0,0.7)] relative z-10">
+                   <p className="text-amber-300 font-mono text-4xl font-black drop-shadow-[0_3px_3px_rgba(0,0,0,0.7)] relative z-10 fx-pot-amount">
                      ${gameState.pot}
                    </p>
                  </motion.div>
@@ -660,20 +660,20 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       ${!isCpuTurn && !isRolling && (gameState.phase === GamePhase.TURN_START || hasDoublesRollAgain)
                         ? (hasDoublesRollAgain 
                             ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-blue-400 cursor-pointer animate-pulse' 
-                            : 'fx-neon-btn border-fuchsia-300/70 cursor-pointer animate-pulse')
+                            : 'fx-neon-btn fx-roll-ready border-fuchsia-300/70 cursor-pointer animate-pulse')
                         : !isCpuTurn && !isRolling && gameState.phase === GamePhase.POST_ROLL
                         ? (gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'bg-red-900 hover:bg-red-800 text-red-100 border-red-700 cursor-pointer animate-pulse' : 'bg-red-600 hover:bg-red-500 text-white border-red-400 cursor-pointer animate-pulse fx-idle-pulse')
                         : 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed opacity-80'
                       }
                     `}
                   >
-                    {isRolling 
+                    <span className="fx-roll-label">{isRolling 
                       ? 'ROLLING...' 
                       : gameState.phase === GamePhase.TURN_START 
                       ? 'ROLL DICE' 
                       : hasDoublesRollAgain 
                       ? 'ROLL DICE 🎲' 
-                      : (gameState.players[gameState.currentPlayerIndex]?.money < 0 && !isCpuTurn ? 'BANKRUPT 💀' : 'END TURN')}
+                      : (gameState.players[gameState.currentPlayerIndex]?.money < 0 && !isCpuTurn ? 'BANKRUPT 💀' : 'END TURN')}</span>
                   </button>
 
                   {/* Dice visual */}
@@ -685,7 +685,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       </div>
                       {!isRolling && gameState.lastDiceRoll && (
                         <div 
-                          className={`text-xs font-bold px-3 py-1 rounded-full border shadow-md flex items-center gap-1.5 transition-all ${
+                          className={`text-xs font-bold px-3 py-1 rounded-full border shadow-md flex items-center gap-1.5 transition-all fx-dice-total ${
                             gameState.lastDiceRoll[0] === gameState.lastDiceRoll[1]
                               ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
                               : 'bg-slate-800/90 text-slate-300 border-slate-700'
@@ -717,7 +717,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                         }
                       `}
                     >
-                      <span>🤝</span> Trade
+                      <span className="fx-action-icon">🤝</span> <span className="fx-action-label">Trade</span>
                     </button>
 
                     <button 
@@ -733,7 +733,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                         }
                       `}
                     >
-                      <span>{gameState.players[gameState.currentPlayerIndex]?.money < 0 ? '💰' : '🏘️'}</span> {gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'Take Loan' : 'Manage'}
+                      <span className="fx-action-icon" style={{ animationDelay: '0.35s' }}>{gameState.players[gameState.currentPlayerIndex]?.money < 0 ? '💰' : '🏘️'}</span> <span className="fx-action-label">{gameState.players[gameState.currentPlayerIndex]?.money < 0 ? 'Take Loan' : 'Manage'}</span>
                     </button>
                   </div>
 
@@ -754,8 +754,8 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                             }}
                             className="w-full bg-emerald-600 hover:bg-emerald-500 border-4 border-emerald-400 text-white font-black py-2.5 px-4 rounded-xl transition-colors shadow-2xl flex flex-col items-center justify-center cursor-pointer"
                           >
-                            <span className="text-lg leading-tight">BUY {currentSpace.name.toUpperCase()}</span>
-                            <span className="text-sm text-emerald-200 font-mono">${currentSpace.price}</span>
+                            <span className="text-lg leading-tight fx-buy-label">BUY {currentSpace.name.toUpperCase()}</span>
+                            <span className="text-sm text-emerald-200 font-mono fx-buy-price">${currentSpace.price}</span>
                           </button>
                         )}
                         
@@ -767,7 +767,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                             }}
                             className="w-full bg-amber-600 hover:bg-amber-500 border-2 border-amber-400 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-colors shadow cursor-pointer"
                           >
-                            <span>🔨</span> Pass to Auction (Bidding for All)
+                            <span className="fx-hammer-swing">🔨</span> <span className="fx-auction-label">Pass to Auction (Bidding for All)</span>
                           </button>
                         )}
                       </motion.div>
@@ -827,7 +827,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                       }}
                       className="flex items-center justify-center pointer-events-none"
                     >
-                      <div className={`relative text-3xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] filter ${player.id === currentPlayer?.id ? 'fx-token-halo' : ''}`}>
+                      <div className={`relative text-3xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] filter fx-token-idle ${player.id === currentPlayer?.id ? 'fx-token-halo' : ''}`} style={{ animationDelay: `${idx * 0.3}s` }}>
                         <span key={currentVisualPos} className="fx-hop">{player.token}</span>
                         {player.inJail && <span className="fx-jail-bars" aria-hidden="true" />}
                       </div>
