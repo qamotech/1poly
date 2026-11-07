@@ -4,6 +4,7 @@ import { GameState, GamePhase, SpaceType } from '../types';
 import { SPACES } from '../engine/board';
 import { audio } from '../audio';
 import { Dice3D } from './Dice3D';
+import { CoinBurst } from './Fx';
 import { 
   Train, 
   Lightbulb, 
@@ -473,6 +474,13 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
 
             const propState = gameState.propertyStates[space.id];
             const owner = propState?.ownerId ? gameState.players.find(p => p.id === propState.ownerId) : null;
+            const isFullGroup = !!(
+              space.groupColor &&
+              owner &&
+              SPACES.filter(s => s.groupColor === space.groupColor).every(
+                s => gameState.propertyStates[s.id]?.ownerId === owner.id
+              )
+            );
 
             const bgClass = isGo 
               ? 'bg-gradient-to-br from-yellow-200 via-orange-200 to-red-400'
@@ -539,7 +547,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                   {/* Property Color Bar */}
                   {space.groupColor && (
                     <div 
-                      className={`${colorBarClass} shrink-0 border-slate-900/80 shadow-[inset_0_1px_3px_rgba(255,255,255,0.6)] flex items-center justify-center gap-1 relative overflow-hidden`}
+                      className={`${colorBarClass} shrink-0 border-slate-900/80 shadow-[inset_0_1px_3px_rgba(255,255,255,0.6)] flex items-center justify-center gap-1 relative overflow-hidden${isFullGroup ? ' fx-group-shimmer' : ''}`}
                       style={{ backgroundColor: space.groupColor }}
                     >
                       {propState?.hasHotel ? (
@@ -618,8 +626,9 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                  <motion.div 
                    initial={{ scale: 0.9, opacity: 0 }}
                    animate={{ scale: 1, opacity: 1 }}
-                   className="bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-700 p-3 rounded-2xl shadow-[0_0_35px_rgba(168,85,247,0.6)] border-3 border-amber-400 flex flex-col items-center justify-center relative overflow-hidden pointer-events-auto min-w-[180px]"
+                   className="fx-pot-wrap bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-700 p-3 rounded-2xl shadow-[0_0_35px_rgba(168,85,247,0.6)] border-3 border-amber-400 flex flex-col items-center justify-center relative overflow-hidden pointer-events-auto min-w-[180px]"
                  >
+                   <CoinBurst amount={gameState.pot} />
                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                    <h3 className="text-amber-200 text-[11px] uppercase tracking-widest mb-0.5 relative z-10 flex items-center gap-1.5 font-black drop-shadow-md">
                      <Car size={13} className="text-amber-300 fill-amber-300" /> FREE PARKING POT

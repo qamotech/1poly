@@ -562,7 +562,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             <div className="flex flex-col items-center">
               <div className="w-20 h-28 sm:w-24 sm:h-34 rounded-xl border-2 border-dashed border-blue-500/50 bg-gradient-to-br from-blue-950 to-indigo-950 flex flex-col items-center justify-center text-center shadow-lg relative">
                 <span className="text-2xl mb-1">🎴</span>
-                <span className="text-xs font-mono font-bold text-blue-300">
+                <span key={gameState.deck.length} className="text-xs font-mono font-bold text-blue-300 fx-draw-pop">
                   {gameState.deck.length}
                 </span>
                 <span className="text-[9px] uppercase font-bold text-slate-400">Draw Pile</span>

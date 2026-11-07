@@ -32,6 +32,7 @@ export const Dice3D: React.FC<{ rolling: boolean, face: number }> = ({ rolling, 
 
   return (
     <div className={`w-16 h-16 relative ${rolling ? 'fx-dice-shake fx-dice-glow' : settling ? 'fx-settle' : ''}`} style={{ perspective: '1000px' }}>
+      <span className={`fx-dice-shadow${rolling ? ' is-rolling' : settling ? ' is-settling' : ''}`} aria-hidden="true" />
       {rolling && (
         <span className="fx-sparkles" aria-hidden="true">
           <i /><i /><i /><i /><i /><i /><i /><i />

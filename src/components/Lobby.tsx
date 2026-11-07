@@ -332,6 +332,8 @@ export const Lobby: React.FC<LobbyProps> = ({
   // the game (picked a name + token) can tap START GAME.
   const inRoom = !!roomCode;
   const canStart = !inRoom || isHost || !!myPlayerId;
+  // C3-2 — with 2+ players in, every START button glows ready-green.
+  const startReady = gameState.players.length >= 2;
   const scrollToJoin = () => document.getElementById('self-join-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   return (
@@ -402,7 +404,7 @@ export const Lobby: React.FC<LobbyProps> = ({
               handleStartDealWithCurrentPlayers();
             }}
             disabled={!!roomCode && canStart && gameState.players.length < 2}
-            className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-xs rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className={`px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-xs rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${startReady ? 'fx-start-ready' : ''}`}
           >
             <Sparkles size={15} /> {roomCode ? (canStart ? (gameState.players.length >= 2 ? 'Start Room Cards Match' : 'Cards — need 2 players') : 'Join to Play Cards') : 'Play 1poly Cards'}
           </button>
@@ -502,8 +504,8 @@ export const Lobby: React.FC<LobbyProps> = ({
             ) : gameState.players.length >= 2 ? (
               <>
                 <span className="text-[11px] font-black text-emerald-300 whitespace-nowrap">{gameState.players.length} in 🎮</span>
-                <button onClick={() => { audio.playUiClick(); onStartGame(); }} className="fx-neon-btn flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer">▶ Classic</button>
-                <button onClick={() => { audio.playUiClick(); onStartRoomDealMatch?.(); }} className="fx-neon-btn-blue flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer">🃏 Cards</button>
+                <button onClick={() => { audio.playUiClick(); onStartGame(); }} className="fx-neon-btn fx-start-ready flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer">▶ Classic</button>
+                <button onClick={() => { audio.playUiClick(); onStartRoomDealMatch?.(); }} className="fx-neon-btn-blue fx-start-ready flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer">🃏 Cards</button>
               </>
             ) : isHost && onAddCpuAndStartDeal ? (
               <>
@@ -930,7 +932,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                 onStartGame();
               }}
               disabled={gameState.players.length < 2}
-              className="flex items-center justify-center gap-3 fx-neon-btn disabled:opacity-50 disabled:cursor-not-allowed font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer"
+              className={`flex items-center justify-center gap-3 fx-neon-btn disabled:opacity-50 disabled:cursor-not-allowed font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer ${startReady ? 'fx-start-ready' : ''}`}
             >
               <Play fill="currentColor" size={18} /> Start Classic 1poly ({gameState.players.length})
             </button>
@@ -945,7 +947,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                 }
               }}
               disabled={!!roomCode && gameState.players.length < 2}
-              className="flex items-center justify-center gap-3 fx-neon-btn-blue disabled:opacity-50 disabled:cursor-not-allowed font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer"
+              className={`flex items-center justify-center gap-3 fx-neon-btn-blue disabled:opacity-50 disabled:cursor-not-allowed font-black py-3 md:py-4 px-4 rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-base md:text-lg cursor-pointer ${startReady ? 'fx-start-ready' : ''}`}
             >
               <Sparkles size={20} /> {roomCode ? 'Start 1poly Cards — Room Match 🌐' : 'Start 1poly Cards'}
             </button>

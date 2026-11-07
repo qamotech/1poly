@@ -33,7 +33,7 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
   return (
     <div className="min-h-screen bg-slate-950 fx-aura-bg fx-view-in text-slate-50 flex flex-col items-center justify-center p-4 space-y-6">
       <h1 className="text-5xl sm:text-6xl font-black fx-shimmer-text tracking-wider uppercase text-center flex items-center gap-3">
-        <span className="text-4xl sm:text-5xl -scale-x-100 inline-block select-none fx-float-bob">🏃🏾‍♂️</span>
+        <span className="text-4xl sm:text-5xl -scale-x-100 inline-block select-none fx-float-bob fx-runner-trail">🏃🏾‍♂️</span>
         1poly
       </h1>
       <p className="text-slate-400 text-sm font-semibold -mt-2 text-center">

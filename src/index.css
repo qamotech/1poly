@@ -640,6 +640,45 @@ html, body { overscroll-behavior: none; }
 }
 .fx-idle-pulse { animation: fx-idle-pulse 2.2s ease-in-out infinite; }
 
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 1
+   ============================================================ */
+
+/* C1-1 — cast shadow under the dice: shrinks/lightens while the die is
+   tumbling (as if lifted), swells back as it settles on the board. */
+.fx-dice-shadow {
+  position: absolute; left: 50%; bottom: -11px; z-index: 0; pointer-events: none;
+  width: 76%; height: 12px; border-radius: 9999px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.52) 0%, rgba(0, 0, 0, 0.28) 55%, transparent 72%);
+  filter: blur(2px);
+  transform: translateX(-50%) scaleX(1);
+  opacity: 0.85;
+}
+.fx-dice-shadow.is-rolling { animation: fx-dice-shadow-roll 0.42s ease-in-out infinite; }
+.fx-dice-shadow.is-settling { animation: fx-dice-shadow-settle 0.45s ease-out both; }
+@keyframes fx-dice-shadow-roll {
+  0%, 100% { transform: translateX(-50%) scaleX(0.72); opacity: 0.45; }
+  50% { transform: translateX(-50%) scaleX(1.14); opacity: 0.95; }
+}
+@keyframes fx-dice-shadow-settle {
+  0% { transform: translateX(-50%) scaleX(0.78); opacity: 0.5; }
+  35% { transform: translateX(-50%) scaleX(1.12); opacity: 0.95; }
+  65% { transform: translateX(-50%) scaleX(0.96); opacity: 0.8; }
+  100% { transform: translateX(-50%) scaleX(1); opacity: 0.85; }
+}
+
+/* C1-2 — full property-group tiles: a shimmering sweep travels across the
+   group-color stripe when one player owns the whole colour group. The
+   stripe element already clips overflow, so the ::after sweep stays
+   inside the bar in both its horizontal and vertical orientations. */
+.fx-group-shimmer::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(110deg, transparent 22%, rgba(255, 255, 255, 0.78) 50%, transparent 78%);
+  background-size: 230% 100%;
+  animation: fx-shimmer 2.6s linear infinite;
+  mix-blend-mode: screen;
+}
+
 /* R3-40 — rotating light rays behind the winner */
 .fx-rays {
   position: absolute; inset: -45%; z-index: 0; pointer-events: none; opacity: 0.15;
@@ -648,5 +687,73 @@ html, body { overscroll-behavior: none; }
 }
 @keyframes fx-rays-spin {
   to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 2
+   ============================================================ */
+
+/* C2-1 — golden motion trail streaming behind the gate logo runner:
+   two gold streaks parked behind the runner (to its left) that stretch
+   and fade in a quick alternating rhythm, plus a warm gold glow on the
+   runner itself. Streaks are pure decoration (pointer-events: none). */
+.fx-runner-trail {
+  position: relative;
+  filter: drop-shadow(0 0 7px rgba(251, 191, 36, 0.55));
+}
+.fx-runner-trail::before,
+.fx-runner-trail::after {
+  content: ""; position: absolute; right: 76%; z-index: -1; pointer-events: none;
+  height: 0.13em; border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0) 0%, rgba(251, 191, 36, 0.55) 55%, rgba(254, 240, 138, 0.98) 100%);
+  transform-origin: right center;
+  animation: fx-trail-streak 0.85s ease-in-out infinite;
+}
+.fx-runner-trail::before { top: 34%; width: 0.95em; }
+.fx-runner-trail::after { top: 60%; width: 0.62em; animation-delay: 0.28s; }
+@keyframes fx-trail-streak {
+  0%, 100% { transform: scaleX(0.55); opacity: 0.45; }
+  50% { transform: scaleX(1.15); opacity: 1; }
+}
+
+/* C2-2 — draw-pile count pops whenever the deck size changes (the count
+   span is keyed by the count, so each change remounts it and replays):
+   quick overshoot scale with a brief blue glow flash. */
+.fx-draw-pop { animation: fx-draw-pop 0.38s cubic-bezier(0.2, 0.9, 0.3, 1.35) both; display: inline-block; }
+@keyframes fx-draw-pop {
+  0% { transform: scale(0.55); text-shadow: 0 0 0 rgba(96, 165, 250, 0); }
+  55% { transform: scale(1.45); text-shadow: 0 0 12px rgba(96, 165, 250, 0.95); }
+  100% { transform: scale(1); text-shadow: 0 0 0 rgba(96, 165, 250, 0); }
+}
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 3
+   ============================================================ */
+
+/* C3-1 — Free Parking pot coin burst: when the pot grows, the shared
+   CoinBurst helper fires inside the pot card; scoped under .fx-pot-wrap
+   the coins start at the card's center (instead of the usual top-right
+   corner), are bigger, and fountain higher/wider with a gold glow —
+   a jackpot-style shower over the pot total. */
+.fx-pot-wrap .fx-coin-burst i {
+  right: auto; left: 50%; top: 46%;
+  font-size: 19px;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.9));
+  animation-name: fx-pot-float;
+  animation-duration: 1.25s;
+}
+@keyframes fx-pot-float {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.5) rotate(0deg); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--cx) * 2.1), -78px) scale(1.2) rotate(24deg); }
+}
+
+/* C3-2 — START buttons glow ready-green once 2+ players are in:
+   a pulsing emerald halo layered over the buttons' neon shadow, so a
+   full-enough lobby reads as "ready — tap to start" at a glance. */
+.fx-start-ready { animation: fx-start-ready-glow 1.6s ease-in-out infinite; }
+@keyframes fx-start-ready-glow {
+  0%, 100% { box-shadow: 0 0 14px rgba(16, 185, 129, 0.55), 0 0 4px rgba(52, 211, 153, 0.7), 0 4px 14px rgba(0, 0, 0, 0.45); }
+  50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.95), 0 0 14px rgba(52, 211, 153, 0.9), 0 4px 14px rgba(0, 0, 0, 0.45); }
 }
 
