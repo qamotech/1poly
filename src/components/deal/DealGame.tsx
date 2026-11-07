@@ -579,7 +579,7 @@ export const DealGame: React.FC<DealGameProps> = ({
                       {opponent.completedSetsCount >= 2 && (
                         <span className="fx-crown-bounce" title="Match point — one more set wins!">👑</span>
                       )}
-                      <span className="relative text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800"><AnimatedMoney value={totalBank} />M<CoinBurst amount={totalBank} /></span>
+                      <span className={`relative text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800${totalBank >= 10 ? ' fx-bank-milestone' : ''}`}><AnimatedMoney value={totalBank} />M<CoinBurst amount={totalBank} /></span>
                     </div>
                   </div>
 
@@ -740,7 +740,7 @@ export const DealGame: React.FC<DealGameProps> = ({
               {/* Local Player Bank Summary */}
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-400">Your Bank:</span>
-                <span className="relative text-base font-mono font-black text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-xl border border-emerald-700/60 shadow-sm"><AnimatedMoney value={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} />M ({localPlayer.bank.length} cards)<CoinBurst amount={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} /></span>
+                <span className={`relative text-base font-mono font-black text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-xl border border-emerald-700/60 shadow-sm${localPlayer.bank.reduce((sum, c) => sum + c.value, 0) >= 10 ? ' fx-bank-milestone' : ''}`}><AnimatedMoney value={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} />M ({localPlayer.bank.length} cards)<CoinBurst amount={localPlayer.bank.reduce((sum, c) => sum + c.value, 0)} /></span>
               </div>
             </div>
 

@@ -1046,3 +1046,38 @@ html, body { overscroll-behavior: none; }
   100% { transform: rotate(0deg) scale(1); opacity: 1; }
 }
 .fx-token-spin-in { display: inline-block; animation: fx-token-spin-in 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.25) both; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 7
+   ============================================================ */
+
+/* C7-1 — Cards: bank total flashes a milestone glow at $10M+.
+   Applied to the bank total pills (local player + opponents) only
+   when the bank value is >= 10; a golden flash pulses around the
+   emerald pill so a double-digit bank reads as a milestone at a
+   glance. Below $10M the pill keeps its plain styling. */
+@keyframes fx-bank-milestone-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(250, 204, 21, 0.35), 0 0 0 1px rgba(250, 204, 21, 0.45); }
+  50% { box-shadow: 0 0 18px rgba(250, 204, 21, 0.9), 0 0 30px rgba(245, 158, 11, 0.45), 0 0 0 1px rgba(253, 224, 71, 0.95); }
+}
+.fx-bank-milestone {
+  animation: fx-bank-milestone-glow 1.5s ease-in-out infinite;
+  border-color: rgba(253, 224, 71, 0.9) !important;
+  color: #fde68a !important;
+}
+
+/* C7-2 — Lobby: room-code tiles wave when the code is copied.
+   Added alongside fx-code-tile only while codeCopied is true; the
+   tiles' existing per-letter animationDelay (i * 95ms) staggers the
+   wave across the code. Overrides the flip-in animation for the
+   wave's duration, then the copy state clears after 2s. */
+@keyframes fx-code-wave {
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-10px) scale(1.1); }
+  60% { transform: translateY(2px) scale(0.98); }
+}
+.fx-code-wave {
+  animation: fx-code-wave 0.65s ease-in-out both;
+  border-color: rgba(52, 211, 153, 0.95) !important;
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.65), 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+}
