@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Pull-to-refresh guard — swiping down must never reload the game mid-match
+   (Nathan, 2026-11-06). overscroll-behavior:none on the root stops the
+   browser's pull-to-refresh and the rubber-band bounce; in-game scroll
+   panels still scroll normally. */
+html, body { overscroll-behavior: none; }
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
