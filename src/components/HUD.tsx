@@ -279,7 +279,7 @@ export const HUD: React.FC<HUDProps> = ({
               >
                 <span>{['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'][i] || `${i + 1}.`}</span>
                 <span>{p.token}</span>
-                <span className="font-mono">${worth}</span>
+                <span className="font-mono fx-worth-glow">${worth}</span>
               </span>
             ))}
         </div>
@@ -364,11 +364,11 @@ export const HUD: React.FC<HUDProps> = ({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-bold truncate ${isTurn ? 'text-emerald-200' : 'text-slate-200'}`}>
+                      <span className={`text-xs font-bold truncate fx-roster-name ${isTurn ? 'text-emerald-200' : 'text-slate-200'}`}>
                         {p.name}
                       </span>
                       {p.type === 'CPU' && (
-                        <span className="text-[9px] bg-slate-700 text-slate-300 px-1 rounded font-bold">CPU</span>
+                        <span className="text-[9px] bg-slate-700 text-slate-300 px-1 rounded font-bold fx-roster-cpu">CPU</span>
                       )}
                       {p.inJail && (
                         <span className="text-[9px] bg-amber-900/80 text-amber-300 border border-amber-600 px-1 rounded font-bold flex items-center gap-0.5">
@@ -377,7 +377,7 @@ export const HUD: React.FC<HUDProps> = ({
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                      <span className="relative text-emerald-400 font-mono font-bold"><AnimatedMoney value={p.money} /><CoinBurst amount={p.money} /></span>
+                      <span className="relative text-emerald-400 font-mono font-bold fx-roster-money"><AnimatedMoney value={p.money} /><CoinBurst amount={p.money} /></span>
                       <span>•</span>
                       <span>{p.properties.length} props</span>
                     </div>

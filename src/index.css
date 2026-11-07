@@ -2712,3 +2712,110 @@ html, body { overscroll-behavior: none; }
   50% { opacity: .55; box-shadow: 0 0 7px 2px rgba(52, 211, 153, .75); }
 }
 .fx-turn-dot { animation: fx-turn-dot-pulse 2.4s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 64
+   ============================================================ */
+
+/* C64-1 — HUD: standings worth amount gets a soft gold glow
+   pulse (fx-worth-glow on the $worth span in HUD's standings
+   pills). Text-shadow swell only, so the amount quietly gleams
+   in place without shifting the medal or token beside it, and
+   stays distinct from the leader pill's fx-leader-glow halo. */
+@keyframes fx-worth-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(251, 191, 36, 0); }
+  50% { text-shadow: 0 0 6px rgba(251, 191, 36, 0.85); }
+}
+.fx-worth-glow { animation: fx-worth-glow 2.7s ease-in-out infinite; }
+
+/* C64-2 — Cards: Action Spotlight last-log line gets a soft
+   slate glow pulse (fx-last-log on the last-log <p> in
+   DealGame's center arena). Text-shadow swell only, so the
+   latest log line quietly gleams in place without shifting
+   the spotlight heading above it or the log chip inside it,
+   and stays distinct from the heading's fx-action-msg pulse. */
+@keyframes fx-last-log-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(148, 163, 184, 0); }
+  50% { text-shadow: 0 0 6px rgba(148, 163, 184, 0.8); }
+}
+.fx-last-log { animation: fx-last-log-glow 2.9s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 65
+   ============================================================ */
+
+/* C65-1 — HUD: roster player name gets a soft white glow pulse
+   (fx-roster-name on the roster name span in HUD's players
+   list). Text-shadow swell only, so the name quietly gleams
+   in place without shifting the CPU / Jail badges beside it,
+   and stays distinct from the Current Turn name's
+   fx-turn-player pulse. */
+@keyframes fx-roster-name-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  50% { text-shadow: 0 0 6px rgba(255, 255, 255, 0.55); }
+}
+.fx-roster-name { animation: fx-roster-name-glow 2.8s ease-in-out infinite; }
+
+/* C65-2 — Cards: Rules button label gets a soft blue glow pulse
+   (fx-rules-label on the Rules span in DealGame's header).
+   Text-shadow swell only, so the label quietly gleams in place
+   without shifting the BookOpen icon beside it, and stays
+   distinct from that icon's fx-rules-glow pulse. */
+@keyframes fx-rules-label-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(96, 165, 250, 0); }
+  50% { text-shadow: 0 0 6px rgba(96, 165, 250, 0.85); }
+}
+.fx-rules-label { animation: fx-rules-label-glow 2.7s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 66
+   ============================================================ */
+
+/* C66-1 — HUD: roster player money gets a soft emerald glow pulse
+   (fx-roster-money on the roster money span in HUD's players
+   list). Text-shadow swell only, so the amount quietly gleams
+   in place without shifting the props count beside it, and
+   stays distinct from the standings worth fx-worth-glow pulse. */
+@keyframes fx-roster-money-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  50% { text-shadow: 0 0 6px rgba(52, 211, 153, 0.75); }
+}
+.fx-roster-money { animation: fx-roster-money-glow 2.9s ease-in-out infinite; }
+
+/* C66-2 — Gate: tagline subtitle gets a soft slate glow pulse
+   (fx-gate-tagline on the tagline paragraph under the 1poly
+   wordmark in RoomGate). Text-shadow swell only, so the line
+   quietly gleams in place without shifting the host/join
+   cards below it. */
+@keyframes fx-gate-tagline-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(148, 163, 184, 0); }
+  50% { text-shadow: 0 0 6px rgba(148, 163, 184, 0.8); }
+}
+.fx-gate-tagline { animation: fx-gate-tagline-glow 3s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 67
+   ============================================================ */
+
+/* C67-1 — Gate: "Host a game" heading gets a warm amber glow
+   pulse (fx-gate-host on the heading row in RoomGate's create
+   card). Text-shadow swell only, so the Crown icon and label
+   quietly gleam in place without shifting the card copy or
+   the Create Game button below it. */
+@keyframes fx-gate-host-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(252, 211, 77, 0); }
+  50% { text-shadow: 0 0 7px rgba(252, 211, 77, 0.85); }
+}
+.fx-gate-host { animation: fx-gate-host-glow 2.8s ease-in-out infinite; }
+
+/* C67-2 — HUD: roster CPU chip gets a soft blue glow pulse
+   (fx-roster-cpu on the CPU chip in HUD's players list).
+   Box-shadow swell only, so the chip quietly gleams in place
+   without shifting the roster name beside it or the money
+   line below it, and stays distinct from the roster name's
+   fx-roster-name white pulse. */
+@keyframes fx-roster-cpu-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(96, 165, 250, 0); }
+  50% { box-shadow: 0 0 6px rgba(96, 165, 250, 0.8); }
+}
+.fx-roster-cpu { animation: fx-roster-cpu-glow 2.6s ease-in-out infinite; }

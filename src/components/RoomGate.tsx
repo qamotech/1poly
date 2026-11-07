@@ -36,14 +36,14 @@ export const RoomGate: React.FC<RoomGateProps> = ({ onCreate, onJoin, onPlayCard
         <span className="text-4xl sm:text-5xl -scale-x-100 inline-block select-none fx-float-bob fx-runner-trail">🏃🏾‍♂️</span>
         1poly
       </h1>
-      <p className="text-slate-400 text-sm font-semibold -mt-2 text-center">
+      <p className="text-slate-400 text-sm font-semibold -mt-2 text-center fx-gate-tagline">
         Play together from anywhere — one phone hosts, everyone else joins with a code.
       </p>
 
       <div className="w-full max-w-md space-y-4">
         {/* Create */}
         <div className="bg-slate-900 border-2 border-amber-500/50 rounded-3xl p-5 space-y-3 shadow-2xl fx-glass">
-          <div className="flex items-center gap-2 text-amber-300 font-black uppercase tracking-widest text-xs">
+          <div className="flex items-center gap-2 text-amber-300 font-black uppercase tracking-widest text-xs fx-gate-host">
             <Crown size={15} /> Host a game
           </div>
           <p className="text-sm text-slate-300">

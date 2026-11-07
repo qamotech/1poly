@@ -441,7 +441,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             title="Deal & Classic Rules"
           >
             <BookOpen size={16} className="fx-rules-glow" />
-            <span className="hidden sm:inline">Rules</span>
+            <span className="hidden sm:inline fx-rules-label">Rules</span>
           </button>
 
           <button
@@ -680,7 +680,7 @@ export const DealGame: React.FC<DealGameProps> = ({
             <h3 className="text-base sm:text-lg font-black text-white mt-0.5 fx-action-msg">
               {gameState.lastActionMessage || 'Game in progress'}
             </h3>
-            <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">
+            <p className="text-xs text-slate-400 line-clamp-1 mt-0.5 fx-last-log">
               {gameState.logs.length > 0 && (
                 <>
                   <span className="fx-log-chip">{fxLogMeta(gameState.logs[gameState.logs.length - 1])}</span>
