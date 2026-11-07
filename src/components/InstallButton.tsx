@@ -157,7 +157,7 @@ export function InstallButton() {
             </div>
             <ol className="space-y-2.5">
               {guide.steps.map((step, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm">
+                <li key={i} className="flex items-start gap-2.5 text-sm fx-install-step" style={{ animationDelay: `${i * 120}ms` }}>
                   <span className="shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[11px] font-black text-white mt-0.5">{i + 1}</span>
                   <span>{step}</span>
                 </li>

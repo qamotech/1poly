@@ -186,7 +186,7 @@ export const HUD: React.FC<HUDProps> = ({
           </div>
           
           <div className="flex items-center gap-3 overflow-hidden z-10 relative">
-            <span className="text-2xl bg-slate-700 p-2 rounded-full shrink-0 drop-shadow">{currentPlayer?.token || '🎲'}</span>
+            <span key={currentPlayer?.id || 'waiting'} className="text-2xl bg-slate-700 p-2 rounded-full shrink-0 drop-shadow fx-turn-avatar">{currentPlayer?.token || '🎲'}</span>
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-bold text-white flex items-center gap-2 whitespace-nowrap">
                 <span className="truncate">{currentPlayer?.name || 'Waiting...'}</span>

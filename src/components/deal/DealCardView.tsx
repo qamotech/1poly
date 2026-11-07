@@ -85,6 +85,8 @@ export const DealCardView: React.FC<DealCardViewProps> = ({
       className={`relative ${sizeClasses} rounded-xl border-2 fx-tilt ${cardBorder} ${cardBg} shadow-lg flex flex-col justify-between overflow-hidden select-none cursor-pointer transition-shadow ${
         card.type === DealCardType.ACTION ? 'fx-holo-orange' : ''
       } ${
+        card.type === DealCardType.PROPERTY_WILD ? 'fx-wild-rainbow' : ''
+      } ${
         isSelected ? 'ring-4 ring-emerald-400 scale-105 z-20 fx-selected-ring' : ''
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >

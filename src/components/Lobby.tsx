@@ -512,9 +512,9 @@ export const Lobby: React.FC<LobbyProps> = ({
                 <span className="text-[11px] font-bold text-slate-300 whitespace-nowrap">Just you so far</span>
                 <button
                   onClick={() => { audio.playUiClick(); const free = TOKENS.find(t => !gameState.players.some(p => p.token === t)) ?? TOKENS[0]; onAddCpuAndStartDeal('CPU Buddy', free); }}
-                  className="fx-neon-btn-blue flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer"
+                  className="fx-neon-btn-blue fx-robot-wiggle flex-1 py-2.5 rounded-xl font-black text-sm cursor-pointer"
                 >
-                  🤖 Add CPU & Start Cards
+                  <span className="fx-robot-icon" aria-hidden="true">🤖</span> Add CPU & Start Cards
                 </button>
               </>
             ) : (

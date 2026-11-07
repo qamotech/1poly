@@ -130,19 +130,19 @@ export const DealGameOver: React.FC<DealGameOverProps> = ({
         {/* Stats card */}
         {winner && (
           <div className="grid grid-cols-3 gap-2 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-left">
-            <div className="space-y-1">
+            <div className="space-y-1 fx-standing-row" style={{ animationDelay: '0ms' }}>
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Sets Done</span>
               <span className="text-base font-bold text-amber-400 flex items-center gap-1">
                 <Home size={14} /> {winner.completedSetsCount} / 3
               </span>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 fx-standing-row" style={{ animationDelay: '110ms' }}>
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Cards Played</span>
               <span className="text-base font-bold text-blue-400 flex items-center gap-1">
                 <Sparkles size={14} /> {winner.stats.cardsPlayed}
               </span>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 fx-standing-row" style={{ animationDelay: '220ms' }}>
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Rent Made</span>
               <span className="text-base font-bold text-emerald-400 flex items-center gap-1">
                 <DollarSign size={14} /> ${winner.stats.rentCollected}M

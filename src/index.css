@@ -1268,3 +1268,114 @@ html, body { overscroll-behavior: none; }
   100% { transform: scale(1); border-color: #e879f9; box-shadow: 0 0 28px rgba(217, 70, 239, 0.65), 0 0 10px rgba(217, 70, 239, 0.5); }
 }
 .fx-pot-rainbow { animation: fx-pot-rainbow-pulse 2.8s ease-in-out infinite; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 13
+   ============================================================ */
+
+/* C13-1 — Lobby: Add-CPU robot button wiggles on hover.
+   Applied to the sticky-bar Add CPU button in Lobby; on hover
+   the whole button does a playful side-to-side wiggle and the
+   robot glyph (fx-robot-icon) tilts with it, inviting the tap
+   without any motion at rest. */
+@keyframes fx-robot-wiggle {
+  0%, 100% { transform: rotate(0deg) translateX(0); }
+  20% { transform: rotate(-2.2deg) translateX(-1.5px); }
+  40% { transform: rotate(2.2deg) translateX(1.5px); }
+  60% { transform: rotate(-1.6deg) translateX(-1px); }
+  80% { transform: rotate(1.2deg) translateX(0.5px); }
+}
+@keyframes fx-robot-icon-wiggle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-14deg) scale(1.12); }
+  50% { transform: rotate(12deg) scale(1.12); }
+  75% { transform: rotate(-7deg) scale(1.06); }
+}
+.fx-robot-wiggle:hover { animation: fx-robot-wiggle 0.55s ease-in-out; }
+.fx-robot-icon { display: inline-block; }
+.fx-robot-wiggle:hover .fx-robot-icon { animation: fx-robot-icon-wiggle 0.55s ease-in-out; }
+
+/* C13-2 — Game-over screen: final standings rows cascade in.
+   Applied to the stat/standings cards on both game-over
+   screens (GameOverScreen stat grid + DealGameOver stats
+   card); each row rises and fades in with a stagger supplied
+   inline via animationDelay, so the final results read
+   top-to-bottom as a cascade instead of appearing at once. */
+@keyframes fx-standing-cascade {
+  0% { opacity: 0; transform: translateY(14px) scale(0.96); }
+  60% { opacity: 1; transform: translateY(-2px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.fx-standing-row { animation: fx-standing-cascade 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 14
+   ============================================================ */
+
+/* C14-1 — Cards: wild cards get a cycling rainbow border.
+   Applied to PROPERTY_WILD cards in DealCardView (on top of the
+   flat yellow border); the border colour and outer halo cycle
+   through the rainbow so a wild reads as any-colour at a glance.
+   Seamless loop: 0% and 100% share the same red. */
+@keyframes fx-wild-rainbow-cycle {
+  0%, 100% { border-color: #f87171; box-shadow: 0 0 14px rgba(239, 68, 68, 0.55), 0 0 5px rgba(239, 68, 68, 0.45); }
+  17% { border-color: #fb923c; box-shadow: 0 0 14px rgba(249, 115, 22, 0.55), 0 0 5px rgba(249, 115, 22, 0.45); }
+  33% { border-color: #facc15; box-shadow: 0 0 16px rgba(250, 204, 21, 0.6), 0 0 6px rgba(250, 204, 21, 0.5); }
+  50% { border-color: #34d399; box-shadow: 0 0 14px rgba(16, 185, 129, 0.55), 0 0 5px rgba(16, 185, 129, 0.45); }
+  67% { border-color: #60a5fa; box-shadow: 0 0 14px rgba(59, 130, 246, 0.55), 0 0 5px rgba(59, 130, 246, 0.45); }
+  83% { border-color: #e879f9; box-shadow: 0 0 14px rgba(217, 70, 239, 0.55), 0 0 5px rgba(217, 70, 239, 0.45); }
+}
+.fx-wild-rainbow { animation: fx-wild-rainbow-cycle 3s linear infinite; }
+
+/* C14-2 — Board: GO tile gets a permanent golden shimmer.
+   Applied to the GO tile (position 0) in Board; a golden sheen
+   band sweeps endlessly across the tile via the shared
+   fx-shimmer keyframes (clipped by the tile's overflow:hidden),
+   over a soft pulsing gold halo, so GO always feels rewarding. */
+@keyframes fx-go-glow {
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.45), inset 0 0 10px rgba(251, 191, 36, 0.35), 0 0 6px rgba(245, 158, 11, 0.35); }
+  50% { box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 0.75), inset 0 0 16px rgba(251, 191, 36, 0.55), 0 0 14px rgba(245, 158, 11, 0.55); }
+}
+.fx-go-shimmer { animation: fx-go-glow 2.6s ease-in-out infinite; }
+.fx-go-shimmer::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(110deg, transparent 22%, rgba(255, 215, 0, 0.55) 50%, rgba(255, 255, 255, 0.5) 54%, transparent 78%);
+  background-size: 230% 100%;
+  animation: fx-shimmer 2.8s linear infinite;
+  mix-blend-mode: screen;
+}
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 15
+   ============================================================ */
+
+/* C15-1 — HUD: the current player's avatar bounces when their
+   turn starts. The Current Turn token avatar in HUD is keyed by
+   player id, so every turn change remounts it and replays this:
+   three springy hops with a squash on each landing and an
+   emerald glow that fades as it settles. Transform/opacity/
+   shadow only — the avatar chip itself is untouched. */
+@keyframes fx-turn-avatar-bounce {
+  0% { transform: translateY(0) scale(1, 1); box-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  12% { transform: translateY(2px) scale(1.14, 0.82); box-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+  30% { transform: translateY(-13px) scale(0.94, 1.1); box-shadow: 0 0 20px rgba(52, 211, 153, 0.75); }
+  45% { transform: translateY(0) scale(1.12, 0.86); box-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
+  60% { transform: translateY(-7px) scale(0.97, 1.05); box-shadow: 0 0 14px rgba(52, 211, 153, 0.5); }
+  74% { transform: translateY(0) scale(1.06, 0.93); box-shadow: 0 0 6px rgba(52, 211, 153, 0.25); }
+  87% { transform: translateY(-3px) scale(1, 1.02); box-shadow: 0 0 4px rgba(52, 211, 153, 0.15); }
+  100% { transform: translateY(0) scale(1, 1); box-shadow: 0 0 0 rgba(52, 211, 153, 0); }
+}
+.fx-turn-avatar { animation: fx-turn-avatar-bounce 0.85s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+/* C15-2 — Install guide card: steps stagger in. Each step row
+   in InstallButton's guide card gets fx-install-step plus an
+   inline animationDelay of i*120ms, so the numbered steps slide
+   in from the left one after another when the card opens,
+   reading top-to-bottom like a checklist being written.
+   Opacity and transform only — card layout is untouched. */
+@keyframes fx-install-step-in {
+  0% { opacity: 0; transform: translateX(-16px) scale(0.96); }
+  60% { opacity: 1; transform: translateX(2px) scale(1.01); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+.fx-install-step { animation: fx-install-step-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }

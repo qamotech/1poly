@@ -210,19 +210,19 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
               
               {/* Stat Highlights Grid */}
               <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full mt-5">
-                <div className="bg-slate-800/90 p-2.5 rounded-xl border border-slate-700 text-center">
+                <div className="bg-slate-800/90 p-2.5 rounded-xl border border-slate-700 text-center fx-standing-row" style={{ animationDelay: '0ms' }}>
                   <p className="text-xl sm:text-2xl font-mono font-black text-amber-400">
                     {winner.properties.length}
                   </p>
                   <p className="text-[10px] text-slate-400 uppercase font-bold mt-0.5">Properties</p>
                 </div>
-                <div className="bg-slate-800/90 p-2.5 rounded-xl border border-slate-700 text-center">
+                <div className="bg-slate-800/90 p-2.5 rounded-xl border border-slate-700 text-center fx-standing-row" style={{ animationDelay: '110ms' }}>
                   <p className="text-xl sm:text-2xl font-mono font-black text-emerald-400">
                     ${winner.stats.rentCollected.toLocaleString()}
                   </p>
                   <p className="text-[10px] text-slate-400 uppercase font-bold mt-0.5">Rent Earned</p>
                 </div>
-                <div className="bg-slate-800/90 p-2.5 rounded-xl border border-slate-700 text-center">
+                <div className="bg-slate-800/90 p-2.5 rounded-xl border border-slate-700 text-center fx-standing-row" style={{ animationDelay: '220ms' }}>
                   <p className="text-xl sm:text-2xl font-mono font-black text-blue-400">
                     ${winner.stats.highestMoney.toLocaleString()}
                   </p>
