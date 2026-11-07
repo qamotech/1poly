@@ -119,6 +119,17 @@ export const CoinBurst: React.FC<{ amount: number }> = ({ amount }) => {
   );
 };
 
+/**
+ * C5-2 — sparkles that orbit the winner token on win screens.
+ * Render inside an .fx-orbit-wrap element (position:relative); the ring
+ * spins via .fx-orbit-sparkles in index.css. Pure decoration.
+ */
+export const OrbitSparkles: React.FC = () => (
+  <span className="fx-orbit-sparkles" aria-hidden="true">
+    <i /><i /><i /><i /><i /><i />
+  </span>
+);
+
 /** A8 — renders text with each letter waving in sequence. */
 export const WaveText: React.FC<{ text: string }> = ({ text }) => (
   <>

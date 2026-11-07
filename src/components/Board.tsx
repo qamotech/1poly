@@ -507,7 +507,7 @@ export const Board: React.FC<BoardProps> = ({ gameState, onRoll, onEndTurn, onBu
                 }}
                 transition={shouldHighlight ? { duration: 1.4, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
                 onClick={() => setSelectedSpaceId(space.id)}
-                className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}${freshBuys[space.id] ? ' fx-buy-pop' : ''}`}
+                className={`group relative ${bgClass} border border-slate-600/60 flex flex-col overflow-hidden cursor-pointer hover:brightness-105 transition-all select-none ${isCorner ? 'p-1.5' : ''}${freshBuys[space.id] ? ' fx-buy-pop' : ''}${space.type === SpaceType.RAILROAD ? ' fx-railroad' : ''}`}
               >
                 {freshBuys[space.id] && (
                   <span key={freshBuys[space.id]} className="fx-sparkles" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>

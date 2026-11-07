@@ -30,6 +30,21 @@ import { audio } from '../../audio';
 import { AnimatedMoney, CoinBurst } from '../Fx';
 
 const FX_PLAYER_HUES = ['#f59e0b', '#38bdf8', '#e879f9', '#34d399', '#fb7185', '#a78bfa'];
+
+// C16 — classify a log line for its icon chip (spotlight ticker + drawer).
+const fxLogMeta = (log: string): string => {
+  const s = log.toLowerCase();
+  if (s.includes('won') || s.includes('wins')) return '🏆';
+  if (s.includes('stole') || s.includes('steal') || s.includes('sly')) return '🥷';
+  if (s.includes('rent')) return '💸';
+  if (s.includes('complete') || s.includes('full set')) return '🎉';
+  if (s.includes('bank')) return '🏦';
+  if (s.includes('paid') || s.includes('pay')) return '💰';
+  if (s.includes('drew') || s.includes('draw')) return '🎴';
+  if (s.includes('house') || s.includes('hotel')) return '🏠';
+  if (s.includes('discard')) return '🗑️';
+  return '✨';
+};
 import {
   Layers,
   Sparkles,
@@ -150,6 +165,30 @@ export const DealGame: React.FC<DealGameProps> = ({
     }
     prevHandLenRef.current = len;
   }, [localPlayer.hand]);
+
+  // C16 — deck riffle: bump the shuffle key when the deck jumps back up
+  // (a reshuffle), so the draw pile replays its riffle animation. The key
+  // starts at 1 so the pile also riffles once on match start.
+  const prevDeckLenRef = useRef(gameState.deck.length);
+  const [shuffleKey, setShuffleKey] = useState(1);
+  useEffect(() => {
+    const len = gameState.deck.length;
+    if (len - prevDeckLenRef.current > 3) setShuffleKey((k) => k + 1);
+    prevDeckLenRef.current = len;
+  }, [gameState.deck.length]);
+
+  // C16 — YOUR TURN sweep across the table when your turn begins.
+  const prevMyTurnRef = useRef(false);
+  const [showTurnSweep, setShowTurnSweep] = useState(false);
+  useEffect(() => {
+    if (isMyTurn && !prevMyTurnRef.current) {
+      setShowTurnSweep(true);
+      const t = setTimeout(() => setShowTurnSweep(false), 1400);
+      prevMyTurnRef.current = isMyTurn;
+      return () => clearTimeout(t);
+    }
+    prevMyTurnRef.current = isMyTurn;
+  }, [isMyTurn]);
 
   // Flash screen effect when turn plays reach 0.
   // The not-turnsAreUp branch MUST clear the flash: ending the turn inside
@@ -452,6 +491,27 @@ export const DealGame: React.FC<DealGameProps> = ({
         </div>
       </header>
 
+      {/* C16 — Sets race bar: first to 3 full sets wins the match */}
+      <div className="fx-race w-full max-w-7xl mx-auto px-3 sm:px-5 mt-1.5" aria-hidden="true">
+        <div className="fx-race-track">
+          <div
+            className="fx-race-fill"
+            style={{ width: `${(Math.max(0, ...gameState.players.map((p) => p.completedSetsCount)) / 3) * 100}%` }}
+          />
+        </div>
+        {gameState.players.map((p) => (
+          <span
+            key={p.id}
+            className="fx-race-marker"
+            style={{ left: `${2 + (p.completedSetsCount / 3) * 94}%` }}
+            title={`${p.name}: ${p.completedSetsCount}/3 sets`}
+          >
+            {p.token}
+          </span>
+        ))}
+        <span className="absolute right-0 top-1/2 -translate-y-1/2 text-[11px] z-[1]">🏁</span>
+      </div>
+
       {/* Main Playing Arena — the middle region scrolls internally only when it
           truly can't fit; the hand dock at the bottom never scrolls away */}
       <main className="flex-1 min-h-0 w-full max-w-7xl mx-auto flex flex-col gap-2 p-2 sm:p-4">
@@ -490,6 +550,15 @@ export const DealGame: React.FC<DealGameProps> = ({
                         <span className="text-[10px] text-slate-400">
                           <span key={opponent.hand.length} className="fx-count-pop">{opponent.hand.length}</span> cards in hand
                         </span>
+                        <span className="fx-fan" aria-hidden="true">
+                          {Array.from({ length: Math.min(opponent.hand.length, 5) }).map((_, i, arr) => (
+                            <i
+                              key={i}
+                              className="fx-fan-card"
+                              style={{ transform: `rotate(${(i - (arr.length - 1) / 2) * 10}deg)` }}
+                            />
+                          ))}
+                        </span>
                       </div>
                     </div>
 
@@ -526,9 +595,11 @@ export const DealGame: React.FC<DealGameProps> = ({
                       return (
                         <div
                           key={col}
-                          className={`p-1 rounded-md border flex flex-col items-center justify-between text-center transition-all ${
+                          className={`relative p-1 rounded-md border flex flex-col items-center justify-between text-center transition-all ${
                             set.isComplete
                               ? `${config.bgClass} border-amber-400 ring-2 ring-amber-400/40 shadow-sm`
+                              : set.cards.length === config.requiredCount - 1
+                              ? 'bg-slate-900 fx-one-away'
                               : 'bg-slate-900 border-slate-700'
                           }`}
                           style={{ boxShadow: `0 0 ${set.isComplete ? 14 : 9}px ${config.hex}${set.isComplete ? 'aa' : '55'}` }}
@@ -539,6 +610,9 @@ export const DealGame: React.FC<DealGameProps> = ({
                           <span className="text-[10px] font-bold text-slate-200">
                             {set.cards.length}/{config.requiredCount}
                           </span>
+                          {set.isComplete && (
+                            <span key={`${col}:${set.cards.length}`} className="fx-set-burst" aria-hidden="true">✨</span>
+                          )}
                           {set.hasHouse && <span className="text-[8px] text-emerald-300">🏠</span>}
                           {set.hasHotel && <span className="text-[8px] text-red-300">🏨</span>}
                         </div>
@@ -553,6 +627,9 @@ export const DealGame: React.FC<DealGameProps> = ({
 
         {/* Center Table Arena (Deck, Discard Pile & Action Announcement) */}
         <section className="bg-slate-900/60 rounded-2xl p-2.5 sm:p-4 border border-slate-800 flex flex-row flex-wrap items-center justify-between gap-2 sm:gap-4 relative overflow-hidden backdrop-blur-xs shrink-0">
+          {showTurnSweep && (
+            <div className="fx-turn-sweep" aria-hidden="true"><span>⚡ YOUR TURN ⚡</span></div>
+          )}
           {gameState.lastActionMessage && (
             <span key={gameState.lastActionMessage + ':' + gameState.logs.length} className="fx-spotlight" aria-hidden="true" />
           )}
@@ -560,19 +637,24 @@ export const DealGame: React.FC<DealGameProps> = ({
           <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
             {/* Draw Deck */}
             <div className="flex flex-col items-center">
-              <div className="w-20 h-28 sm:w-24 sm:h-34 rounded-xl border-2 border-dashed border-blue-500/50 bg-gradient-to-br from-blue-950 to-indigo-950 flex flex-col items-center justify-center text-center shadow-lg relative">
+              <div key={shuffleKey} className={`w-20 h-28 sm:w-24 sm:h-34 rounded-xl border-2 border-dashed border-blue-500/50 bg-gradient-to-br from-blue-950 to-indigo-950 flex flex-col items-center justify-center text-center shadow-lg relative fx-riffle ${gameState.deck.length <= 10 ? 'fx-deck-low' : ''}`}>
                 <span className="text-2xl mb-1">🎴</span>
-                <span key={gameState.deck.length} className="text-xs font-mono font-bold text-blue-300 fx-draw-pop">
+                <span key={gameState.deck.length} className={`text-xs font-mono font-bold fx-draw-pop ${gameState.deck.length <= 10 ? 'text-amber-300' : 'text-blue-300'}`}>
                   {gameState.deck.length}
                 </span>
                 <span className="text-[9px] uppercase font-bold text-slate-400">Draw Pile</span>
+                {gameState.deck.length <= 10 && (
+                  <span className="text-[8px] font-black text-amber-400 tracking-widest">LOW!</span>
+                )}
               </div>
             </div>
 
             {/* Discard / Action Center Pile */}
             <div className="flex flex-col items-center">
               {gameState.discardPile.length > 0 ? (
-                <div key={gameState.discardPile[gameState.discardPile.length - 1].id} className="relative fx-slap">
+                <div key={gameState.discardPile[gameState.discardPile.length - 1].id} className={`relative fx-slap ${gameState.discardPile[gameState.discardPile.length - 1].type === DealCardType.ACTION || gameState.discardPile[gameState.discardPile.length - 1].type === DealCardType.RENT ? 'fx-action-zoom' : ''}`}>
+                  <span className="fx-stack-back" style={{ transform: 'translate(5px, 4px) rotate(2.5deg)' }} aria-hidden="true" />
+                  <span className="fx-stack-back" style={{ transform: 'translate(2.5px, 2px) rotate(1.2deg)' }} aria-hidden="true" />
                   <DealCardView
                     card={gameState.discardPile[gameState.discardPile.length - 1]}
                     size="sm"
@@ -599,7 +681,12 @@ export const DealGame: React.FC<DealGameProps> = ({
               {gameState.lastActionMessage || 'Game in progress'}
             </h3>
             <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">
-              {gameState.logs[gameState.logs.length - 1]}
+              {gameState.logs.length > 0 && (
+                <>
+                  <span className="fx-log-chip">{fxLogMeta(gameState.logs[gameState.logs.length - 1])}</span>
+                  {gameState.logs[gameState.logs.length - 1]}
+                </>
+              )}
             </p>
           </div>
 
@@ -667,11 +754,13 @@ export const DealGame: React.FC<DealGameProps> = ({
                 return (
                   <div
                     key={color}
-                    className={`p-1.5 rounded-lg border transition-all flex flex-col justify-between ${
+                    className={`relative p-1.5 rounded-lg border transition-all flex flex-col justify-between ${
                       set.isComplete
                         ? `${config.bgClass} border-amber-400 ring-2 ring-amber-400/40 shadow-md`
                         : hasCards
-                        ? 'bg-slate-950 border-slate-700'
+                        ? set.cards.length === config.requiredCount - 1
+                          ? 'bg-slate-950 fx-one-away'
+                          : 'bg-slate-950 border-slate-700'
                         : 'bg-slate-950/40 border-slate-800/50 opacity-60'
                     }`}
                     style={hasCards ? { boxShadow: `0 0 ${set.isComplete ? 15 : 9}px ${config.hex}${set.isComplete ? 'aa' : '55'}` } : undefined}
@@ -684,6 +773,12 @@ export const DealGame: React.FC<DealGameProps> = ({
                         {set.cards.length}/{config.requiredCount}
                       </span>
                     </div>
+                    {set.isComplete && (
+                      <span key={`${color}:${set.cards.length}`} className="fx-set-burst" aria-hidden="true">✨</span>
+                    )}
+                    {hasCards && (
+                      <div className="fx-set-chip" style={{ background: `linear-gradient(90deg, ${config.hex}, ${config.hex}55)` }} aria-hidden="true" />
+                    )}
 
                     {/* Cards list in set */}
                     <div className="flex flex-wrap gap-0.5 my-0.5">
@@ -739,6 +834,11 @@ export const DealGame: React.FC<DealGameProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                 <span>{spectating ? '👀 Spectating — hands are hidden' : `Your Hand (${localPlayer.hand.length} cards)`}</span>
+                {!spectating && localPlayer.hand.length > 0 && (
+                  <span className="fx-hand-value text-[10px] font-black font-mono text-emerald-300 bg-emerald-950/70 border border-emerald-800/70 px-1.5 py-0.5 rounded-md">
+                    💼 <span key={localPlayer.hand.reduce((s, c) => s + c.value, 0)} className="fx-count-pop">${localPlayer.hand.reduce((s, c) => s + c.value, 0)}M</span>
+                  </span>
+                )}
                 {isMyTurn && !turnsAreUp && (
                   <span className="text-amber-400 font-bold">• Pick a card to play!</span>
                 )}
@@ -803,12 +903,15 @@ export const DealGame: React.FC<DealGameProps> = ({
                 You're watching this match — claim a seat in the lobby to play in the next one!
               </div>
             ) : localPlayer.hand.length > 0 ? (
-              <div className={`flex gap-2.5 overflow-x-auto pb-1 pt-0.5 custom-scrollbar rounded-xl ${localPlayer.hand.length <= 2 ? 'fx-low-hand' : ''}`}>
+              <div className={`flex gap-2.5 overflow-x-auto pb-1 pt-0.5 custom-scrollbar rounded-xl ${localPlayer.hand.length <= 2 ? 'fx-low-hand' : ''} ${localPlayer.completedSetsCount >= 2 ? 'fx-gold-edge' : ''}`}>
                 {localPlayer.hand.map((card, cardIdx) => {
                   const isSelected = selectedHandCardId === card.id;
 
                   return (
                     <div key={card.id} className={`relative shrink-0 rounded-xl fx-holo ${card.id === freshCardId ? 'fx-flip-in' : 'fx-deal-in'}`} style={{ animationDelay: `${Math.min(cardIdx, 7) * 45}ms` }}>
+                      {card.id === freshCardId && (
+                        <span className="fx-new-ribbon" aria-hidden="true">✨ NEW</span>
+                      )}
                       <DealCardView
                         card={card}
                         isSelected={isSelected}
@@ -860,7 +963,7 @@ export const DealGame: React.FC<DealGameProps> = ({
               <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar text-xs">
                 {gameState.logs.map((log, idx) => (
                   <div key={idx} className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 text-slate-300">
-                    {log}
+                    <span className="fx-log-chip">{fxLogMeta(log)}</span>{log}
                   </div>
                 ))}
               </div>

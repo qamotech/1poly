@@ -91,6 +91,9 @@ export default function App() {
   const [inRoom, setInRoom] = useState(false);
   const [gateError, setGateError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  // Denied-action toasts (seat rejected / not your turn) shake once on
+  // arrival (fx-toast-shake); info toasts (game starting) do not.
+  const [toastDenied, setToastDenied] = useState(false);
   // True while the join attempt in flight is the automatic rejoin of the
   // saved room (vs. a code the user typed). A dead saved room is expected —
   // servers restart and lobbies empty — so its failure stays quiet instead
@@ -208,16 +211,19 @@ export default function App() {
     });
 
     socket.on('seat_rejected', ({ message }) => {
+      setToastDenied(true);
       setToast(message || 'That seat is taken.');
     });
 
     socket.on('action_denied', ({ message }) => {
+      setToastDenied(true);
       setToast(message || 'Not your turn');
     });
 
     // Cards match lifecycle: the server pushes a fresh (redacted) view after
     // every move; deal_started pulls everyone in the room into the match.
     socket.on('game_starting', ({ by, mode }: { by: string; mode: string }) => {
+      setToastDenied(false);
       setToast(mode === 'deal' ? `🃏 ${by} started a Cards match!` : `🎮 ${by} started the game!`);
     });
 
@@ -497,7 +503,7 @@ export default function App() {
 
   // If currently playing 1poly Cards game
   const toastEl = toast ? (
-    <div key={toast} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[320] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none whitespace-nowrap fx-toast-in">
+    <div key={toast} className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[320] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none whitespace-nowrap fx-toast-in${toastDenied ? ' fx-toast-shake' : ''}`}>
       {toast}
     </div>
   ) : null;
@@ -632,7 +638,7 @@ export default function App() {
       <InstallButton />
       {/* Soft notice from the server when an action isn't this phone's to make */}
       {toast && (
-        <div key={toast} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[120] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none fx-toast-in">
+        <div key={toast} className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[120] bg-slate-900/95 border border-amber-500/60 text-amber-200 text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl pointer-events-none fx-toast-in${toastDenied ? ' fx-toast-shake' : ''}`}>
           {toast}
         </div>
       )}

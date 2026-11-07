@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { Player } from '../types';
 import { audio } from '../audio';
-import { WaveText, Confetti } from './Fx';
+import { WaveText, Confetti, OrbitSparkles } from './Fx';
 import { Trophy, Sparkles, RotateCcw, Award, DollarSign, Home, Building } from 'lucide-react';
 
 interface GameOverScreenProps {
@@ -191,8 +191,9 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onRestar
                   scale: [1, 1.05, 1]
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="text-7xl sm:text-8xl drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] mb-2 select-none"
+                className="fx-orbit-wrap text-7xl sm:text-8xl drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] mb-2 select-none"
               >
+                <OrbitSparkles />
                 {winner.token}
               </motion.div>
 

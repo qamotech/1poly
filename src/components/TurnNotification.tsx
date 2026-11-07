@@ -40,14 +40,18 @@ export const TurnNotification: React.FC<TurnNotificationProps> = ({ currentPlaye
             {/* Color accent bar reflecting the player token color if applicable, or generic emerald */}
             <div className={`absolute top-0 left-0 w-2 h-full ${currentPlayer.token === '🚗' ? 'bg-red-500' : currentPlayer.token === '🎩' ? 'bg-indigo-500' : 'bg-emerald-500'}`} />
 
-            <motion.span 
-              initial={{ rotate: -15, scale: 0.5 }}
-              animate={{ rotate: 0, scale: 1 }}
-              transition={{ type: 'spring', bounce: 0.6, delay: 0.1 }}
-              className="text-5xl drop-shadow-xl"
-            >
-              {currentPlayer.token}
-            </motion.span>
+            {/* C6-2 — token spins in: wrapper keyed by player id so it
+                remounts (and replays the spin) on every turn change */}
+            <span key={currentPlayer.id} className="fx-token-spin-in">
+              <motion.span
+                initial={{ rotate: -15, scale: 0.5 }}
+                animate={{ rotate: 0, scale: 1 }}
+                transition={{ type: 'spring', bounce: 0.6, delay: 0.1 }}
+                className="text-5xl drop-shadow-xl"
+              >
+                {currentPlayer.token}
+              </motion.span>
+            </span>
             
             <div className="flex flex-col pr-4">
               <span className="text-xs uppercase tracking-[0.2em] text-slate-400 font-bold mb-1">Active Player</span>

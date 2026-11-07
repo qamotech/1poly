@@ -82,7 +82,9 @@ export const DealCardView: React.FC<DealCardViewProps> = ({
       whileHover={!disabled && isPlayable ? { y: -6, scale: 1.03 } : {}}
       whileTap={!disabled && isPlayable ? { scale: 0.97 } : {}}
       onClick={!disabled ? onClick : undefined}
-      className={`relative ${sizeClasses} rounded-xl border-2 ${cardBorder} ${cardBg} shadow-lg flex flex-col justify-between overflow-hidden select-none cursor-pointer transition-shadow ${
+      className={`relative ${sizeClasses} rounded-xl border-2 fx-tilt ${cardBorder} ${cardBg} shadow-lg flex flex-col justify-between overflow-hidden select-none cursor-pointer transition-shadow ${
+        card.type === DealCardType.ACTION ? 'fx-holo-orange' : ''
+      } ${
         isSelected ? 'ring-4 ring-yellow-400 scale-105 z-20 shadow-[0_0_20px_rgba(250,204,21,0.6)]' : ''
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >

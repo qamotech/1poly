@@ -757,3 +757,292 @@ html, body { overscroll-behavior: none; }
   50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.95), 0 0 14px rgba(52, 211, 153, 0.9), 0 4px 14px rgba(0, 0, 0, 0.45); }
 }
 
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 4
+   ============================================================ */
+
+/* C4-1 — HUD jail badge: the little key icon on a jailed player's
+   badge wiggles like it's rattling in the lock — a quick tilt left,
+   tilt right, then a rest, on a loop. */
+.fx-jail-key { animation: fx-jail-key-wiggle 1.5s ease-in-out infinite; transform-origin: 50% 85%; display: inline-block; }
+@keyframes fx-jail-key-wiggle {
+  0%, 55%, 100% { transform: rotate(0deg); }
+  12% { transform: rotate(-22deg); }
+  26% { transform: rotate(18deg); }
+  40% { transform: rotate(-10deg); }
+}
+
+/* C4-2 — Cards: ACTION cards get an orange-tinted holo sheen variant.
+   Same sweep timing family as .fx-holo, but the band is warm orange /
+   amber instead of white-mint, so action cards read as hot/urgent
+   against the cooler sheen on the rest of the hand. Scoped to the
+   card root (overflow-hidden), sitting above the card face (z 5) and
+   below the action-button overlay (z 30). */
+.fx-holo-orange::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5;
+  background: linear-gradient(115deg, transparent 30%, rgba(249, 115, 22, 0.42) 46%, rgba(253, 186, 116, 0.34) 52%, rgba(234, 88, 12, 0.36) 57%, transparent 70%);
+  background-size: 280% 100%; background-position: 120% 0;
+  animation: fx-holo-sweep 4.2s ease-in-out infinite; mix-blend-mode: screen;
+}
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 5
+   ============================================================ */
+
+/* C5-1 — Board: railroad tiles get a sliding train highlight on hover.
+   A warm light sweep crosses the tile (::before) while a little train
+   (::after) chugs across the bottom edge. Pure decoration, clipped by
+   the tile's own overflow-hidden; fires only on hover. */
+.fx-railroad::before {
+  content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background: linear-gradient(100deg, transparent 18%, rgba(251, 191, 36, 0.38) 50%, transparent 82%);
+  transform: translateX(-130%);
+}
+.fx-railroad:hover::before {
+  transform: translateX(130%);
+  transition: transform 0.65s ease-in-out;
+}
+.fx-railroad::after {
+  content: "🚂"; position: absolute; left: 0; bottom: 3px; z-index: 20; pointer-events: none;
+  font-size: 13px; line-height: 1; opacity: 0;
+  filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.9)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+}
+.fx-railroad:hover::after { animation: fx-rail-slide 0.9s ease-in-out both; }
+@keyframes fx-rail-slide {
+  0% { opacity: 0; transform: translateX(-18px); }
+  14% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(74px); }
+}
+
+/* C5-2 — Win screens: winner token gets orbiting sparkles. A ring of
+   glowing dots (rendered by the OrbitSparkles helper in Fx.tsx inside
+   an .fx-orbit-wrap) slowly circles the token, each dot twinkling as
+   it goes. */
+.fx-orbit-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.fx-orbit-sparkles {
+  position: absolute; inset: -20px; z-index: 5; pointer-events: none;
+  animation: fx-orbit-spin 3.6s linear infinite;
+}
+.fx-orbit-sparkles i {
+  position: absolute; width: 7px; height: 7px; border-radius: 9999px;
+  animation: fx-orbit-twinkle 1.1s ease-in-out infinite;
+}
+.fx-orbit-sparkles i:nth-child(1) { left: 50%; top: 0; transform: translateX(-50%); background: #fbbf24; box-shadow: 0 0 8px rgba(251, 191, 36, 0.95); }
+.fx-orbit-sparkles i:nth-child(2) { right: 5px; top: 22%; background: #e879f9; box-shadow: 0 0 8px rgba(232, 121, 249, 0.95); animation-delay: 0.18s; }
+.fx-orbit-sparkles i:nth-child(3) { right: 9px; bottom: 5px; background: #60a5fa; box-shadow: 0 0 8px rgba(96, 165, 250, 0.95); animation-delay: 0.36s; }
+.fx-orbit-sparkles i:nth-child(4) { left: 50%; bottom: 0; transform: translateX(-50%); background: #34d399; box-shadow: 0 0 8px rgba(52, 211, 153, 0.95); animation-delay: 0.54s; }
+.fx-orbit-sparkles i:nth-child(5) { left: 5px; bottom: 22%; background: #f87171; box-shadow: 0 0 8px rgba(248, 113, 113, 0.95); animation-delay: 0.72s; }
+.fx-orbit-sparkles i:nth-child(6) { left: 9px; top: 5px; background: #fef08a; box-shadow: 0 0 8px rgba(254, 240, 138, 0.95); animation-delay: 0.9s; }
+@keyframes fx-orbit-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes fx-orbit-twinkle {
+  0%, 100% { opacity: 0.55; scale: 0.75; }
+  50% { opacity: 1; scale: 1.25; }
+}
+
+/* ============================================================
+   1POLY CARDS — 16-ENHANCEMENT PACK (manual batch, 2026-11-06)
+   Cards-only surfaces: deck, discard, sets, hand dock, opponents,
+   race bar, log chips, turn sweep, rematch.
+   ============================================================ */
+
+/* C16-1 — draw pile riffle: quick shuffle shake when the deck is
+   (re)built — match start and reshuffles (keyed remount). */
+@keyframes fx-riffle-anim {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(-2.4deg) translateX(-1px); filter: brightness(1.25); }
+  30% { transform: rotate(2.2deg) translateX(1px); }
+  45% { transform: rotate(-1.8deg); filter: brightness(1.15); }
+  60% { transform: rotate(1.6deg) translateX(-1px); }
+  78% { transform: rotate(-0.8deg); }
+  100% { transform: rotate(0deg); filter: brightness(1); }
+}
+.fx-riffle { animation: fx-riffle-anim .55s ease-in-out; }
+
+/* C16-2 — set completion burst: a star that pops and fades over a
+   set the moment it completes (keyed by the set's card count). */
+@keyframes fx-set-burst-anim {
+  0% { transform: scale(.3) rotate(-30deg); opacity: 0; }
+  35% { transform: scale(1.5) rotate(10deg); opacity: 1; }
+  70% { transform: scale(1.15) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1.3) translateY(-8px); opacity: 0; }
+}
+.fx-set-burst {
+  position: absolute; top: -8px; right: -6px; z-index: 5; pointer-events: none;
+  font-size: 15px; filter: drop-shadow(0 0 6px rgba(250, 204, 21, .9));
+  animation: fx-set-burst-anim 1s ease-out forwards;
+}
+
+/* C16-3 — one-away glow: a set needing exactly one more card breathes
+   amber so the target is obvious at a glance. */
+@keyframes fx-one-away-anim {
+  0%, 100% { box-shadow: 0 0 6px rgba(245, 158, 11, .25), inset 0 0 0 1px rgba(245, 158, 11, .35); }
+  50% { box-shadow: 0 0 14px rgba(245, 158, 11, .6), inset 0 0 0 1px rgba(245, 158, 11, .8); }
+}
+.fx-one-away { animation: fx-one-away-anim 1.6s ease-in-out infinite; border-color: rgba(245, 158, 11, .7) !important; }
+
+/* C16-4 — opponent hand fan: tiny card backs fanned by hand size. */
+.fx-fan { display: inline-flex; align-items: flex-end; margin-left: 6px; height: 14px; }
+.fx-fan-card {
+  width: 8px; height: 12px; margin-left: -3px; border-radius: 2px;
+  background: linear-gradient(160deg, #1d4ed8, #172554);
+  border: 1px solid rgba(147, 197, 253, .55);
+  transform-origin: 50% 100%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+.fx-fan-card:first-child { margin-left: 0; }
+
+/* C16-5 — action/rent cards LAND on the discard with a zoom punch. */
+@keyframes fx-action-zoom-anim {
+  0% { transform: scale(1.28) rotate(-2deg); filter: brightness(1.35); }
+  55% { transform: scale(.97) rotate(.6deg); }
+  100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+}
+.fx-action-zoom { animation: fx-action-zoom-anim .38s cubic-bezier(.2, 1.6, .4, 1); }
+
+/* C16-6 — low deck warning: the draw pile pulses amber at 10 or fewer. */
+@keyframes fx-deck-low-anim {
+  0%, 100% { box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+  50% { box-shadow: 0 0 16px rgba(245, 158, 11, .55); }
+}
+.fx-deck-low { animation: fx-deck-low-anim 1.1s ease-in-out infinite; border-color: rgba(245, 158, 11, .8) !important; }
+
+/* C16-7 — discard depth: offset card backs stacked under the top card. */
+.fx-stack-back {
+  position: absolute; inset: 0; border-radius: .75rem; pointer-events: none;
+  background: linear-gradient(150deg, #1e3a8a, #0f172a);
+  border: 2px solid rgba(100, 116, 139, .5);
+}
+
+/* C16-8 — sets race bar: tokens race to 3 sets along a slim track. */
+.fx-race { position: relative; height: 22px; }
+.fx-race-track {
+  position: absolute; left: 0; right: 0; top: 50%; height: 6px; transform: translateY(-50%);
+  border-radius: 999px; background: rgba(30, 41, 59, .9);
+  border: 1px solid rgba(71, 85, 105, .6); overflow: hidden;
+}
+.fx-race-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, #0ea5e9, #34d399, #facc15);
+  transition: width .7s cubic-bezier(.3, 1.2, .4, 1);
+}
+.fx-race-marker {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  font-size: 14px; line-height: 1; z-index: 2;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .8));
+  transition: left .7s cubic-bezier(.3, 1.2, .4, 1);
+}
+
+/* C16-9 — set color chip: a shimmering gradient bar in the set's color. */
+.fx-set-chip {
+  height: 3px; border-radius: 999px; margin-top: 3px; position: relative; overflow: hidden;
+}
+.fx-set-chip::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .75) 50%, transparent 70%);
+  transform: translateX(-120%); animation: fx-sheen-sweep 2.8s ease-in-out infinite;
+}
+
+/* C16-10 — match-point gold edge: at 2 sets your hand zone glows gold. */
+@keyframes fx-gold-edge-anim {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(250, 204, 21, .35), 0 0 10px rgba(250, 204, 21, .18); }
+  50% { box-shadow: 0 0 0 1px rgba(250, 204, 21, .85), 0 0 20px rgba(250, 204, 21, .4); }
+}
+.fx-gold-edge { animation: fx-gold-edge-anim 1.8s ease-in-out infinite; border-radius: .75rem; }
+
+/* C16-11 — card hover tilt via the CSS `rotate` property, so it composes
+   with the motion library's transforms instead of fighting them. */
+.fx-tilt { transition: rotate .18s ease-out; }
+.fx-tilt:hover { rotate: -2.2deg; }
+
+/* C16-12 — NEW ribbon on the card you just drew. */
+.fx-new-ribbon {
+  position: absolute; top: -6px; left: -4px; z-index: 30; pointer-events: none;
+  background: linear-gradient(120deg, #f59e0b, #facc15); color: #451a03;
+  font-size: 8px; font-weight: 900; letter-spacing: .06em;
+  padding: 2px 5px; border-radius: 999px; box-shadow: 0 2px 6px rgba(0, 0, 0, .5);
+  animation: fx-pop-in .3s cubic-bezier(.2, 1.8, .4, 1) both;
+}
+
+/* C16-13 — log icon chips (ticker line + activity drawer). */
+.fx-log-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 5px; font-size: 10px; flex: none;
+  background: rgba(51, 65, 85, .8); border: 1px solid rgba(100, 116, 139, .5);
+  vertical-align: -3px; margin-right: 5px;
+}
+
+/* C16-14 — YOUR TURN sweep: a banner that streaks across the table the
+   moment your turn begins. */
+@keyframes fx-turn-sweep-anim {
+  0% { transform: translateX(-110%) skewX(-8deg); opacity: 0; }
+  12% { opacity: 1; }
+  45% { transform: translateX(0) skewX(0deg); opacity: 1; }
+  78% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(110%); opacity: 0; }
+}
+.fx-turn-sweep {
+  position: absolute; inset: 0; z-index: 20; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.fx-turn-sweep > span {
+  background: linear-gradient(120deg, rgba(245, 158, 11, .95), rgba(250, 204, 21, .95));
+  color: #451a03; font-weight: 900; font-size: 15px; letter-spacing: .12em;
+  padding: 6px 18px; border-radius: 999px; box-shadow: 0 6px 24px rgba(245, 158, 11, .5);
+  animation: fx-turn-sweep-anim 1.35s cubic-bezier(.3, .9, .3, 1) forwards;
+}
+
+/* C16-15 — rematch heartbeat on the Deal Again button. */
+@keyframes fx-rematch-anim {
+  0%, 100% { transform: scale(1); }
+  12% { transform: scale(1.045); }
+  24% { transform: scale(1); }
+  36% { transform: scale(1.03); }
+  48% { transform: scale(1); }
+}
+.fx-rematch-heartbeat { animation: fx-rematch-anim 1.6s ease-in-out infinite; }
+
+/* C16-16 — hand value chip pop is fx-count-pop (shared); the chip itself
+   gets a soft emerald sheen sweep. */
+.fx-hand-value { position: relative; overflow: hidden; }
+.fx-hand-value::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(110, 231, 183, .35) 50%, transparent 65%);
+  transform: translateX(-130%); animation: fx-sheen-sweep 3.4s ease-in-out infinite;
+}
+
+/* ============================================================
+   VIEW ENHANCEMENT LOOP — CYCLE 6
+   ============================================================ */
+
+/* C6-1 — denied-action toasts (seat rejected / not your turn) shake
+   once on arrival: the toast slides up like fx-toast-in, then rattles
+   side to side with decaying offsets and settles. Applied INSTEAD of
+   the plain fx-toast-in animation (both classes stay on the element
+   so the fx-toast-in::after dismiss bar still renders); keyframes
+   keep the -50% centering the toast positioning relies on. Info
+   toasts (game starting) don't get this class and never shake. */
+@keyframes fx-toast-shake {
+  0% { opacity: 0; transform: translate(-50%, 16px) scale(0.94); }
+  30% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  45% { transform: translate(calc(-50% - 8px), 0) scale(1); }
+  58% { transform: translate(calc(-50% + 7px), 0) scale(1); }
+  70% { transform: translate(calc(-50% - 5px), 0) scale(1); }
+  82% { transform: translate(calc(-50% + 3px), 0) scale(1); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+.fx-toast-shake { animation: fx-toast-shake 0.78s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+/* C6-2 — turn banner: the player token spins in. The wrapper span
+   (keyed by player id in TurnNotification, so it remounts and replays
+   every turn change) whirls a near-full turn while scaling up; the
+   inner motion.span keeps its existing spring pop untouched. */
+@keyframes fx-token-spin-in {
+  0% { transform: rotate(-340deg) scale(0.25); opacity: 0; }
+  55% { opacity: 1; }
+  100% { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+.fx-token-spin-in { display: inline-block; animation: fx-token-spin-in 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.25) both; }

@@ -372,7 +372,7 @@ export const HUD: React.FC<HUDProps> = ({
                       )}
                       {p.inJail && (
                         <span className="text-[9px] bg-amber-900/80 text-amber-300 border border-amber-600 px-1 rounded font-bold flex items-center gap-0.5">
-                          <Key size={9} /> Jail
+                          <Key size={9} className="fx-jail-key" /> Jail
                         </span>
                       )}
                     </div>

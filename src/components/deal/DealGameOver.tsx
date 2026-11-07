@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 import { DealPlayer } from '../../deal/dealTypes';
 import { Trophy, Sparkles, RefreshCw, Home, DollarSign, Swords } from 'lucide-react';
 import { audio } from '../../audio';
-import { WaveText, Confetti } from '../Fx';
+import { WaveText, Confetti, OrbitSparkles } from '../Fx';
 
 interface DealGameOverProps {
   winner: DealPlayer | null;
@@ -121,7 +121,7 @@ export const DealGameOver: React.FC<DealGameOverProps> = ({
           <h2 className="text-3xl sm:text-4xl font-black fx-shimmer-text">
             <WaveText text={winner?.name ?? ''} /> Wins!
           </h2>
-          <div className="text-5xl my-3 filter drop-shadow-lg fx-trophy-bounce">{winner?.token}</div>
+          <div className="fx-orbit-wrap text-5xl my-3 filter drop-shadow-lg fx-trophy-bounce"><OrbitSparkles />{winner?.token}</div>
           <p className="text-xs sm:text-sm text-slate-300 max-w-sm mx-auto">
             Successfully collected <strong>3 Complete Property Sets</strong> and conquered the 1poly Cards arena!
           </p>
@@ -159,7 +159,7 @@ export const DealGameOver: React.FC<DealGameOverProps> = ({
                 audio.playUiClick();
                 onRestart();
               }}
-              className="flex-1 py-3 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 py-3 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer fx-rematch-heartbeat"
             >
               <RefreshCw size={16} /> Deal Again (Rematch)
             </button>
